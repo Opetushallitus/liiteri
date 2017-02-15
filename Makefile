@@ -1,2 +1,2 @@
 source-to-image:
-  ./bin/cibuild.sh create-uberjar
+	./bin/cibuild.sh create-uberjar
