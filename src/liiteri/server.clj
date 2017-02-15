@@ -16,7 +16,8 @@
 
   (stop [this]
     (when-let [stop (:server this)]
-      (stop))
+      (stop)
+      (log/info (str "Stopped server")))
     (assoc this :server nil)))
 
 (defn new-server []
