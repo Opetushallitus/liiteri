@@ -6,7 +6,10 @@
             :url  "https://www.tldrlegal.com/l/eupl-1.1"}
 
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [com.stuartsierra/component "0.3.2"]]
+                 [metosin/compojure-api "1.1.10"]
+                 [com.stuartsierra/component "0.3.2"]
+                 [http-kit "2.2.0"]
+                 [com.taoensso/timbre "4.8.0"]]
 
   :profiles {:dev     {:dependencies [[reloaded.repl "0.2.3"]]
                        :repl-options {:init-ns user}

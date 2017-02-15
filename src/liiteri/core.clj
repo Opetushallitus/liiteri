@@ -1,9 +1,10 @@
 (ns liiteri.core
-  (:require [com.stuartsierra.component :as component])
+  (:require [com.stuartsierra.component :as component]
+            [liiteri.server :as server])
   (:gen-class))
 
 (defn new-system []
-  (let [components {}]
+  (let [components [:server (server/new-server)]]
     (apply component/system-map components)))
 
 (defn -main [& _]
