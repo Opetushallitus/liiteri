@@ -4,8 +4,8 @@
   (:gen-class))
 
 (defn new-system []
-  (let [components [:server (server/new-server)]]
-    (apply component/system-map components)))
+  (component/system-map
+    :server (server/new-server)))
 
 (defn -main [& _]
   (let [_ (component/start-system (new-system))]
