@@ -9,6 +9,7 @@
                  [metosin/compojure-api "1.1.10"]
                  [com.stuartsierra/component "0.3.2"]
                  [http-kit "2.2.0"]
+                 [prismatic/schema "1.1.3"]
                  [javax.servlet/servlet-api "2.5"]
                  [com.taoensso/timbre "4.8.0"]]
 
