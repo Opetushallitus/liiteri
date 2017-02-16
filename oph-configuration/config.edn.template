@@ -1,1 +1,9 @@
-{}
+{:db {:database-name "{{liiteri_db_name}}"
+      :pool-name "liiteri-pool"
+      :username "{{liiteri_db_username}}"
+      :password "{{liiteri_db_password}}"
+      :server-name "{{liiteri_db_host}}"
+      :port-number {{liiteri_db_port}}
+      :schema "public"
+      :minimum-idle {{liiteri_db_max_pool_size}}
+      :maximum-pool-size {{liiteri_db_max_pool_size}}}}
