@@ -1,12 +1,18 @@
 (ns liiteri.core
   (:require [com.stuartsierra.component :as component]
+            [liiteri.config :as config]
             [liiteri.db :as db]
             [liiteri.server :as server])
   (:gen-class))
 
 (defn new-system []
   (component/system-map
-    :db     (db/new-pool)
+    :config (config/new-config)
+
+    :db     (component/using
+              (db/new-pool)
+              [:config])
+
     :server (server/new-server)))
 
 (defn -main [& _]

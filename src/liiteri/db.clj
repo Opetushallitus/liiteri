@@ -2,8 +2,7 @@
   (:require [com.stuartsierra.component :as component]
             [cheshire.core :as json]
             [clojure.java.jdbc :as jdbc]
-            [hikari-cp.core :as h]
-            [liiteri.config :refer [config]])
+            [hikari-cp.core :as h])
   (:import [org.postgresql.util PGobject]))
 
 (extend-protocol jdbc/IResultSetReadColumn
@@ -18,7 +17,7 @@
 (defrecord DbPool []
   component/Lifecycle
 
-  (start [this]
+  (start [{:keys [config] :as this}]
     (let [db-config  (merge {:auto-commit        true
                              :read-only          false
                              :connection-timeout 30000
