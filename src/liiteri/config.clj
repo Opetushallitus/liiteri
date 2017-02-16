@@ -4,7 +4,7 @@
             [com.stuartsierra.component :as component]))
 
 (defn new-config []
-  (-> "dev-config.edn"
-      io/resource
-      slurp
-      edn/read-string))
+  (let [path (System/getProperty "config" "dev-resources/dev-config.edn")]
+    (-> path
+        slurp
+        edn/read-string)))
