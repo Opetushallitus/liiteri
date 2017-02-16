@@ -7,11 +7,11 @@
 (defn new-api []
   (api/api {:swagger {:spec         "/liiteri/swagger.json"
                       :ui           "/liiteri/api-docs"
-                      :validatorUrl nil
                       :data         {:info {:version     "0.1.0"
                                             :title       "Liiteri API"
                                             :description "File Storage Service API For OPH"}
-                                     :tags [{:name "liiteri" :description "Liiteri API"}]}}}
+                                     :tags [{:name "liiteri" :description "Liiteri API"}]}
+                      :options {:ui {:validatorUrl nil}}}}
     (api/context "/liiteri/api" []
       :tags ["liiteri"]
 
