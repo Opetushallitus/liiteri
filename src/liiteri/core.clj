@@ -3,12 +3,15 @@
             [liiteri.config :as config]
             [liiteri.db :as db]
             [liiteri.migrations :as migrations]
-            [liiteri.server :as server])
+            [liiteri.server :as server]
+            [liiteri.s3-client :as s3-client])
   (:gen-class))
 
 (defn new-system []
   (component/system-map
     :config     (config/new-config)
+
+    :s3-client  (s3-client/new-client)
 
     :db         (component/using
                   (db/new-pool)
@@ -16,7 +19,7 @@
 
     :server     (component/using
                   (server/new-server)
-                  [:db])
+                  [:db :s3-client])
 
     :migrations (component/using
                   (migrations/new-migration)
