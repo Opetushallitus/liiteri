@@ -2,8 +2,11 @@
   (:require [compojure.api.sweet :as api]
             [compojure.api.upload :as upload]
             [liiteri.schema :as schema]
-            [liiteri.s3-store :as store]
-            [ring.util.http-response :as response]))
+            [liiteri.s3-store :as s3-store]
+            [ring.util.http-response :as response]
+            [ring.swagger.upload]
+            [schema.core :as s])
+  (:import [ring.swagger.upload Upload]))
 
 (defn new-api [{:keys [db s3-client]}]
   (api/api {:swagger {:spec    "/liiteri/swagger.json"
@@ -16,9 +19,15 @@
     (api/context "/liiteri/api" []
       :tags ["liiteri"]
 
-      (api/POST "/upload" []
+      (api/POST "/files" []
         :summary "Upload a file"
-        :multipart-params [file :- (api/describe schema/FileUpload "File to upload")]
-        :middleware [[upload/wrap-multipart-params {:store (store/s3-store s3-client db)}]]
-        :return schema/FileUpload
-        (response/ok file)))))
+        :multipart-params [file :- (api/describe (Upload. schema/File) "File to upload")]
+        :middleware [[upload/wrap-multipart-params {:store (s3-store/s3-store s3-client db)}]]
+        :return schema/File
+        (response/ok file))
+
+      (api/DELETE "/files/:id" []
+        :summary "Delete a file"
+        :path-params [id :- s/Int]
+        :return schema/File
+        (response/ok (s3-store/delete-file id s3-client db))))))

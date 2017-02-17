@@ -14,3 +14,9 @@
     (-> (db-utils/kwd->snake-case spec)
         (sql-create-file<! conn)
         (db-utils/unwrap-data))))
+
+(defn delete-file [id db]
+  {:pre [(integer? id)]}
+  (let [conn {:connection db}]
+    (-> (sql-delete-file<! {:id id} conn)
+        (db-utils/unwrap-data))))

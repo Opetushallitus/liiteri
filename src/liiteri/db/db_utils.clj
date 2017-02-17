@@ -25,6 +25,6 @@
                         data))
 
 (defn unwrap-data [data]
-  (-> data
-      kwd->kebab-case
-      (transform-values sql-date->joda-time)))
+  (some-> data
+          kwd->kebab-case
+          (transform-values sql-date->joda-time)))

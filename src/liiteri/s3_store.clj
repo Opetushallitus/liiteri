@@ -11,3 +11,10 @@
           stream (:stream item)]
       (.putObject client "oph-liiteri-dev" key stream nil)
       file)))
+
+(defn delete-file [id s3-client db]
+  (let [client (:s3-client s3-client)
+        key    (str id)]
+    (when-let [file (file-store/delete-file id db)]
+      (.deleteObject client "oph-liiteri-dev" key)
+      file)))
