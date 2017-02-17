@@ -1,14 +1,8 @@
 (ns liiteri.store
-  (:require [ring.swagger.upload]
-            [schema.core :as s])
-  (:import [ring.swagger.upload Upload]
-           [java.io InputStream]))
-
-(def StreamUpload
-  (Upload. {:filename     s/Str
-            :content-type s/Str}))
+  (:require [liiteri.db.file-store :as file-store]
+            [ring.swagger.upload]))
 
 (defn stream-store
-  []
+  [db]
   (fn [item]
-    (select-keys item [:filename :content-type])))
+    (file-store/create-file (select-keys item [:filename :content-type]) db)))
