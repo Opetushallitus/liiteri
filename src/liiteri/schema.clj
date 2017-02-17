@@ -1,5 +1,6 @@
 (ns liiteri.schema
-  (:require [schema.core :as s])
+  (:require [ring.swagger.upload]
+            [schema.core :as s])
   (:import [ring.swagger.upload Upload]
            [org.joda.time DateTime]))
 
