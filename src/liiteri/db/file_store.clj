@@ -10,7 +10,7 @@
 (defn create-file [spec db]
   {:pre [(not-blank? (:filename spec))
          (not-blank? (:content-type spec))]}
-  (let [conn  {:connection db}]
+  (let [conn {:connection db}]
     (-> (db-utils/kwd->snake-case spec)
         (sql-create-file<! conn)
         (db-utils/unwrap-data))))
