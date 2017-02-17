@@ -30,4 +30,6 @@
         :summary "Delete a file"
         :path-params [id :- s/Int]
         :return schema/File
-        (response/ok (s3-store/delete-file id s3-client db))))))
+        (if-let [response (s3-store/delete-file id s3-client db)]
+          (response/ok response)
+          (response/not-found {:message (str "File " id " not found")}))))))
