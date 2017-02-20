@@ -7,16 +7,20 @@
 (defn- not-blank? [string]
   (not (clojure.string/blank? string)))
 
-(defn create-file [spec db]
+(defn create-file [spec conn]
   {:pre [(not-blank? (:filename spec))
          (not-blank? (:content-type spec))]}
-  (let [conn {:connection db}]
-    (-> (db-utils/kwd->snake-case spec)
-        (sql-create-file<! conn)
-        (db-utils/unwrap-data))))
+  (-> (db-utils/kwd->snake-case spec)
+      (sql-create-file<! conn)
+      (db-utils/unwrap-data)))
 
 (defn delete-file [id db]
   {:pre [(integer? id)]}
   (let [conn {:connection db}]
-    (-> (sql-delete-file<! {:id id} conn)
-        (db-utils/unwrap-data))))
+    (-> (sql-delete-file! {:file_id id} conn))))
+
+(defn create-version [version file-id conn]
+  {:pre [(not-blank? version)
+         (integer? file-id)]}
+  (-> (sql-create-version<! {:file_id file-id :version version} conn)
+      (db-utils/unwrap-data)))

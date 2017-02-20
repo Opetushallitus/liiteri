@@ -29,7 +29,7 @@
       (api/DELETE "/files/:id" []
         :summary "Delete a file"
         :path-params [id :- s/Int]
-        :return schema/File
-        (if-let [response (s3-store/delete-file id s3-client db)]
-          (response/ok response)
+        :return {:id s/Int}
+        (if (> (s3-store/delete-file id s3-client db) 0)
+          (response/ok {:id id})
           (response/not-found {:message (str "File " id " not found")}))))))
