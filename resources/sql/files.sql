@@ -1,5 +1,5 @@
 -- name: sql-create-file<!
-INSERT INTO files (filename, content_type) VALUES (:filename, :content_type);
+INSERT INTO files (id, filename, content_type) VALUES (:id, :filename, :content_type);
 
 -- name: sql-delete-file!
 UPDATE file_versions SET deleted = NOW() WHERE file_id = :file_id AND deleted IS NULL;

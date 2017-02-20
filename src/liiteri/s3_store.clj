@@ -1,19 +1,19 @@
 (ns liiteri.s3-store
   (:require [clojure.java.jdbc :as jdbc]
             [liiteri.db.file-store :as file-store]
-            [ring.swagger.upload]))
+            [ring.swagger.upload])
+  (:import [java.util UUID]))
 
 (defn s3-store
   [s3-client db]
   (fn [item]
-    (jdbc/with-db-transaction [datasource db]
-      (let [conn     {:connection datasource}
-            file     (file-store/create-file (select-keys item [:filename :content-type]) conn)
-            client   (:s3-client s3-client)
-            result   (.putObject client "oph-liiteri-dev" (str (:id file)) (:stream item) nil)
-            version  (file-store/create-version (.getVersionId result) (:id file) conn)
-            uploaded (:uploaded version)]
-        (assoc file :uploaded uploaded)))))
+    (let [id        (str (UUID/randomUUID))
+          s3-object (.putObject (:s3-client s3-client) "oph-liiteri-dev" id (:stream item) nil)]
+      (jdbc/with-db-transaction [datasource db]
+        (let [conn    {:connection datasource}
+              file    (file-store/create-file (assoc (select-keys item [:filename :content-type]) :id id) conn)
+              version (file-store/create-version (.getVersionId s3-object) id conn)]
+          (assoc file :uploaded (:uploaded version)))))))
 
 (defn delete-file [id s3-client db]
   (let [client  (:s3-client s3-client)

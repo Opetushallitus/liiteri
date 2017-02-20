@@ -28,8 +28,8 @@
 
       (api/DELETE "/files/:id" []
         :summary "Delete a file"
-        :path-params [id :- s/Int]
-        :return {:id s/Int}
+        :path-params [id :- s/Str]
+        :return {:id s/Str}
         (if (> (s3-store/delete-file id s3-client db) 0)
           (response/ok {:id id})
           (response/not-found {:message (str "File " id " not found")}))))))
