@@ -2,15 +2,16 @@
   (:require [clj-time.core :as t]
             [clojure.java.jdbc :as jdbc]
             [liiteri.db.file-store :as file-store]
-            [liiteri.utils :as utils]
-            [ring.swagger.upload])
+            [liiteri.schema :as schema]
+            [ring.swagger.upload]
+            [schema.core :as s])
   (:import [java.util UUID]
            [java.io File]))
 
-(defn create-file [file s3-client db]
-  {:pre [(instance? File (:tempfile file))
-         (utils/not-blank? (:filename file))
-         (utils/not-blank? (:content-type file))]}
+(s/defn create-file :- schema/File
+  [file :- schema/FileUpload
+   s3-client :- s/Any
+   db :- s/Any]
   (let [id        (str (UUID/randomUUID))
         s3-object (.putObject (:s3-client s3-client) "oph-liiteri-dev" id (:tempfile file))]
     (jdbc/with-db-transaction [datasource db]
@@ -23,11 +24,11 @@
   (or (nil? deleted)
       (t/after? deleted (t/now))))
 
-(defn update-file [file id s3-client db]
-  {:pre [(instance? File (:tempfile file))
-         (utils/not-blank? (:filename file))
-         (utils/not-blank? (:content-type file))
-         (utils/not-blank? id)]}
+(s/defn update-file :- schema/File
+  [file :- schema/FileUpload
+   id :- s/Str
+   s3-client :- s/Any
+   db :- s/Any]
   (jdbc/with-db-transaction [datasource db]
     (let [conn              {:connection datasource}
           previous-versions (file-store/get-file-for-update id conn)]
@@ -37,7 +38,10 @@
           (merge (select-keys file [:filename :content-type])
                  {:id id :uploaded (:uploaded version)}))))))
 
-(defn delete-file [id s3-client db]
+(s/defn delete-file :- s/Int
+  [id :- s/Str
+   s3-client :- s/Any
+   db :- s/Any]
   (let [client  (:s3-client s3-client)
         deleted (file-store/delete-file id db)]
     (when (> deleted 0)

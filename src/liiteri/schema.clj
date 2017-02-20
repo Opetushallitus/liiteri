@@ -19,3 +19,8 @@
                       :version                  s/Str
                       :uploaded                 DateTime
                       (s/optional-key :deleted) (s/maybe DateTime)})
+
+(s/defschema FileUpload {:filename     s/Str
+                         :content-type s/Str
+                         :size         s/Int
+                         :tempfile     java.io.File})
