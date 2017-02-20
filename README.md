@@ -2,6 +2,10 @@
 
 File Storage Service For OPH
 
+## AWS S3
+
+The backing object storage is [AWS S3](https://aws.amazon.com/s3/). This service assumes that versioning support is turned on for the bucket used.
+
 ## Running The Service Locally
 
 Open your terminal and run following commands. Creating the PostgreSQL Docker image needs to be done only once.
