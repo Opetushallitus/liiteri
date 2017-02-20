@@ -21,10 +21,13 @@
 
       (api/POST "/files" []
         :summary "Upload a file"
-        :multipart-params [file :- (api/describe (Upload. schema/File) "File to upload")]
-        :middleware [[upload/wrap-multipart-params {:store (s3-store/s3-store s3-client db)}]]
+        :multipart-params [file :- (api/describe upload/TempFileUpload "File to upload")]
+        :middleware [upload/wrap-multipart-params]
         :return schema/File
-        (response/ok file))
+        (try
+          (response/ok (s3-store/create-file file s3-client db))
+          (finally
+            (.delete (:tempfile file)))))
 
       (api/DELETE "/files/:id" []
         :summary "Delete a file"
