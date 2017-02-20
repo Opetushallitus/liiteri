@@ -5,6 +5,9 @@
 
 (sql/defqueries "sql/files.sql")
 
+;; conn = datasource wrapped inside a DB transaction
+;; db   = a datasource, auto-commit
+
 (defn create-file [spec conn]
   {:pre [(utils/not-blank? (:id spec))
          (utils/not-blank? (:filename spec))
@@ -23,3 +26,8 @@
          (utils/not-blank? file-id)]}
   (-> (sql-create-version<! {:file_id file-id :version version} conn)
       (db-utils/unwrap-data)))
+
+(defn get-file-for-update [id conn]
+  {:pre [(utils/not-blank? id)]}
+  (->> (sql-get-file-for-update {:id id} conn)
+       (map db-utils/unwrap-data)))

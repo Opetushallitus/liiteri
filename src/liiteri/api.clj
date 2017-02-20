@@ -29,6 +29,17 @@
           (finally
             (.delete (:tempfile file)))))
 
+      (api/PUT "/files/:id" []
+        :summary "Update a file"
+        :path-params [id :- s/Str]
+        :multipart-params [file :- (api/describe upload/TempFileUpload "File to upload")]
+        :middleware [upload/wrap-multipart-params]
+        :return schema/File
+        (try
+          (response/ok (s3-store/update-file file id s3-client db))
+          (finally
+            (.delete (:tempfile file)))))
+
       (api/DELETE "/files/:id" []
         :summary "Delete a file"
         :path-params [id :- s/Str]
