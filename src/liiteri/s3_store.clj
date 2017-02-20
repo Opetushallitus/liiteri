@@ -4,8 +4,7 @@
             [ring.swagger.upload])
   (:import [java.util UUID]))
 
-(defn s3-store
-  [s3-client db]
+(defn s3-store [s3-client db]
   (fn [item]
     (let [id        (str (UUID/randomUUID))
           s3-object (.putObject (:s3-client s3-client) "oph-liiteri-dev" id (:stream item) nil)]
