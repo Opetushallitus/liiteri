@@ -4,7 +4,8 @@
             [liiteri.db :as db]
             [liiteri.migrations :as migrations]
             [liiteri.server :as server]
-            [liiteri.s3-client :as s3-client])
+            [liiteri.s3-client :as s3-client]
+            [schema.core :as s])
   (:gen-class))
 
 (defn new-system []
@@ -26,5 +27,6 @@
                   [:db])))
 
 (defn -main [& _]
+  (s/set-fn-validation! true)
   (let [_ (component/start-system (new-system))]
     @(promise)))

@@ -1,6 +1,8 @@
 (ns user
-  (:require [reloaded.repl :refer [set-init! system init start stop go reset reset-all]]))
+  (:require [reloaded.repl :refer [set-init! system init start stop go reset reset-all]]
+            [schema.core :as s]))
 
 (set-init! #(do
+              (s/set-fn-validation! true)
               (require 'liiteri.core)
               ((resolve 'liiteri.core/new-system))))
