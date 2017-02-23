@@ -12,13 +12,13 @@
   [file :- schema/FileUpload
    s3-client :- s/Any
    db :- s/Any]
-  (let [id        (str (UUID/randomUUID))
-        s3-object (.putObject (:s3-client s3-client) "oph-liiteri-dev" id (:tempfile file))]
+  (let [key       (str (UUID/randomUUID))
+        s3-object (.putObject (:s3-client s3-client) "oph-liiteri-dev" key (:tempfile file))]
     (jdbc/with-db-transaction [datasource db]
-      (let [conn    {:connection datasource}
-            file    (file-store/create-file (assoc (select-keys file [:filename :content-type]) :id id) conn)
-            version (file-store/create-version (.getVersionId s3-object) id conn)]
-        (assoc file :uploaded (:uploaded version))))))
+      (let [conn {:connection datasource}]
+        (file-store/create-file (merge (select-keys file [:filename :content-type :size])
+                                       {:key key :version (.getVersionId s3-object)})
+                                conn)))))
 
 (defn- not-deleted? [{:keys [deleted]}]
   (or (nil? deleted)
@@ -26,24 +26,24 @@
 
 (s/defn update-file :- schema/File
   [file :- schema/FileUpload
-   id :- s/Str
+   key :- s/Str
    s3-client :- s/Any
    db :- s/Any]
   (jdbc/with-db-transaction [datasource db]
     (let [conn              {:connection datasource}
-          previous-versions (file-store/get-file-for-update id conn)]
+          previous-versions (file-store/get-file-for-update key conn)]
       (when (every? not-deleted? previous-versions)
-        (let [s3-object (.putObject (:s3-client s3-client) "oph-liiteri-dev" id (:tempfile file))
-              version   (file-store/create-version (.getVersionId s3-object) id conn)]
-          (merge (select-keys file [:filename :content-type])
-                 {:id id :uploaded (:uploaded version)}))))))
+        (let [s3-object (.putObject (:s3-client s3-client) "oph-liiteri-dev" key (:tempfile file))]
+          (file-store/create-file (merge (select-keys file [:filename :content-type :size])
+                                         {:key key :version (.getVersionId s3-object)})
+                                  conn))))))
 
 (s/defn delete-file :- s/Int
-  [id :- s/Str
+  [key :- s/Str
    s3-client :- s/Any
    db :- s/Any]
   (let [client  (:s3-client s3-client)
-        deleted (file-store/delete-file id db)]
+        deleted (file-store/delete-file key db)]
     (when (> deleted 0)
-      (.deleteObject client "oph-liiteri-dev" (str id)))
+      (.deleteObject client "oph-liiteri-dev" key))
     deleted))

@@ -16,23 +16,17 @@
    conn :- s/Any]
   (-> (db-utils/kwd->snake-case spec)
       (sql-create-file<! conn)
-      (db-utils/unwrap-data)))
+      (db-utils/unwrap-data)
+      (dissoc :id)))
 
 (s/defn delete-file :- s/Int
-  [id :- s/Str
+  [key :- s/Str
    db :- s/Any]
   (let [conn {:connection db}]
-    (-> (sql-delete-file! {:file_id id} conn))))
+    (-> (sql-delete-file! {:key key} conn))))
 
-(s/defn create-version :- schema/Version
-  [version :- s/Str
-   file-id :- s/Str
+(s/defn get-file-for-update :- [{:deleted (s/maybe DateTime)}]
+  [key :- s/Str
    conn :- s/Any]
-  (-> (sql-create-version<! {:file_id file-id :version version} conn)
-      (db-utils/unwrap-data)))
-
-(s/defn get-file-for-update :- [(assoc (st/select-keys schema/Version [:version :uploaded :deleted]) :id s/Str)]
-  [id :- s/Str
-   conn :- s/Any]
-  (->> (sql-get-file-for-update {:id id} conn)
+  (->> (sql-get-file-for-update {:key key} conn)
        (map db-utils/unwrap-data)))

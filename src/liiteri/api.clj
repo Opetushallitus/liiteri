@@ -29,21 +29,21 @@
           (finally
             (.delete (:tempfile file)))))
 
-      (api/PUT "/files/:id" []
+      (api/PUT "/files/:key" []
         :summary "Update a file"
-        :path-params [id :- s/Str]
+        :path-params [key :- (api/describe s/Str "Key of the file")]
         :multipart-params [file :- (api/describe upload/TempFileUpload "File to upload")]
         :middleware [upload/wrap-multipart-params]
         :return schema/File
         (try
-          (response/ok (s3-store/update-file file id s3-client db))
+          (response/ok (s3-store/update-file file key s3-client db))
           (finally
             (.delete (:tempfile file)))))
 
-      (api/DELETE "/files/:id" []
+      (api/DELETE "/files/:key" []
         :summary "Delete a file"
-        :path-params [id :- s/Str]
-        :return {:id s/Str}
-        (if (> (s3-store/delete-file id s3-client db) 0)
-          (response/ok {:id id})
-          (response/not-found {:message (str "File " id " not found")}))))))
+        :path-params [key :- (api/describe s/Str "Key of the file")]
+        :return {:key s/Str}
+        (if (> (s3-store/delete-file key s3-client db) 0)
+          (response/ok {:key key})
+          (response/not-found {:message (str "File with key " key " not found")}))))))
