@@ -13,10 +13,3 @@
    :version                   s/Str
    (s/optional-key :uploaded) DateTime
    (s/optional-key :deleted)  (s/maybe DateTime)})
-
-;; "Private" schema, used internally with schema.core/defn
-
-(s/defschema FileUpload {:filename     s/Str
-                         :content-type s/Str
-                         :size         s/Int
-                         :tempfile     java.io.File})
