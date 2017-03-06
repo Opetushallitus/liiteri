@@ -1,5 +1,6 @@
 (ns liiteri.db.file-store
-  (:require [liiteri.db.db-utils :as db-utils]
+  (:require [clj-time.core :as t]
+            [liiteri.db.db-utils :as db-utils]
             [liiteri.schema :as schema]
             [schema.core :as s]
             [schema-tools.core :as st]
@@ -30,3 +31,17 @@
    conn :- s/Any]
   (->> (sql-get-file-for-update {:key key} conn)
        (map db-utils/unwrap-data)))
+
+(s/defn get-metadata :- [schema/File]
+  [key-list :- [s/Str]
+   db :- s/Any]
+  (let [conn {:connection db}]
+    (->> (sql-get-metadata {:keys key-list} conn)
+         (map db-utils/unwrap-data)
+         (reduce (fn pick-latest-metadata [result {:keys [key uploaded] :as metadata}]
+                   (cond-> result
+                     (or (not (contains? result key))
+                         (t/before? (get-in result [key :uploaded]) uploaded))
+                     (assoc key metadata)))
+                 {})
+         (map second))))
