@@ -2,7 +2,6 @@
   (:require [clj-time.core :as t]
             [liiteri.db.db-utils :as db-utils]
             [liiteri.schema :as schema]
-            [schema.core :as s]
             [schema-tools.core :as st]
             [yesql.core :as sql])
   (:import [org.joda.time DateTime]))
@@ -12,29 +11,21 @@
 ;; conn = datasource wrapped inside a DB transaction
 ;; db   = a datasource, auto-commit
 
-(s/defn create-file :- schema/File
-  [spec :- schema/File
-   conn :- s/Any]
+(defn create-file [spec conn]
   (-> (db-utils/kwd->snake-case spec)
       (sql-create-file<! conn)
       (db-utils/unwrap-data)
       (dissoc :id)))
 
-(s/defn delete-file :- s/Int
-  [key :- s/Str
-   db :- s/Any]
+(defn delete-file [key db]
   (let [conn {:connection db}]
     (-> (sql-delete-file! {:key key} conn))))
 
-(s/defn get-file-for-update :- [{:deleted (s/maybe DateTime)}]
-  [key :- s/Str
-   conn :- s/Any]
+(defn get-file-for-update [key conn]
   (->> (sql-get-file-for-update {:key key} conn)
        (map db-utils/unwrap-data)))
 
-(s/defn get-metadata :- [schema/File]
-  [key-list :- [s/Str]
-   db :- s/Any]
+(defn get-metadata [key-list db]
   (let [conn {:connection db}]
     (->> (sql-get-metadata {:keys key-list} conn)
          (map db-utils/unwrap-data)
