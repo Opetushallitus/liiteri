@@ -30,6 +30,13 @@
           (finally
             (.delete (:tempfile file)))))
 
+      (api/GET "/files/:key" []
+        :summary "Download a file"
+        :path-params [key :- (api/describe s/Str "Key of the file")]
+        (if-let [file-stream (s3-store/get-file key s3-client db)]
+          (response/ok file-stream)
+          (response/not-found)))
+
       (api/PUT "/files/:key" []
         :summary "Update a file"
         :path-params [key :- (api/describe s/Str "Key of the file")]

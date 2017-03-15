@@ -35,3 +35,10 @@
     (when (> deleted 0)
       (.deleteObject client "oph-liiteri-dev" key))
     deleted))
+
+(defn get-file [key s3-client db]
+  (let [metadata (file-store/get-metadata key db)
+        client   (:s3-client s3-client)]
+    (when (> (count metadata) 0)
+      (-> (.getObject client "oph-liiteri-dev" key)
+          (.getObjectContent)))))
