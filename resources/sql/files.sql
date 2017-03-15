@@ -4,6 +4,12 @@ INSERT INTO files (key, filename, content_type, size, version) VALUES (:key, :fi
 -- name: sql-delete-file!
 UPDATE files SET deleted = NOW() WHERE key = :key AND deleted IS NULL;
 
+-- name: sql-mark-virus-checked!
+UPDATE files SET virus_checked = NOW() WHERE key = :key AND deleted IS NULL;
+
+-- name: sql-get-non-virus-checked
+SELECT key, filename, content_type, size, uploaded, version, deleted FROM files WHERE virus_checked IS NULL;
+
 -- name: sql-get-file-for-update
 SELECT deleted FROM files WHERE key = :key FOR UPDATE;
 

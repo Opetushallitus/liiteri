@@ -4,12 +4,13 @@
             [liiteri.db.file-store :as file-store]
             [liiteri.schema :as schema]
             [liiteri.s3-store :as s3-store]
+            [liiteri.av :as av]
             [ring.util.http-response :as response]
             [ring.swagger.upload]
             [schema.core :as s])
   (:import [ring.swagger.upload Upload]))
 
-(defn new-api [{:keys [db s3-client]}]
+(defn new-api [{:keys [db s3-client av]}]
   (api/api {:swagger {:spec    "/liiteri/swagger.json"
                       :ui      "/liiteri/api-docs"
                       :data    {:info {:version     "0.1.0"
@@ -63,4 +64,27 @@
         :return {:key s/Str}
         (if (> (s3-store/delete-file key s3-client db) 0)
           (response/ok {:key key})
-          (response/not-found {:message (str "File with key " key " not found")}))))))
+          (response/not-found {:message (str "File with key " key " not found")})))
+
+      (api/GET "/files" []
+        :summary "Get metadata for one or more files"
+        :query-params [key :- (api/describe [s/Str] "Key of the file")]
+        :return [schema/File]
+        (let [metadata (file-store/get-metadata key db)]
+          (if (> (count metadata) 0)
+            (response/ok metadata)
+            (response/not-found {:message (str "File with given keys not found")}))))
+
+      (api/GET "/av" []
+        :summary "Execute virus check for db files"
+        :return {}
+        (response/ok (av/check-db-files db s3-client)))
+
+      (api/POST "/av" []
+        :summary "Check file for viruses"
+        :multipart-params [file :- (api/describe upload/TempFileUpload "File to upload")]
+        :middleware [upload/wrap-multipart-params]
+        (try
+          (response/ok (av/check-multipart-file file))
+          (finally
+            (.delete (:tempfile file))))))))

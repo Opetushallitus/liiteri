@@ -36,3 +36,12 @@
                      (assoc key metadata)))
                  {})
          (map second))))
+
+(defn get-unchecked-files [db]
+  (let [conn {:connection db}]
+    (->> (sql-get-non-virus-checked {} conn)
+         (map db-utils/unwrap-data))))
+
+(defn mark-virus-checked [key db]
+  (let [conn {:connection db}]
+    (-> (sql-mark-virus-checked! {:key key} conn))))

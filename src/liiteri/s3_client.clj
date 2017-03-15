@@ -11,7 +11,8 @@
     (let [client (-> (AmazonS3Client/builder)
                      (.withRegion Regions/EU_CENTRAL_1)
                      (.withCredentials (SystemPropertiesCredentialsProvider.))
-                     (.build))]
+                     (.build))
+          bucket ()]
       (assoc this :s3-client client)))
 
   (stop [this]

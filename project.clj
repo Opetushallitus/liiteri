@@ -21,9 +21,9 @@
                  [metosin/schema-tools "0.9.0"]
                  [javax.servlet/servlet-api "2.5"]
                  [com.taoensso/timbre "4.8.0"]
+                 [yesql "0.5.3"]
                  [ring-logger-timbre "0.7.5"]
-                 [ch.qos.logback/logback-classic "1.2.2"]
-                 [yesql "0.5.3"]]
+                 [ch.qos.logback/logback-classic "1.2.2"]]
 
   :profiles {:dev     {:dependencies   [[reloaded.repl "0.2.3"]]
                        :repl-options   {:init-ns user}
