@@ -49,7 +49,7 @@
           (response/ok {:key key})
           (response/not-found {:message (str "File with key " key " not found")})))
 
-      (api/GET "/files" []
+      (api/GET "/files/metadata" []
         :summary "Get metadata for one or more files"
         :query-params [key :- (api/describe [s/Str] "Key of the file")]
         :return [schema/File]
