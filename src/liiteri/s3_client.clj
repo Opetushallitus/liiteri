@@ -13,7 +13,8 @@
                      (.withCredentials (SystemPropertiesCredentialsProvider.))
                      (.build))
           bucket ()]
-      (assoc this :s3-client client)))
+      (assoc this :s3-client client)
+      (assoc this :s3-bucket (System/getProperty "aws.bucket" "liiteri-dev"))))
 
   (stop [this]
     (when-let [client (:s3-client this)]
