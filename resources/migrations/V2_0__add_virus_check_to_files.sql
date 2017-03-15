@@ -1,0 +1,1 @@
+alter table files add column virus_checked TIMESTAMP WITH TIME ZONE;

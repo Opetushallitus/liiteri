@@ -8,7 +8,7 @@
 
 (defn create-file [file s3-client db]
   (let [key       (str (UUID/randomUUID))
-        s3-object (.putObject (:s3-client s3-client) "oph-liiteri-dev" key (:tempfile file))]
+        s3-object (.putObject (:s3-client s3-client) "hpr-liiteri" key (:tempfile file))]
     (jdbc/with-db-transaction [datasource db]
       (let [conn {:connection datasource}]
         (file-store/create-file (merge (select-keys file [:filename :content-type :size])
@@ -24,14 +24,17 @@
     (let [conn              {:connection datasource}
           previous-versions (file-store/get-file-for-update key conn)]
       (when (every? not-deleted? previous-versions)
-        (let [s3-object (.putObject (:s3-client s3-client) "oph-liiteri-dev" key (:tempfile file))]
+        (let [s3-object (.putObject (:s3-client s3-client) "hpr-liiteri" key (:tempfile file))]
           (file-store/create-file (merge (select-keys file [:filename :content-type :size])
                                          {:key key :version (.getVersionId s3-object)})
                                   conn))))))
+(defn get-file-stream [key s3-client]
+  (let [file-object (.getObject (:s3-client s3-client) "hpr-liiteri" key)]
+    (.getObjectContent file-object)))
 
 (defn delete-file [key s3-client db]
   (let [client  (:s3-client s3-client)
         deleted (file-store/delete-file key db)]
     (when (> deleted 0)
-      (.deleteObject client "oph-liiteri-dev" key))
+      (.deleteObject client "hpr-liiteri" key))
     deleted))

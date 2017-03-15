@@ -10,6 +10,7 @@
    :filename                  s/Str
    :content-type              s/Str
    :size                      s/Int
-   (s/optional-key :version)  s/Str
+   :version                   s/Str
+   (s/optional-key :virus-checked)             (s/maybe DateTime)
    (s/optional-key :uploaded) DateTime
    (s/optional-key :deleted)  (s/maybe DateTime)})

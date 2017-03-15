@@ -21,7 +21,8 @@
                  [metosin/schema-tools "0.9.0"]
                  [javax.servlet/servlet-api "2.5"]
                  [com.taoensso/timbre "4.8.0"]
-                 [yesql "0.5.3"]]
+                 [yesql "0.5.3"]
+                 [http-kit "2.2.0"]]
 
   :profiles {:dev     {:dependencies   [[reloaded.repl "0.2.3"]]
                        :repl-options   {:init-ns user}
