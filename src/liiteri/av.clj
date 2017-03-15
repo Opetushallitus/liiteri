@@ -22,7 +22,7 @@
 (defn check-db-files [db s3-client]
   (let [files (file-store/get-unchecked-files db)
         response []]
-    (map )
+    ;(map )
     (doseq [i files] (check-db-file i db s3-client))))
 
 (defn check-multipart-file [file]
