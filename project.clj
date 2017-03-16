@@ -21,6 +21,7 @@
                  [metosin/schema-tools "0.9.0"]
                  [javax.servlet/servlet-api "2.5"]
                  [com.taoensso/timbre "4.8.0"]
+                 [ring-logger-timbre "0.7.5"]
                  [yesql "0.5.3"]]
 
   :profiles {:dev     {:dependencies   [[reloaded.repl "0.2.3"]]
