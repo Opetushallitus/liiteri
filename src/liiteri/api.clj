@@ -30,6 +30,15 @@
           (finally
             (.delete (:tempfile file)))))
 
+      (api/GET "/files/metadata" []
+        :summary "Get metadata for one or more files"
+        :query-params [key :- (api/describe [s/Str] "Key of the file")]
+        :return [schema/File]
+        (let [metadata (file-store/get-metadata key db)]
+          (if (> (count metadata) 0)
+            (response/ok metadata)
+            (response/not-found {:message (str "File with given keys not found")}))))
+
       (api/GET "/files/:key" []
         :summary "Download a file"
         :path-params [key :- (api/describe s/Str "Key of the file")]
@@ -54,13 +63,4 @@
         :return {:key s/Str}
         (if (> (s3-store/delete-file key s3-client db) 0)
           (response/ok {:key key})
-          (response/not-found {:message (str "File with key " key " not found")})))
-
-      (api/GET "/files/metadata" []
-        :summary "Get metadata for one or more files"
-        :query-params [key :- (api/describe [s/Str] "Key of the file")]
-        :return [schema/File]
-        (let [metadata (file-store/get-metadata key db)]
-          (if (> (count metadata) 0)
-            (response/ok metadata)
-            (response/not-found {:message (str "File with given keys not found")})))))))
+          (response/not-found {:message (str "File with key " key " not found")}))))))
