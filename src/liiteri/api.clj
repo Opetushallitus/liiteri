@@ -2,7 +2,7 @@
   (:require [clojure.java.io :as io]
             [compojure.api.sweet :as api]
             [compojure.api.upload :as upload]
-            [liiteri.db.file-store :as file-store]
+            [liiteri.db.file-metadata-store :as file-store]
             [liiteri.schema :as schema]
             [liiteri.files.s3.s3-store :as s3-store]
             [ring.util.http-response :as response]
