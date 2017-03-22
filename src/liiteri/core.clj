@@ -4,7 +4,7 @@
             [liiteri.db :as db]
             [liiteri.migrations :as migrations]
             [liiteri.server :as server]
-            [liiteri.s3-client :as s3-client]
+            [liiteri.files.s3.s3-client :as s3-client]
             [schema.core :as s])
   (:gen-class))
 

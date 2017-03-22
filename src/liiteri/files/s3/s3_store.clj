@@ -1,4 +1,4 @@
-(ns liiteri.s3-store
+(ns liiteri.files.s3.s3-store
   (:require [clj-time.core :as t]
             [clojure.java.jdbc :as jdbc]
             [liiteri.db.file-store :as file-store]

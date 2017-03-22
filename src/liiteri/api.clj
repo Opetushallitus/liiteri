@@ -4,7 +4,7 @@
             [compojure.api.upload :as upload]
             [liiteri.db.file-store :as file-store]
             [liiteri.schema :as schema]
-            [liiteri.s3-store :as s3-store]
+            [liiteri.files.s3.s3-store :as s3-store]
             [ring.util.http-response :as response]
             [ring.swagger.upload]
             [schema.core :as s])
