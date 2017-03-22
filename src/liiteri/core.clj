@@ -5,6 +5,7 @@
             [liiteri.migrations :as migrations]
             [liiteri.server :as server]
             [liiteri.files.s3.s3-client :as s3-client]
+            [liiteri.files.s3.s3-store :as s3-store]
             [schema.core :as s])
   (:gen-class))
 
@@ -14,13 +15,17 @@
 
     :s3-client  (s3-client/new-client)
 
+    :file-store (component/using
+                  (s3-store/new-store)
+                  [:s3-client :db])
+
     :db         (component/using
                   (db/new-pool)
                   [:config])
 
     :server     (component/using
                   (server/new-server)
-                  [:db :s3-client])
+                  [:file-store])
 
     :migrations (component/using
                   (migrations/new-migration)

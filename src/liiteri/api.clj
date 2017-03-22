@@ -10,7 +10,7 @@
             [schema.core :as s])
   (:import [ring.swagger.upload Upload]))
 
-(defn new-api [{:keys [db s3-client]}]
+(defn new-api [{:keys [file-store]}]
   (api/api {:swagger {:spec    "/liiteri/swagger.json"
                       :ui      "/liiteri/api-docs"
                       :data    {:info {:version     "0.1.0"
@@ -27,7 +27,7 @@
         :middleware [upload/wrap-multipart-params]
         :return schema/File
         (try
-          (response/ok (s3-store/create-file file s3-client db))
+          (response/ok (.create-file file-store file))
           (finally
             (io/delete-file (:tempfile file) true))))
 
@@ -35,7 +35,7 @@
         :summary "Get metadata for one or more files"
         :query-params [key :- (api/describe [s/Str] "Key of the file")]
         :return [schema/File]
-        (let [metadata (file-metadata-store/get-metadata key db)]
+        (let [metadata (file-metadata-store/get-metadata key)]
           (if (> (count metadata) 0)
             (response/ok metadata)
             (response/not-found {:message (str "File with given keys not found")}))))
@@ -43,7 +43,7 @@
       (api/GET "/files/:key" []
         :summary "Download a file"
         :path-params [key :- (api/describe s/Str "Key of the file")]
-        (if-let [file-stream (s3-store/get-file key s3-client db)]
+        (if-let [file-stream (.get-file file-store key)]
           (response/ok file-stream)
           (response/not-found)))
 
@@ -54,7 +54,7 @@
         :middleware [upload/wrap-multipart-params]
         :return schema/File
         (try
-          (response/ok (s3-store/update-file file key s3-client db))
+          (response/ok (.update-file file-store file key))
           (finally
             (io/delete-file (:tempfile file) true))))
 
@@ -62,6 +62,6 @@
         :summary "Delete a file"
         :path-params [key :- (api/describe s/Str "Key of the file")]
         :return {:key s/Str}
-        (if (> (s3-store/delete-file key s3-client db) 0)
+        (if (> (.delete-file file-store key) 0)
           (response/ok {:key key})
           (response/not-found {:message (str "File with key " key " not found")}))))))

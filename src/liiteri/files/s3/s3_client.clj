@@ -1,5 +1,6 @@
 (ns liiteri.files.s3.s3-client
-  (:require [com.stuartsierra.component :as component])
+  (:require [com.stuartsierra.component :as component]
+            [liiteri.files.file-store :as file-store])
   (:import [com.amazonaws.services.s3 AmazonS3Client]
            [com.amazonaws.regions Regions]
            [com.amazonaws.auth SystemPropertiesCredentialsProvider]))
