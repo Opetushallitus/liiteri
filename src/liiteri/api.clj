@@ -1,5 +1,6 @@
 (ns liiteri.api
-  (:require [compojure.api.sweet :as api]
+  (:require [clojure.java.io :as io]
+            [compojure.api.sweet :as api]
             [compojure.api.upload :as upload]
             [liiteri.db.file-store :as file-store]
             [liiteri.schema :as schema]
@@ -28,7 +29,7 @@
         (try
           (response/ok (s3-store/create-file file s3-client db))
           (finally
-            (.delete (:tempfile file)))))
+            (io/delete-file (:tempfile file) true))))
 
       (api/GET "/files/metadata" []
         :summary "Get metadata for one or more files"
@@ -55,7 +56,7 @@
         (try
           (response/ok (s3-store/update-file file key s3-client db))
           (finally
-            (.delete (:tempfile file)))))
+            (io/delete-file (:tempfile file) true))))
 
       (api/DELETE "/files/:key" []
         :summary "Delete a file"
