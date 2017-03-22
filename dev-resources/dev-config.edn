@@ -6,4 +6,5 @@
       :port-number       5434
       :minimum-idle      20
       :maximum-pool-size 20}
- :file-store {:engine :s3}}
+ :file-store {:engine :s3
+              :filesystem {:base-path "/tmp"}}}
