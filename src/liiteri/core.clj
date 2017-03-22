@@ -5,6 +5,7 @@
             [liiteri.migrations :as migrations]
             [liiteri.server :as server]
             [liiteri.s3-client :as s3-client]
+            [liiteri.av :as av]
             [schema.core :as s])
   (:gen-class))
 
@@ -18,9 +19,13 @@
                   (db/new-pool)
                   [:config])
 
+    :av         (component/using
+                  (av/new-av)
+                  [:db :s3-client :config])
+
     :server     (component/using
                   (server/new-server)
-                  [:db :s3-client])
+                  [:db :s3-client :av])
 
     :migrations (component/using
                   (migrations/new-migration)
