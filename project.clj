@@ -23,7 +23,8 @@
                  [com.taoensso/timbre "4.8.0"]
                  [yesql "0.5.3"]
                  [http-kit "2.2.0"]
-                 [jarohen/chime "0.2.0"]]
+                 [jarohen/chime "0.2.0"]
+                 [ring-logger-timbre "0.7.5"]]
 
   :profiles {:dev     {:dependencies   [[reloaded.repl "0.2.3"]]
                        :repl-options   {:init-ns user}
