@@ -19,7 +19,7 @@
 
                          :server     (component/using
                                        (server/new-server)
-                                       [:file-store])
+                                       [:file-store :db])
 
                          :migrations (component/using
                                        (migrations/new-migration)

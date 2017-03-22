@@ -10,7 +10,7 @@
             [schema.core :as s])
   (:import [ring.swagger.upload Upload]))
 
-(defn new-api [{:keys [file-store]}]
+(defn new-api [{:keys [file-store db]}]
   (api/api {:swagger {:spec    "/liiteri/swagger.json"
                       :ui      "/liiteri/api-docs"
                       :data    {:info {:version     "0.1.0"
@@ -35,7 +35,7 @@
         :summary "Get metadata for one or more files"
         :query-params [key :- (api/describe [s/Str] "Key of the file")]
         :return [schema/File]
-        (let [metadata (file-metadata-store/get-metadata key)]
+        (let [metadata (file-metadata-store/get-metadata key db)]
           (if (> (count metadata) 0)
             (response/ok metadata)
             (response/not-found {:message (str "File with given keys not found")}))))
