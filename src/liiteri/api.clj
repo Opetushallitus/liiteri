@@ -2,7 +2,7 @@
   (:require [clojure.java.io :as io]
             [compojure.api.sweet :as api]
             [compojure.api.upload :as upload]
-            [liiteri.db.file-metadata-store :as file-store]
+            [liiteri.db.file-metadata-store :as file-metadata-store]
             [liiteri.schema :as schema]
             [liiteri.files.s3.s3-store :as s3-store]
             [ring.util.http-response :as response]
@@ -35,7 +35,7 @@
         :summary "Get metadata for one or more files"
         :query-params [key :- (api/describe [s/Str] "Key of the file")]
         :return [schema/File]
-        (let [metadata (file-store/get-metadata key db)]
+        (let [metadata (file-metadata-store/get-metadata key db)]
           (if (> (count metadata) 0)
             (response/ok metadata)
             (response/not-found {:message (str "File with given keys not found")}))))
