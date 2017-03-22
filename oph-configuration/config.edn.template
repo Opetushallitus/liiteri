@@ -5,4 +5,5 @@
       :server-name "{{liiteri_db_host}}"
       :port-number {{liiteri_db_port}}
       :minimum-idle {{liiteri_db_max_pool_size}}
-      :maximum-pool-size {{liiteri_db_max_pool_size}}}}
+      :maximum-pool-size {{liiteri_db_max_pool_size}}}
+ :av {:clamav-url "{{liiteri_av_clamav_url}}"}}
