@@ -10,26 +10,28 @@
   (:gen-class))
 
 (defn new-system []
-  (component/system-map
-    :config     (config/new-config)
+  (let [config          (config/new-config)
+        base-components [:config     config
 
-    :s3-client  (s3-client/new-client)
+                         :db         (component/using
+                                       (db/new-pool)
+                                       [:config])
 
-    :file-store (component/using
-                  (s3-store/new-store)
-                  [:s3-client :db])
+                         :server     (component/using
+                                       (server/new-server)
+                                       [:file-store])
 
-    :db         (component/using
-                  (db/new-pool)
-                  [:config])
+                         :migrations (component/using
+                                       (migrations/new-migration)
+                                       [:db])]
+        file-components (case (get-in config [:file-store :engine])
+                          :s3 [:s3-client (s3-client/new-client)
 
-    :server     (component/using
-                  (server/new-server)
-                  [:file-store])
-
-    :migrations (component/using
-                  (migrations/new-migration)
-                  [:db])))
+                               :file-store (component/using
+                                             (s3-store/new-store)
+                                             [:s3-client :db])])]
+    (apply component/system-map (concat base-components
+                                        file-components))))
 
 (defn -main [& _]
   (s/set-fn-validation! true)

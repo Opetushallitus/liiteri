@@ -5,4 +5,5 @@
       :server-name       "localhost"
       :port-number       5434
       :minimum-idle      20
-      :maximum-pool-size 20}}
+      :maximum-pool-size 20}
+ :file-store {:engine :s3}}
