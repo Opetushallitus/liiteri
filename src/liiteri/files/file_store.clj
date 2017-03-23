@@ -12,10 +12,6 @@
 
   (get-file [this file-key]))
 
-(defn- not-deleted? [{:keys [deleted]}]
-  (or (nil? deleted)
-      (t/after? deleted (t/now))))
-
 (defn create-file [file storage-engine db]
   (let [key     (str (UUID/randomUUID))
         version (.create-file storage-engine (:tempfile file) key)]
@@ -23,15 +19,6 @@
       (let [conn {:connection datasource}]
         (metadata-store/create-file (assoc (select-keys file [:filename :content-type :size]) :key key)
                                     conn)))))
-
-(defn update-file [file key storage-engine db]
-  (jdbc/with-db-transaction [datasource db]
-    (let [conn              {:connection datasource}
-          previous-versions (metadata-store/get-file-for-update key conn)]
-      (when (every? not-deleted? previous-versions)
-        (let [version (.update-file storage-engine (:tempfile file) key)]
-          (metadata-store/create-file (assoc (select-keys file [:filename :content-type :size]) :key key)
-                                      conn))))))
 
 (defn delete-file [key storage-engine db]
   (let [deleted (metadata-store/delete-file key db)]
