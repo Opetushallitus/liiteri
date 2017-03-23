@@ -4,27 +4,34 @@
             [liiteri.db :as db]
             [liiteri.migrations :as migrations]
             [liiteri.server :as server]
-            [liiteri.s3-client :as s3-client]
+            [liiteri.files.s3.s3-client :as s3-client]
+            [liiteri.files.s3.s3-store :as s3-store]
             [schema.core :as s])
   (:gen-class))
 
 (defn new-system []
-  (component/system-map
-    :config     (config/new-config)
+  (let [config          (config/new-config)
+        base-components [:config     config
 
-    :s3-client  (s3-client/new-client)
+                         :db         (component/using
+                                       (db/new-pool)
+                                       [:config])
 
-    :db         (component/using
-                  (db/new-pool)
-                  [:config])
+                         :server     (component/using
+                                       (server/new-server)
+                                       [:file-store])
 
-    :server     (component/using
-                  (server/new-server)
-                  [:db :s3-client])
+                         :migrations (component/using
+                                       (migrations/new-migration)
+                                       [:db])]
+        file-components (case (get-in config [:file-store :engine])
+                          :s3 [:s3-client (s3-client/new-client)
 
-    :migrations (component/using
-                  (migrations/new-migration)
-                  [:db])))
+                               :file-store (component/using
+                                             (s3-store/new-store)
+                                             [:s3-client :db])])]
+    (apply component/system-map (concat base-components
+                                        file-components))))
 
 (defn -main [& _]
   (s/set-fn-validation! true)
