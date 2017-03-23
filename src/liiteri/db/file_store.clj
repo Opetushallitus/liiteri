@@ -17,9 +17,9 @@
       (db-utils/unwrap-data)
       (dissoc :id)))
 
-(defn delete-file [key db]
+(defn delete-file [key delete_reason db]
   (let [conn {:connection db}]
-    (-> (sql-delete-file! {:key key} conn))))
+    (-> (sql-delete-file! {:key key :delete-reason delete_reason} conn))))
 
 (defn get-file-for-update [key conn]
   (->> (sql-get-file-for-update {:key key} conn)

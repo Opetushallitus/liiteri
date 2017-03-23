@@ -32,16 +32,16 @@
   (let [file-object (.getObject (:s3-client s3-client) (:s3-bucket s3-client) key)]
     (.getObjectContent file-object)))
 
-(defn delete-file [key s3-client db]
+(defn delete-file [key delete_reason s3-client db]
   (let [client  (:s3-client s3-client)
-        deleted (file-store/delete-file key db)]
+        deleted (file-store/delete-file key delete_reason db)]
     (when (> deleted 0)
-      (.deleteObject client "hpr-liiteri" key))
+      (.deleteObject client (:s3-bucket s3-client) key))
     deleted))
 
 (defn get-file [key s3-client db]
   (let [metadata (file-store/get-metadata key db)
         client   (:s3-client s3-client)]
     (when (> (count metadata) 0)
-      (-> (.getObject client "oph-liiteri-dev" key)
+      (-> (.getObject client (:s3-bucket s3-client) key)
           (.getObjectContent)))))

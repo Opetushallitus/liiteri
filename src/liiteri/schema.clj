@@ -11,6 +11,7 @@
    :content-type              s/Str
    :size                      s/Int
    :version                   s/Str
+   (s/optional-key :delete-reason)             s/Str
    (s/optional-key :virus-checked)             (s/maybe DateTime)
    (s/optional-key :uploaded) DateTime
    (s/optional-key :deleted)  (s/maybe DateTime)})

@@ -21,7 +21,7 @@
         (do (file-store/mark-virus-checked (:key file) db)
             true)
         (do (log/info (str "file " (:key file) " contains a virus, deleting it"))
-            (s3-store/delete-file (:key file) db s3-client)
+            (s3-store/delete-file (:key file) "VIRUS" db s3-client)
             false)))))
 
 (defn check-multipart-file [file]

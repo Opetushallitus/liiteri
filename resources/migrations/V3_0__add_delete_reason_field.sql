@@ -1,0 +1,1 @@
+alter table files add column delete_reason text not null default 'OK';

@@ -62,7 +62,7 @@
         :summary "Delete a file"
         :path-params [key :- (api/describe s/Str "Key of the file")]
         :return {:key s/Str}
-        (if (> (s3-store/delete-file key s3-client db) 0)
+        (if (> (s3-store/delete-file key "API" s3-client db) 0)
           (response/ok {:key key})
           (response/not-found {:message (str "File with key " key " not found")})))
 
