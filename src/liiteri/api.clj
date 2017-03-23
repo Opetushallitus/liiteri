@@ -3,14 +3,14 @@
             [compojure.api.sweet :as api]
             [compojure.api.upload :as upload]
             [liiteri.db.file-metadata-store :as file-metadata-store]
+            [liiteri.files.file-store :as file-store]
             [liiteri.schema :as schema]
-            [liiteri.files.s3.s3-store :as s3-store]
             [ring.util.http-response :as response]
             [ring.swagger.upload]
             [schema.core :as s])
   (:import [ring.swagger.upload Upload]))
 
-(defn new-api [{:keys [file-store db]}]
+(defn new-api [{:keys [storage-engine db]}]
   (api/api {:swagger {:spec    "/liiteri/swagger.json"
                       :ui      "/liiteri/api-docs"
                       :data    {:info {:version     "0.1.0"
@@ -27,7 +27,7 @@
         :middleware [upload/wrap-multipart-params]
         :return schema/File
         (try
-          (response/ok (.create-file file-store file))
+          (response/ok (file-store/create-file file storage-engine db))
           (finally
             (io/delete-file (:tempfile file) true))))
 
@@ -43,7 +43,7 @@
       (api/GET "/files/:key" []
         :summary "Download a file"
         :path-params [key :- (api/describe s/Str "Key of the file")]
-        (if-let [file-stream (.get-file file-store key)]
+        (if-let [file-stream (file-store/get-file key storage-engine db)]
           (response/ok file-stream)
           (response/not-found)))
 
@@ -54,7 +54,7 @@
         :middleware [upload/wrap-multipart-params]
         :return schema/File
         (try
-          (response/ok (.update-file file-store file key))
+          (response/ok (file-store/update-file file key storage-engine db))
           (finally
             (io/delete-file (:tempfile file) true))))
 
@@ -62,6 +62,6 @@
         :summary "Delete a file"
         :path-params [key :- (api/describe s/Str "Key of the file")]
         :return {:key s/Str}
-        (if (> (.delete-file file-store key) 0)
+        (if (> (file-store/delete-file key storage-engine db) 0)
           (response/ok {:key key})
           (response/not-found {:message (str "File with key " key " not found")}))))))

@@ -4,6 +4,7 @@
             [liiteri.db :as db]
             [liiteri.migrations :as migrations]
             [liiteri.server :as server]
+            [liiteri.files.filesystem-store :as filesystem-store]
             [liiteri.files.s3.s3-client :as s3-client]
             [liiteri.files.s3.s3-store :as s3-store]
             [schema.core :as s])
@@ -19,17 +20,20 @@
 
                          :server     (component/using
                                        (server/new-server)
-                                       [:file-store :db])
+                                       [:storage-engine :db])
 
                          :migrations (component/using
                                        (migrations/new-migration)
                                        [:db])]
         file-components (case (get-in config [:file-store :engine])
-                          :s3 [:s3-client (s3-client/new-client)
+                          :s3 [:s3-client      (s3-client/new-client)
 
-                               :file-store (component/using
-                                             (s3-store/new-store)
-                                             [:s3-client :db])])]
+                               :storage-engine (component/using
+                                                 (s3-store/new-store)
+                                                 [:s3-client :db])]
+                          :filesystem [:storage-engine (component/using
+                                                         (filesystem-store/new-store)
+                                                         [:config])])]
     (apply component/system-map (concat base-components
                                         file-components))))
 
