@@ -7,9 +7,6 @@
   (create-file [this file file-key]
     (println (str "create-file")))
 
-  (update-file [this file file-key]
-    (println (str "update-efile")))
-
   (delete-file [this file-key]
     (println (str "delete-file")))
 

@@ -5,12 +5,7 @@
   file-store/StorageEngine
 
   (create-file [this file file-key]
-    (let [s3-object (.putObject (:s3-client s3-client) "oph-liiteri-dev" file-key file)]
-      (.getVersionId s3-object)))
-
-  (update-file [this file file-key]
-    (let [s3-object (.putObject (:s3-client s3-client) "oph-liiteri-dev" file-key file)]
-      (.getVersionId s3-object)))
+    (.putObject (:s3-client s3-client) "oph-liiteri-dev" file-key file))
 
   (delete-file [this file-key]
     (.deleteObject (:s3-client s3-client) "oph-liiteri-dev" file-key))

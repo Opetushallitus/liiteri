@@ -8,8 +8,6 @@
 (defprotocol StorageEngine
   (create-file [this file file-key])
 
-  (update-file [this file file-key])
-
   (delete-file [this file-key])
 
   (get-file [this file-key]))
@@ -23,8 +21,7 @@
         version (.create-file storage-engine (:tempfile file) key)]
     (jdbc/with-db-transaction [datasource db]
       (let [conn {:connection datasource}]
-        (metadata-store/create-file (merge (select-keys file [:filename :content-type :size])
-                                           {:key key :version version})
+        (metadata-store/create-file (assoc (select-keys file [:filename :content-type :size]) :key key)
                                     conn)))))
 
 (defn update-file [file key storage-engine db]
@@ -33,8 +30,7 @@
           previous-versions (metadata-store/get-file-for-update key conn)]
       (when (every? not-deleted? previous-versions)
         (let [version (.update-file storage-engine (:tempfile file) key)]
-          (metadata-store/create-file (merge (select-keys file [:filename :content-type :size])
-                                             {:key key :version version})
+          (metadata-store/create-file (assoc (select-keys file [:filename :content-type :size]) :key key)
                                       conn))))))
 
 (defn delete-file [key storage-engine db]

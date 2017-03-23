@@ -47,17 +47,6 @@
           (response/ok file-stream)
           (response/not-found)))
 
-      (api/PUT "/files/:key" []
-        :summary "Update a file"
-        :path-params [key :- (api/describe s/Str "Key of the file")]
-        :multipart-params [file :- (api/describe upload/TempFileUpload "File to upload")]
-        :middleware [upload/wrap-multipart-params]
-        :return schema/File
-        (try
-          (response/ok (file-store/update-file file key storage-engine db))
-          (finally
-            (io/delete-file (:tempfile file) true))))
-
       (api/DELETE "/files/:key" []
         :summary "Delete a file"
         :path-params [key :- (api/describe s/Str "Key of the file")]

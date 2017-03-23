@@ -1,11 +1,9 @@
 CREATE TABLE files (
   id BIGSERIAL PRIMARY KEY,
-  key VARCHAR(36) NOT NULL,
+  key VARCHAR(36) UNIQUE NOT NULL,
   filename VARCHAR(256) NOT NULL,
   content_type VARCHAR(128) NOT NULL,
   size BIGINT NOT NULL,
-  version VARCHAR(1024) NOT NULL,
   uploaded TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  deleted TIMESTAMP WITH TIME ZONE,
-  CONSTRAINT files_key_version_key UNIQUE (key, version)
+  deleted TIMESTAMP WITH TIME ZONE
 );
