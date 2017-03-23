@@ -1,5 +1,5 @@
 pipeline {
-    agent { docker 'lein' }
+    agent { docker 'clojure' }
     stages {
         stage('build') {
             steps {
