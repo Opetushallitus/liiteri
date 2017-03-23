@@ -4,19 +4,30 @@
             [liiteri.db.file-store :as file-store]
             [liiteri.schema :as schema]
             [liiteri.s3-store :as s3-store]
+            [ring.logger.timbre :as logger-mw]
             [ring.util.http-response :as response]
             [ring.swagger.upload]
-            [schema.core :as s])
+            [schema.core :as s]
+            [compojure.api.exception :as ex]
+            [taoensso.timbre :as log])
   (:import [ring.swagger.upload Upload]))
 
+(defn- error-logger [^Exception e data req]
+  (log/error e req)
+  (response/internal-server-error))
+
 (defn new-api [{:keys [db s3-client]}]
-  (api/api {:swagger {:spec    "/liiteri/swagger.json"
-                      :ui      "/liiteri/api-docs"
-                      :data    {:info {:version     "0.1.0"
-                                       :title       "Liiteri API"
-                                       :description "File Storage Service API For OPH"}
-                                :tags [{:name "liiteri" :description "Liiteri API"}]}
-                      :options {:ui {:validatorUrl nil}}}}
+  (api/api {:swagger    {:spec    "/liiteri/swagger.json"
+                         :ui      "/liiteri/api-docs"
+                         :data    {:info {:version     "0.1.0"
+                                          :title       "Liiteri API"
+                                          :description "File Storage Service API For OPH"}
+                                   :tags [{:name "liiteri" :description "Liiteri API"}]}
+                         :options {:ui {:validatorUrl nil}}}
+            :exceptions {:handlers {::ex/request-parsing     (ex/with-logging ex/request-parsing-handler :warn)
+                                    ::ex/request-validation  (ex/with-logging ex/request-validation-handler :warn)
+                                    ::ex/response-validation (ex/with-logging ex/response-validation-handler :error)
+                                    ::ex/default             (ex/with-logging error-logger :error)}}}
     (api/context "/liiteri/api" []
       :tags ["liiteri"]
 
