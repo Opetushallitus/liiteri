@@ -6,4 +6,4 @@
       :port-number       5434
       :minimum-idle      20
       :maximum-pool-size 20}
- :av {:clamav-url        "http://localhost:8080/"}}
+ :av {:clamav-url        "http://localhost:8880/scan"}}

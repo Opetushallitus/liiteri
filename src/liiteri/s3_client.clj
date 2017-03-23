@@ -13,7 +13,6 @@
                      (.withCredentials (SystemPropertiesCredentialsProvider.))
                      (.build))
           bucket (System/getProperty "aws.bucket" "liiteri-dev")]
-      (println "client: " (str client))
       (assoc this :s3-client client
                   :s3-bucket bucket)))
 

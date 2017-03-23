@@ -78,13 +78,13 @@
       (api/GET "/av" []
         :summary "Execute virus check for db files"
         :return {}
-        (response/ok (av/check-db-files db s3-client)))
+        (response/ok (av/check-db-files (:clamav-url av) db s3-client)))
 
       (api/POST "/av" []
         :summary "Check file for viruses"
         :multipart-params [file :- (api/describe upload/TempFileUpload "File to upload")]
         :middleware [upload/wrap-multipart-params]
         (try
-          (response/ok (av/check-multipart-file file))
+          (response/ok (av/check-multipart-file file (:clamav-url av)))
           (finally
             (.delete (:tempfile file))))))))

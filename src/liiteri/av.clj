@@ -10,33 +10,34 @@
             [liiteri.db.file-store :as file-store]))
 
 (defn check-db-file [clamav-url file db s3-client]
-  (let [file-stream (s3-store/get-file-stream (:key file) s3-client)
-        options {:form-params {"name" (:filename file)}
-                 :multipart [{:name "file" :content file-stream :filename (:filename file)}]}
-        {:keys [status headers body error] :as resp} @(http/post clamav-url options)]
-    (if error
-      error
-      (if (.contains body "true")
-        (do (file-store/mark-virus-checked (:key file) db)
-            true)
-        (do (log/info (str "file " (:key file) " contains a virus, deleting it"))
-            (s3-store/delete-file (:key file) "VIRUS" db s3-client)
-            false)))))
-
-(defn check-multipart-file [file]
-  (let [url (str (System/getProperty "clamav.url" "http://localhost:8880/scan"))]
-    (let [options {:form-params {"name" (:filename file)}
-                   :multipart [{:name "file" :content (:tempfile file) :filename (:filename file)}]}
-
-          {:keys [status headers body error] :as resp} @(http/post url options)]
+  (try
+    (let [file-stream (s3-store/get-file-stream (:key file) s3-client)]
+      (let [options {:form-params {"name" (:filename file)}
+                     :multipart [{:name "file" :content file-stream :filename (:filename file)}]}
+          {:keys [status headers body error] :as resp} @(http/post clamav-url options)]
       (if error
-        error
-        true))))
+        (do (log/error error) error)
+        (if (.contains body "true")
+          (do (file-store/mark-virus-checked (:key file) db)
+              true)
+          (do (log/warn (str "file " (:key file) " contains a virus, deleting it"))
+              (file-store/mark-virus-checked (:key file) db)
+              (s3-store/delete-file (:key file) "VIRUS" s3-client db)
+              false)))))
+    (catch Exception e (log/error "error while checking viruses " (str e)))))
+
+(defn check-multipart-file [file url]
+  (let [options {:form-params {"name" (:filename file)}
+                 :multipart [{:name "file" :content (:tempfile file) :filename (:filename file)}]}
+
+        {:keys [status headers body error] :as resp} @(http/post url options)]
+    (if error
+      (do (log/error error) error)
+      (do (log/info body) body))))
 
 (defn check-db-files [clamav-url db s3-client]
   (let [files (file-store/get-unchecked-files db)
         response []]
-    ;(map )
     (doseq [i files] (check-db-file clamav-url i db s3-client))))
 
 (defn- scheduler [clamav-url db s3-client]
@@ -50,13 +51,14 @@
   component/Lifecycle
 
   (start [this]
-      (assoc this :clamav-url (:clamav-url (:av (:config this)))
-                  :scheduler (scheduler (:clamav-url this) (:db this) (:s3-client this))))
+    (let [clamav-url (:clamav-url (:av (:config this)))]
+      (assoc this :clamav-url clamav-url
+                  :scheduler (scheduler clamav-url (:db this) (:s3-client this)))))
 
   (stop [this]
-    (let [scheduler (:scheduler this)]
-      (scheduler)
-      (dissoc this :clam-url :scheduler))))
+    (when-let [scheduler (:scheduler this)]
+      (a/close! scheduler)
+      (dissoc this :clamav-url :scheduler))))
 
 (defn new-av []
   (->Av))
