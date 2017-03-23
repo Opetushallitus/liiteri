@@ -9,12 +9,11 @@
             [liiteri.s3-store :as s3-store]
             [liiteri.db.file-store :as file-store]))
 
-(defn check-db-file [file db s3-client]
+(defn check-db-file [clamav-url file db s3-client]
   (let [file-stream (s3-store/get-file-stream (:key file) s3-client)
-        url (str (System/getProperty "clamav.url" "http://localhost:8880/scan"))
         options {:form-params {"name" (:filename file)}
                  :multipart [{:name "file" :content file-stream :filename (:filename file)}]}
-        {:keys [status headers body error] :as resp} @(http/post url options)]
+        {:keys [status headers body error] :as resp} @(http/post clamav-url options)]
     (if error
       error
       (if (.contains body "true")
@@ -34,34 +33,30 @@
         error
         true))))
 
-(defn check-db-files [db s3-client]
+(defn check-db-files [clamav-url db s3-client]
   (let [files (file-store/get-unchecked-files db)
         response []]
     ;(map )
-    (doseq [i files] (check-db-file i db s3-client))))
+    (doseq [i files] (check-db-file clamav-url i db s3-client))))
+
+(defn- scheduler [clamav-url db s3-client]
+  (let [chimes (chime/chime-ch (periodic-seq (t/now) (-> 4 t/seconds)) (a/chan (a/dropping-buffer 1)))]
+    (a/go (a/<!! (go-loop []
+             (when-let [time (<! chimes)]
+               (check-db-files clamav-url db s3-client)
+               (recur)))))))
 
 (defrecord Av []
   component/Lifecycle
 
   (start [this]
-    (let [url (:clamav-url (:av (:config this)))
-          channel (a/chan)
-          chimes (chime/chime-ch (periodic-seq (t/now) (-> 5 t/seconds)) channel)]
-      (a/<!! (go-loop []
-               (when-let [msg (<! chimes)]
-                 (check-db-files (:db this) (:s3-client this))
-                 (recur))))
-      (assoc this :av nil)
-      (assoc this :clam-url url)
-      (assoc this :channel channel)))
+      (assoc this :clamav-url (:clamav-url (:av (:config this)))
+                  :scheduler (scheduler (:clamav-url this) (:db this) (:s3-client this))))
 
   (stop [this]
-    (when-let [channel (:channel this)]
-      (a/close! channel)
-      (log/info (str "Stopped server")))
-    (assoc this :server nil)))
-
+    (let [scheduler (:scheduler this)]
+      (scheduler)
+      (dissoc this :clam-url :scheduler))))
 
 (defn new-av []
   (->Av))
-
