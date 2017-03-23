@@ -11,8 +11,10 @@
     (let [client (-> (AmazonS3Client/builder)
                      (.withRegion Regions/EU_CENTRAL_1)
                      (.withCredentials (SystemPropertiesCredentialsProvider.))
-                     (.build))]
-      (assoc this :s3-client client)))
+                     (.build))
+          bucket (System/getProperty "aws.bucket" "liiteri-dev")]
+      (assoc this :s3-client client
+                  :s3-bucket bucket)))
 
   (stop [this]
     (when-let [client (:s3-client this)]
