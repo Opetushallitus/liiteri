@@ -5,8 +5,8 @@
             [liiteri.migrations :as migrations]
             [liiteri.server :as server]
             [liiteri.files.filesystem-store :as filesystem-store]
-            [liiteri.files.s3.s3-client :as s3-client]
-            [liiteri.files.s3.s3-store :as s3-store]
+            [liiteri.files.s3-client :as s3-client]
+            [liiteri.files.s3-store :as s3-store]
             [schema.core :as s])
   (:gen-class))
 

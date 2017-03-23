@@ -1,4 +1,4 @@
-(ns liiteri.files.s3.s3-client
+(ns liiteri.files.s3-client
   (:require [com.stuartsierra.component :as component]
             [liiteri.files.file-store :as file-store])
   (:import [com.amazonaws.services.s3 AmazonS3Client]

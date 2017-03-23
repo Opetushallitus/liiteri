@@ -1,4 +1,4 @@
-(ns liiteri.files.s3.s3-store
+(ns liiteri.files.s3-store
   (:require [liiteri.files.file-store :as file-store]))
 
 (defrecord S3Store [s3-client]
