@@ -31,6 +31,5 @@
                   [:db])))
 
 (defn -main [& _]
-  (s/set-fn-validation! true)
   (let [_ (component/start-system (new-system))]
     @(promise)))
