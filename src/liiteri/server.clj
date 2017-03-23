@@ -2,8 +2,7 @@
   (:require [com.stuartsierra.component :as component]
             [liiteri.api :as api]
             [org.httpkit.server :as server]
-            [taoensso.timbre :as log]
-            [ring.logger.timbre :as logger.timbre]))
+            [taoensso.timbre :as log]))
 
 (defrecord Server []
   component/Lifecycle
@@ -11,8 +10,7 @@
   (start [this]
     (let [port    (Long/valueOf (System/getProperty "server.port" "16832"))
           api     (api/new-api this)
-          wrapped (logger.timbre/wrap-with-logger api)
-          server  (server/run-server wrapped {:port port})]
+          server  (server/run-server api {:port port})]
       (log/info (str "Started server on port " port))
       (assoc this :server server)))
 
