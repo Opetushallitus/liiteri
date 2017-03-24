@@ -5,10 +5,14 @@
             [liiteri.migrations :as migrations]
             [liiteri.server :as server]
             [liiteri.s3-client :as s3-client]
-            [schema.core :as s])
+            [schema.core :as s]
+            [taoensso.timbre :as log])
+  (:import [java.util TimeZone])
   (:gen-class))
 
 (defn new-system []
+  (log/merge-config! {:timestamp-opts {:pattern  "yyyy-MM-dd HH:mm:ss ZZ"
+                                       :timezone (TimeZone/getTimeZone "Europe/Helsinki")}})
   (component/system-map
     :config     (config/new-config)
 
@@ -27,6 +31,5 @@
                   [:db])))
 
 (defn -main [& _]
-  (s/set-fn-validation! true)
   (let [_ (component/start-system (new-system))]
     @(promise)))

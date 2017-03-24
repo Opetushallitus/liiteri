@@ -23,7 +23,8 @@
                  [com.taoensso/timbre "4.8.0"]
                  [ring-logger-timbre "0.7.5"]
                  [ch.qos.logback/logback-classic "1.2.2"]
-                 [yesql "0.5.3"]]
+                 [yesql "0.5.3"]
+                 [ring.middleware.conditional "0.2.0"]]
 
   :profiles {:dev     {:dependencies   [[reloaded.repl "0.2.3"]]
                        :repl-options   {:init-ns user}
