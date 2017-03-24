@@ -7,10 +7,14 @@
             [liiteri.files.filesystem-store :as filesystem-store]
             [liiteri.files.s3-client :as s3-client]
             [liiteri.files.s3-store :as s3-store]
-            [schema.core :as s])
+            [schema.core :as s]
+            [taoensso.timbre :as log])
+  (:import [java.util TimeZone])
   (:gen-class))
 
 (defn new-system []
+  (log/merge-config! {:timestamp-opts {:pattern  "yyyy-MM-dd HH:mm:ss ZZ"
+                                       :timezone (TimeZone/getTimeZone "Europe/Helsinki")}})
   (let [config          (config/new-config)
         base-components [:config     config
 
@@ -38,6 +42,5 @@
                                         file-components))))
 
 (defn -main [& _]
-  (s/set-fn-validation! true)
   (let [_ (component/start-system (new-system))]
     @(promise)))
