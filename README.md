@@ -9,7 +9,8 @@ To use filesystem based storage engine, the service must have following configur
 ```clojure
 {:file-store {:engine :filesystem
               :filesystem {:base-path "/path/to/storage"}}
- ;; Other configuration items}
+ ;; Other configuration items
+ }
 ```
 
 ## AWS S3
@@ -18,7 +19,8 @@ To use [AWS S3](https://aws.amazon.com/s3/) based storage engine, the service mu
 
 ```clojure
 {:file-store {:engine :s3}
- ;; Other configuration items}
+ ;; Other configuration items
+ }
 ```
 
 Also, when AWS S3 is used, AWS access key and AWS secret key must be provided to the service. Please see the
