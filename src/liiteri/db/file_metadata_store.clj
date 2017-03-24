@@ -1,4 +1,4 @@
-(ns liiteri.db.file-store
+(ns liiteri.db.file-metadata-store
   (:require [clj-time.core :as t]
             [liiteri.db.db-utils :as db-utils]
             [liiteri.schema :as schema]
