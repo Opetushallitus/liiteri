@@ -30,7 +30,8 @@
                        :repl-options   {:init-ns user}
                        :source-paths   ["src" "dev-src"]
                        :resource-paths ["resources" "dev-resources"]
-                       :plugins        [[lein-ancient "0.6.10"]]}
+                       :plugins        [[lein-ancient "0.6.10"]
+                                        [com.jakemccrary/lein-test-refresh "0.19.0"]]}
              :uberjar {:aot :all}}
 
   :main liiteri.core

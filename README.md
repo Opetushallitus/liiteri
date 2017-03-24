@@ -25,6 +25,20 @@ Also, when AWS S3 is used, AWS access key and AWS secret key must be provided to
 [Running The Service Locally](#running-the-service-locally) chapter for more info on how to provide the required
 JVM system properties on startup.
 
+## Testing
+
+Run tests once by invoking
+
+```bash
+$ lein test
+```
+
+Run tests automatically on file changes by invoking
+
+```bash
+$ lein test-refresh
+```
+
 ## Running The Service Locally
 
 Open your terminal and run following commands. Creating the PostgreSQL Docker image needs to be done only once. If you
