@@ -12,9 +12,15 @@
             [taoensso.timbre :as log])
   (:import [ring.swagger.upload Upload]))
 
-(defn- error-logger [^Exception e data req]
-  (log/error e req)
+(defn- internal-server-error [& _]
   (response/internal-server-error))
+
+(defn- error-logger
+  ([response-fn ^Exception e data req]
+   (log/error e req)
+   (response-fn e data req))
+  ([^Exception e data req]
+   (error-logger internal-server-error e data req)))
 
 (defn new-api [{:keys [db s3-client]}]
   (api/api {:swagger    {:spec    "/liiteri/swagger.json"
@@ -24,9 +30,9 @@
                                           :description "File Storage Service API For OPH"}
                                    :tags [{:name "liiteri" :description "Liiteri API"}]}
                          :options {:ui {:validatorUrl nil}}}
-            :exceptions {:handlers {::ex/request-parsing     (ex/with-logging ex/request-parsing-handler :warn)
-                                    ::ex/request-validation  (ex/with-logging ex/request-validation-handler :warn)
-                                    ::ex/response-validation (ex/with-logging ex/response-validation-handler :error)
+            :exceptions {:handlers {::ex/request-parsing     (ex/with-logging (partial error-logger ex/request-parsing-handler) :warn)
+                                    ::ex/request-validation  (ex/with-logging (partial error-logger ex/request-validation-handler) :warn)
+                                    ::ex/response-validation (ex/with-logging (partial error-logger ex/response-validation-handler) :error)
                                     ::ex/default             (ex/with-logging error-logger :error)}}}
     (api/context "/liiteri/api" []
       :tags ["liiteri"]
