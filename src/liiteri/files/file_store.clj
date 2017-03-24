@@ -14,7 +14,7 @@
 
 (defn create-file [file storage-engine db]
   (let [key     (str (UUID/randomUUID))
-        version (.create-file storage-engine (:tempfile file) key)]
+        _       (.create-file storage-engine (:tempfile file) key)]
     (jdbc/with-db-transaction [datasource db]
       (let [conn {:connection datasource}]
         (metadata-store/create-file (assoc (select-keys file [:filename :content-type :size]) :key key)
