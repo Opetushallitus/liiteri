@@ -36,7 +36,7 @@ $ lein test
 Run tests automatically on file changes by invoking
 
 ```bash
-$ lein test-refresh
+$ lein test-auto
 ```
 
 ## Running The Service Locally

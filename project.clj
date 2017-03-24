@@ -30,9 +30,16 @@
                        :repl-options   {:init-ns user}
                        :source-paths   ["src" "dev-src"]
                        :resource-paths ["resources" "dev-resources"]
-                       :plugins        [[lein-ancient "0.6.10"]
-                                        [com.jakemccrary/lein-test-refresh "0.19.0"]]}
+                       :plugins        [[lein-ancient "0.6.10"]]}
+
+             :test    {:test-paths     ["test"]
+                       :resource-paths ["resources" "dev-resources"]
+                       :plugins        [[lein-auto "0.1.3"]]}
+
              :uberjar {:aot :all}}
 
   :main liiteri.core
-  :target-path "target/%s")
+  :target-path "target/%s"
+
+  :aliases {"test"         ["with-profile" "test" "test"]
+            "test-auto"    ["with-profile" "test" "auto" "test"]})
