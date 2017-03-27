@@ -9,6 +9,9 @@
  :file-store {:engine :filesystem
               :filesystem {:base-path "/tmp"}
               :attachment-mime-types ["text/plain"
+                                      "image/jpeg"
+                                      "image/png"
+                                      "image/gif"
                                       "application/rtf"
                                       "application/pdf"
                                       "application/vnd.oasis.opendocument.text"
