@@ -46,10 +46,9 @@
             :middleware [upload/wrap-multipart-params]
             :return schema/File
             (try
-              (do
-                (mime/validate-file-content-type config (:tempfile file) (:filename file) (:content-type file))
-                ;; TODO: use mime/file-name-according-to-content-type
-                (response/ok (file-store/create-file file storage-engine db)))
+              (let [real-file-type (mime/validate-file-content-type config (:tempfile file) (:filename file) (:content-type file))
+                    fixed-filename (mime/file-name-according-to-content-type (:filename file) real-file-type)]
+                (response/ok (file-store/create-file (assoc file :filename fixed-filename) storage-engine db)))
               (finally
                 (io/delete-file (:tempfile file) true))))
 
