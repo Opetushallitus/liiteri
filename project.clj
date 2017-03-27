@@ -25,7 +25,8 @@
                  [ch.qos.logback/logback-classic "1.2.2"]
                  [yesql "0.5.3"]
                  [ring.middleware.conditional "0.2.0"]
-                 [environ "1.1.0"]]
+                 [environ "1.1.0"]
+                 [com.novemberain/pantomime "2.9.0"]]
 
   :plugins [[lein-environ "1.1.0"]]
 

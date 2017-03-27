@@ -6,6 +6,7 @@
             [liiteri.db.file-metadata-store :as file-metadata-store]
             [liiteri.files.file-store :as file-store]
             [liiteri.schema :as schema]
+            [liiteri.mime :as mime]
             [ring.logger.timbre :as logger-mw]
             [ring.middleware.conditional :as c]
             [ring.util.http-response :as response]
@@ -24,7 +25,7 @@
   ([^Exception e data req]
    (error-logger internal-server-error e data req)))
 
-(defn new-api [{:keys [storage-engine db]}]
+(defn new-api [{:keys [storage-engine db config]}]
   (-> (api/api {:swagger    {:spec    "/liiteri/swagger.json"
                              :ui      "/liiteri/api-docs"
                              :data    {:info {:version     "0.1.0"
@@ -45,7 +46,9 @@
             :middleware [upload/wrap-multipart-params]
             :return schema/File
             (try
-              (response/ok (file-store/create-file file storage-engine db))
+              (let [real-file-type (mime/validate-file-content-type config (:tempfile file) (:filename file) (:content-type file))
+                    fixed-filename (mime/file-name-according-to-content-type (:filename file) real-file-type)]
+                (response/ok (file-store/create-file (assoc file :filename fixed-filename) storage-engine db)))
               (finally
                 (io/delete-file (:tempfile file) true))))
 

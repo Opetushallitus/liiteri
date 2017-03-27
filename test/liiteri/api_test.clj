@@ -47,12 +47,12 @@
 (deftest file-upload
   (let [file (io/file (io/resource "parrot.png"))
         path (str "http://localhost:" (get-in config [:server :port]) "/liiteri/api/files")
-        resp @(http/post path {:multipart [{:name "file" :content file :filename "parrot.png"}]})
+        resp @(http/post path {:multipart [{:name "file" :content file :filename "parrot.png" :content-type "image/png"}]})
         body (json/parse-string (:body resp) true)]
     (is (= (:status resp) 200))
     (is (file-stored? (:key body)))
     (is (= (:filename body) "parrot.png"))
-    (is (= (:content-type body) "application/octet-stream"))
+    (is (= (:content-type body) "image/png"))
     (is (= (:size body) 7777))
     (is (= (:deleted body) nil))
     (is (some? (:uploaded body)))))
