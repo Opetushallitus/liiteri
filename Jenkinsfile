@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('build') {
             steps {
-                sh 'lein uberjar'
+                sh './bin/cibuild.sh create-uberjar'
             }
         }
     }
