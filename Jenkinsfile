@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('test') {
             steps {
-                sh 'lein do clean, test'
+                sh './bin/cibuild.sh run-tests'
             }
         }
         stage('package') {
