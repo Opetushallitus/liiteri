@@ -6,7 +6,7 @@ pipeline {
                 sh 'lein do clean, test'
             }
         }
-        stage('build') {
+        stage('package') {
             steps {
                 sh './bin/cibuild.sh create-uberjar'
             }
