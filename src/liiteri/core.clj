@@ -24,7 +24,7 @@
 
                          :server     (component/using
                                        (server/new-server)
-                                       [:storage-engine :db])
+                                       [:storage-engine :db :config])
 
                          :migrations (component/using
                                        (migrations/new-migration)

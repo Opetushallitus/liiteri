@@ -7,4 +7,13 @@
       :minimum-idle      20
       :maximum-pool-size 20}
  :file-store {:engine :filesystem
-              :filesystem {:base-path "/tmp"}}}
+              :filesystem {:base-path "/tmp"}
+              :attachment-mime-types ["text/plain"
+                                      "application/rtf"
+                                      "application/pdf"
+                                      "application/vnd.oasis.opendocument.text"
+                                      "application/msword"
+                                      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                      "application/vnd.oasis.opendocument.spreadsheet"
+                                      "application/vnd.ms-excel"
+                                      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]}}
