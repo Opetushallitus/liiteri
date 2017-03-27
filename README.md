@@ -27,6 +27,12 @@ JVM system properties on startup.
 
 ## Testing
 
+Tests require own separate database. Open your terminal and run following command to start it:
+
+```bash
+$ docker run --name liiteri-test-db -e POSTGRES_PASSWORD=oph -e POSTGRES_USER=oph -e POSTGRES_DB=liiteri -p 5435:5432 -d postgres:9.5
+```
+
 Run tests once by invoking
 
 ```bash
