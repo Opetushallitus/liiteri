@@ -1,5 +1,5 @@
 pipeline {
-    agent { docker 'clojure' }
+    agent any
     stages {
         stage('test') {
             steps {
@@ -8,7 +8,7 @@ pipeline {
         }
         stage('build') {
             steps {
-                sh 'lein do clean, uberjar'
+                sh './bin/cibuild.sh create-uberjar'
             }
         }
     }
