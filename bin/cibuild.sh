@@ -3,6 +3,9 @@ set -e
 
 OLD_CWD=$(pwd)
 
+export JAVA_HOME=/data00/oph/java/jdk1.8.0_60
+export PATH=/data00/oph/java/jdk1.8.0_60/bin:$PATH
+
 clean-project() {
   echo "Cleaning project"
   ./bin/lein clean
