@@ -13,6 +13,7 @@
   (:gen-class))
 
 (defn new-system []
+  (s/set-fn-validation! true)
   (log/merge-config! {:timestamp-opts {:pattern  "yyyy-MM-dd HH:mm:ss ZZ"
                                        :timezone (TimeZone/getTimeZone "Europe/Helsinki")}})
   (let [config          (config/new-config)

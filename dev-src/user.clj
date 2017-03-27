@@ -3,6 +3,5 @@
             [schema.core :as s]))
 
 (set-init! #(do
-              (s/set-fn-validation! true)
               (require 'liiteri.core)
               ((resolve 'liiteri.core/new-system))))

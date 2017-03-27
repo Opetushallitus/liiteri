@@ -8,4 +8,16 @@
       :maximum-pool-size {{liiteri_db_max_pool_size}}}
  :file-store {:engine {{liiteri_file_engine}}
               :filesystem {:base-path "{{liiteri_filesystem_base_path}}"}
-              :attachment-mime-types [{{liiteri_allowed_attachment_mime_types}}]}}
+              :attachment-mime-types ["text/plain"
+                                      "image/jpeg"
+                                      "image/png"
+                                      "image/gif"
+                                      "application/rtf"
+                                      "application/pdf"
+                                      "application/vnd.oasis.opendocument.text"
+                                      "application/msword"
+                                      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                      "application/vnd.oasis.opendocument.spreadsheet"
+                                      "application/vnd.ms-excel"
+                                      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]}
+ :server {:port {{liiteri_server_port}}}}
