@@ -7,4 +7,5 @@
       :minimum-idle {{liiteri_db_max_pool_size}}
       :maximum-pool-size {{liiteri_db_max_pool_size}}}
  :file-store {:engine {{liiteri_file_engine}}
-              :filesystem {:base-path "{{liiteri_filesystem_base_path}}"}}}
+              :filesystem {:base-path "{{liiteri_filesystem_base_path}}"}}
+ :server {:port {{liiteri_server_port}}}}

@@ -57,3 +57,5 @@ When the REPL prompt opens, you can start the service by invoking
 ```
 
 Other REPL commands are as documented in the [reloaded.repl](https://github.com/weavejester/reloaded.repl) workflow.
+
+The server runs on <http://localhost:16832/liiteri> by default.
