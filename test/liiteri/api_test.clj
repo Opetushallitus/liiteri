@@ -4,6 +4,7 @@
             [clojure.test :refer :all]
             [liiteri.config :as config]
             [liiteri.core :as system]
+            [liiteri.db.file-metadata-store :as metadata]
             [org.httpkit.client :as http]
             [cheshire.core :as json]))
 
@@ -55,4 +56,8 @@
     (is (= (:content-type body) "image/png"))
     (is (= (:size body) 7777))
     (is (= (:deleted body) nil))
-    (is (some? (:uploaded body)))))
+    (is (some? (:uploaded body)))
+    (let [[saved-metadata] (metadata/get-metadata [(:key body)] (:db @system-state))]
+      (is (= (:filename saved-metadata) "parrot.png"))
+      (is (= (:size saved-metadata) 7777))
+      (is (nil? (:deleted saved-metadata))))))
