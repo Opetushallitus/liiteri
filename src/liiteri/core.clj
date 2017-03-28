@@ -7,6 +7,7 @@
             [liiteri.files.s3-store :as s3-store]
             [liiteri.migrations :as migrations]
             [liiteri.server :as server]
+            [liiteri.virus-scan :as virus-scan]
             [schema.core :as s]
             [taoensso.timbre :as log])
   (:import [java.util TimeZone])
@@ -29,6 +30,10 @@
 
                          :migrations (component/using
                                        (migrations/new-migration)
+                                       [:db])
+
+                         :virus-scan (component/using
+                                       (virus-scan/new-scanner)
                                        [:db])]
         file-components (case (get-in config [:file-store :engine])
                           :s3 [:s3-client      (s3-client/new-client)
