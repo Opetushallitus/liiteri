@@ -46,7 +46,7 @@
 
   :main liiteri.core
 
-  :target-path "target/%s"
-
   :aliases {"test"         ["with-profile" "test" "test"]
-            "test-auto"    ["with-profile" "test" "auto" "test"]})
+            "test-auto"    ["with-profile" "test" "auto" "test"]}
+
+  :uberjar-name "liiteri.jar")
