@@ -21,10 +21,6 @@
   (let [conn {:connection db}]
     (-> (sql-delete-file! {:key key} conn))))
 
-(defn get-file-for-update [key conn]
-  (->> (sql-get-file-for-update {:key key} conn)
-       (map db-utils/unwrap-data)))
-
 (defn get-metadata [key-list db]
   (let [conn {:connection db}]
     (->> (sql-get-metadata {:keys key-list} conn)
