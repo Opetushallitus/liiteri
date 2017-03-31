@@ -21,4 +21,4 @@
                                       "application/vnd.ms-excel"
                                       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]}
  :server {:port 16833}
- :av {:enabled? false}}
+ :antivirus {:enabled? false}}

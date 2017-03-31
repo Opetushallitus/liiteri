@@ -40,7 +40,7 @@
                           :filesystem [:storage-engine (component/using
                                                          (filesystem-store/new-store)
                                                          [:config])])
-        virus-scanner (when (get-in config [:av :enabled?])
+        virus-scanner (when (get-in config [:antivirus :enabled?])
                         [:virus-scan (component/using
                                        (virus-scan/new-scanner)
                                        [:db :storage-engine :config :migrations])])]  ; Make sure that migrations are run before scanning

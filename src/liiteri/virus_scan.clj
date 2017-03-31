@@ -14,7 +14,7 @@
     (let [conn {:connection db}]
       (when-let [{file-key :key filename :filename} (metadata-store/get-unscanned-file conn)]
         (let [file        (.get-file storage-engine file-key)
-              clamav-url  (str (get-in config [:av :clamav-url]) "/scan")
+              clamav-url  (str (get-in config [:antivirus :clamav-url]) "/scan")
               scan-result @(http/post clamav-url {:form-params {"name" filename}
                                                   :multipart   [{:name "file" :content file :filename filename}]})]
           (when (= (:status scan-result) 200)
@@ -32,7 +32,7 @@
   component/Lifecycle
 
   (start [this]
-    (let [poll-interval (get-in config [:av :poll-interval-seconds])
+    (let [poll-interval (get-in config [:antivirus :poll-interval-seconds])
           times         (c/chime-ch (p/periodic-seq (t/now) (t/seconds poll-interval))
                                     {:ch (a/chan (a/sliding-buffer 1))})]
       (a/go-loop []
