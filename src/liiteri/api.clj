@@ -37,44 +37,50 @@
                                         ::ex/request-validation  (ex/with-logging (partial error-logger ex/request-validation-handler) :warn)
                                         ::ex/response-validation (ex/with-logging (partial error-logger ex/response-validation-handler) :error)
                                         ::ex/default             (ex/with-logging error-logger :error)}}}
-        (api/context "/liiteri/api" []
-          :tags ["liiteri"]
 
-          (api/POST "/files" []
-            :summary "Upload a file"
-            :multipart-params [file :- (api/describe upload/TempFileUpload "File to upload")]
-            :middleware [upload/wrap-multipart-params]
-            :return schema/File
-            (try
-              (let [real-file-type (mime/validate-file-content-type config (:tempfile file) (:filename file) (:content-type file))
-                    fixed-filename (mime/file-name-according-to-content-type (:filename file) real-file-type)]
-                (response/ok (file-store/create-file (assoc file :filename fixed-filename) storage-engine db)))
-              (finally
-                (io/delete-file (:tempfile file) true))))
+        (api/context "/liiteri" []
+          (api/undocumented
+            (api/GET "/buildversion.txt" []
+              (response/ok (slurp (io/resource "buildversion.txt")))))
 
-          (api/GET "/files/metadata" []
-            :summary "Get metadata for one or more files"
-            :query-params [key :- (api/describe [s/Str] "Key of the file")]
-            :return [schema/File]
-            (let [metadata (file-metadata-store/get-metadata key db)]
-              (if (> (count metadata) 0)
-                (response/ok metadata)
-                (response/not-found {:message (str "File with given keys not found")}))))
+          (api/context "/api" []
+            :tags ["liiteri"]
 
-          (api/GET "/files/:key" []
-            :summary "Download a file"
-            :path-params [key :- (api/describe s/Str "Key of the file")]
-            (if-let [file-response (file-store/get-file key storage-engine db)]
-              (response/header (response/ok (:body file-response))
+            (api/POST "/files" []
+              :summary "Upload a file"
+              :multipart-params [file :- (api/describe upload/TempFileUpload "File to upload")]
+              :middleware [upload/wrap-multipart-params]
+              :return schema/File
+              (try
+                (let [real-file-type (mime/validate-file-content-type config (:tempfile file) (:filename file) (:content-type file))
+                      fixed-filename (mime/file-name-according-to-content-type (:filename file) real-file-type)]
+                  (response/ok (file-store/create-file (assoc file :filename fixed-filename) storage-engine db)))
+                (finally
+                  (io/delete-file (:tempfile file) true))))
+
+            (api/GET "/files/metadata" []
+              :summary "Get metadata for one or more files"
+              :query-params [key :- (api/describe [s/Str] "Key of the file")]
+              :return [schema/File]
+              (let [metadata (file-metadata-store/get-metadata key db)]
+                (if (> (count metadata) 0)
+                  (response/ok metadata)
+                  (response/not-found {:message (str "File with given keys not found")}))))
+
+            (api/GET "/files/:key" []
+              :summary "Download a file"
+              :path-params [key :- (api/describe s/Str "Key of the file")]
+              (if-let [file-response (file-store/get-file key storage-engine db)]
+                (response/header (response/ok (:body file-response))
                                "Content-Disposition"
                                (str "attachment; filename=\"" (:filename file-response) "\""))
-              (response/not-found)))
+                (response/not-found)))
 
-          (api/DELETE "/files/:key" []
-            :summary "Delete a file"
-            :path-params [key :- (api/describe s/Str "Key of the file")]
-            :return {:key s/Str}
-            (if (> (file-store/delete-file key storage-engine db) 0)
-              (response/ok {:key key})
-              (response/not-found {:message (str "File with key " key " not found")})))))
+            (api/DELETE "/files/:key" []
+              :summary "Delete a file"
+              :path-params [key :- (api/describe s/Str "Key of the file")]
+              :return {:key s/Str}
+              (if (> (file-store/delete-file key storage-engine db) 0)
+                (response/ok {:key key})
+                (response/not-found {:message (str "File with key " key " not found")}))))))
       (c/if-url-starts-with "/liiteri/api/" logger-mw/wrap-with-logger)))

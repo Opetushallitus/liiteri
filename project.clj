@@ -28,7 +28,8 @@
                  [environ "1.1.0"]
                  [com.novemberain/pantomime "2.9.0"]]
 
-  :plugins [[lein-environ "1.1.0"]]
+  :plugins [[lein-environ "1.1.0"]
+            [lein-resource "16.11.1"]]
 
   :profiles {:dev     {:dependencies   [[reloaded.repl "0.2.3"]]
                        :repl-options   {:init-ns user}
@@ -43,6 +44,16 @@
                        :env            {:config "dev-resources/test-config.edn"}}
 
              :uberjar {:aot :all}}
+
+  :resource {:resource-paths ["templates"]
+             :target-path    "resources"
+             :update         false
+             :extra-values   {:version   "0.1.0-SNAPSHOT"
+                              :buildTime ~(.format
+                                            (java.text.SimpleDateFormat. "yyyyMMdd-HHmm")
+                                            (java.util.Date.))
+                              :githash   ~(System/getenv "githash")}
+             :silent         false}
 
   :main liiteri.core
 
