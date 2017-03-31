@@ -71,9 +71,10 @@
               :summary "Download a file"
               :path-params [key :- (api/describe s/Str "Key of the file")]
               (if-let [file-response (file-store/get-file key storage-engine db)]
-                (response/header (response/ok (:body file-response))
-                               "Content-Disposition"
-                               (str "attachment; filename=\"" (:filename file-response) "\""))
+                (-> (response/ok (:body file-response))
+                    (response/header
+                      "Content-Disposition"
+                      (str "attachment; filename=\"" (:filename file-response) "\"")))
                 (response/not-found)))
 
             (api/DELETE "/files/:key" []
