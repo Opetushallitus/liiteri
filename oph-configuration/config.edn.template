@@ -20,4 +20,7 @@
                                       "application/vnd.oasis.opendocument.spreadsheet"
                                       "application/vnd.ms-excel"
                                       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]}
- :server {:port {{liiteri_server_port}}}}
+ :server {:port {{liiteri_server_port}}}
+ :av {:enabled? {{liiteri_antivirus_enabled}}
+      :clamav-url "{{liiteri_clamav_url}}"
+      :poll-interval-seconds {{liiteri_antivirus_poll_interval_seconds}}}}
