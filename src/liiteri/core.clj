@@ -34,7 +34,7 @@
 
                          :virus-scan (component/using
                                        (virus-scan/new-scanner)
-                                       [:db])]
+                                       [:db :storage-engine :config :migrations])] ; Make sure that migrations are run before scanning
         file-components (case (get-in config [:file-store :engine])
                           :s3 [:s3-client      (s3-client/new-client)
 
