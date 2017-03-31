@@ -33,8 +33,9 @@
   component/Lifecycle
 
   (start [this]
-    (let [times (c/chime-ch (p/periodic-seq (t/now) (t/seconds 1))
-                            {:ch (a/chan (a/sliding-buffer 1))})]
+    (let [poll-interval (get-in config [:av :poll-interval-seconds])
+          times         (c/chime-ch (p/periodic-seq (t/now) (t/seconds poll-interval))
+                                    {:ch (a/chan (a/sliding-buffer 1))})]
       (a/go-loop []
         (when-let [_ (a/<! times)]
           (scan-files db storage-engine config)
