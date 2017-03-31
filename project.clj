@@ -12,7 +12,7 @@
                  [clj-time "0.13.0"]
                  [metosin/compojure-api "1.1.10"]
                  [com.stuartsierra/component "0.3.2"]
-                 [org.flywaydb/flyway-core "4.1.1"]
+                 [org.flywaydb/flyway-core "4.1.2"]
                  [hikari-cp "1.7.5"]
                  [http-kit "2.2.0"]
                  [org.clojure/java.jdbc "0.7.0-alpha1"]
