@@ -16,7 +16,7 @@
                  [hikari-cp "1.7.5"]
                  [http-kit "2.2.0"]
                  [org.clojure/java.jdbc "0.7.0-alpha1"]
-                 [org.postgresql/postgresql "9.4.1212"]
+                 [org.postgresql/postgresql "42.0.0"]
                  [prismatic/schema "1.1.3"]
                  [metosin/schema-tools "0.9.0"]
                  [javax.servlet/servlet-api "2.5"]
