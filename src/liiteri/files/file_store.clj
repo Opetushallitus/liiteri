@@ -29,4 +29,5 @@
 (defn get-file [key storage-engine db]
   (let [metadata (metadata-store/get-metadata key db)]
     (when (> (count metadata) 0)
-      (.get-file storage-engine key))))
+      {:body (.get-file storage-engine key)
+       :filename (:filename (first metadata))})))
