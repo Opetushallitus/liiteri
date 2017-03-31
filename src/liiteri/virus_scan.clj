@@ -38,6 +38,7 @@
     (let [poll-interval (get-in config [:antivirus :poll-interval-seconds])
           times         (c/chime-ch (p/periodic-seq (t/now) (t/seconds poll-interval))
                                     {:ch (a/chan (a/sliding-buffer 1))})]
+      (log/info "Starting virus scan process")
       (a/go-loop []
         (when-let [_ (a/<! times)]
           (scan-files db storage-engine config)
@@ -47,6 +48,7 @@
   (stop [this]
     (when-let [chan (:chan this)]
       (a/close! chan))
+    (log/info "Stopped virus scan process")
     (assoc this :chan nil)))
 
 (defn new-scanner []
