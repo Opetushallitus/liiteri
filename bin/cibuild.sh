@@ -11,8 +11,14 @@ clean-project() {
   ./bin/lein clean
 }
 
+process-resources() {
+  echo "Processing resources"
+  ./bin/lein resource
+}
+
 create-uberjar() {
   clean-project
+  process-resources
   echo "Creating uberjar"
   ./bin/lein with-profile uberjar uberjar
 }
