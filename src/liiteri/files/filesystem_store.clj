@@ -1,7 +1,6 @@
 (ns liiteri.files.filesystem-store
   (:require [liiteri.files.file-store :as file-store]
-            [clojure.java.io :as io]
-            [taoensso.timbre :as log]))
+            [clojure.java.io :as io]))
 
 (defrecord FilesystemStore [config]
   file-store/StorageEngine
