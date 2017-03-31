@@ -13,13 +13,12 @@
   (jdbc/with-db-transaction [datasource db]
     (let [conn {:connection db}]
       (when-let [{file-key :key filename :filename} (metadata-store/get-unscanned-file conn)]
-        (let [file   (.get-file storage-engine file-key)
-              url    (str (get-in config [:av :clamav-url]) "/scan")
-              params {:form-params {"name" filename}
-                      :multipart   [{:name "file" :content file :filename filename}]}
-              resp   @(http/post url params)]
-          (when (= (:status resp) 200)
-            (let [status (if (= "Everything ok : true\n" (:body resp))
+        (let [file        (.get-file storage-engine file-key)
+              clamav-url  (str (get-in config [:av :clamav-url]) "/scan")
+              scan-result @(http/post clamav-url {:form-params {"name" filename}
+                                                  :multipart   [{:name "file" :content file :filename filename}]})]
+          (when (= (:status scan-result) 200)
+            (let [status (if (= "Everything ok : true\n" (:body scan-result))
                            :done
                            :failed)]
               (metadata-store/set-virus-scan-status! file-key status conn))))))))
