@@ -26,7 +26,8 @@
                  [yesql "0.5.3"]
                  [ring.middleware.conditional "0.2.0"]
                  [environ "1.1.0"]
-                 [com.novemberain/pantomime "2.9.0"]]
+                 [com.novemberain/pantomime "2.9.0"]
+                 [jarohen/chime "0.2.0"]]
 
   :plugins [[lein-environ "1.1.0"]
             [lein-resource "16.11.1"]]

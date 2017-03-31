@@ -2,11 +2,12 @@
   (:require [com.stuartsierra.component :as component]
             [liiteri.config :as config]
             [liiteri.db :as db]
-            [liiteri.migrations :as migrations]
-            [liiteri.server :as server]
             [liiteri.files.filesystem-store :as filesystem-store]
             [liiteri.files.s3-client :as s3-client]
             [liiteri.files.s3-store :as s3-store]
+            [liiteri.migrations :as migrations]
+            [liiteri.server :as server]
+            [liiteri.virus-scan :as virus-scan]
             [schema.core :as s]
             [taoensso.timbre :as log])
   (:import [java.util TimeZone])
@@ -38,9 +39,14 @@
                                                  [:s3-client :db])]
                           :filesystem [:storage-engine (component/using
                                                          (filesystem-store/new-store)
-                                                         [:config])])]
+                                                         [:config])])
+        virus-scanner (when (get-in config [:av :enabled?])
+                        [:virus-scan (component/using
+                                       (virus-scan/new-scanner)
+                                       [:db :storage-engine :config :migrations])])]  ; Make sure that migrations are run before scanning
     (apply component/system-map (concat base-components
-                                        file-components))))
+                                        file-components
+                                        virus-scanner))))
 
 (defn -main [& _]
   (let [_ (component/start-system (new-system))]

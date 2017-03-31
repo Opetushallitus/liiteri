@@ -1,6 +1,7 @@
 (ns liiteri.files.filesystem-store
   (:require [liiteri.files.file-store :as file-store]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [taoensso.timbre :as log]))
 
 (defrecord FilesystemStore [config]
   file-store/StorageEngine
@@ -18,8 +19,10 @@
       (io/delete-file file true)))
 
   (get-file [this file-key]
-    (let [base-path (get-in config [:file-store :filesystem :base-path])]
-      (io/file (str base-path "/" file-key)))))
+    (let [base-path (get-in config [:file-store :filesystem :base-path])
+          path     (str base-path "/" file-key)]
+      (log/debug path)
+      (io/file path))))
 
 (defn new-store []
   (map->FilesystemStore {}))

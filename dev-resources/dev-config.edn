@@ -20,4 +20,7 @@
                                       "application/vnd.oasis.opendocument.spreadsheet"
                                       "application/vnd.ms-excel"
                                       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]}
- :server {:port 16832}}
+ :server {:port 16832}
+ :av {:enabled? true
+      :clamav-url "http://tentti.hard.ware.fi:8765"
+      :poll-interval-seconds 5}}

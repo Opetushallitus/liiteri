@@ -15,7 +15,7 @@
   (-> (db-utils/kwd->snake-case spec)
       (sql-create-file<! conn)
       (db-utils/unwrap-data)
-      (dissoc :id)))
+      (dissoc :id :virus-scan-status)))
 
 (defn delete-file [key db]
   (let [conn {:connection db}]
@@ -32,3 +32,13 @@
                      (assoc key metadata)))
                  {})
          (map second))))
+
+(defn get-unscanned-file [conn]
+  (->> (sql-get-unscanned-file {} conn)
+       (map db-utils/unwrap-data)
+       (first)))
+
+(defn set-virus-scan-status! [file-key status conn]
+  (sql-set-virus-scan-status! {:file_key          file-key
+                               :virus_scan_status (name status)}
+                              conn))
