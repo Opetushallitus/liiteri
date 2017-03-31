@@ -30,11 +30,7 @@
 
                          :migrations (component/using
                                        (migrations/new-migration)
-                                       [:db])
-
-                         :virus-scan (component/using
-                                       (virus-scan/new-scanner)
-                                       [:db :storage-engine :config :migrations])] ; Make sure that migrations are run before scanning
+                                       [:db])]
         file-components (case (get-in config [:file-store :engine])
                           :s3 [:s3-client      (s3-client/new-client)
 
@@ -43,9 +39,14 @@
                                                  [:s3-client :db])]
                           :filesystem [:storage-engine (component/using
                                                          (filesystem-store/new-store)
-                                                         [:config])])]
+                                                         [:config])])
+        virus-scanner (when (get-in config [:av :enabled?])
+                        [:virus-scan (component/using
+                                       (virus-scan/new-scanner)
+                                       [:db :storage-engine :config :migrations])])]  ; Make sure that migrations are run before scanning
     (apply component/system-map (concat base-components
-                                        file-components))))
+                                        file-components
+                                        virus-scanner))))
 
 (defn -main [& _]
   (let [_ (component/start-system (new-system))]
