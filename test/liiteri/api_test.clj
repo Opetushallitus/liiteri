@@ -6,7 +6,8 @@
             [liiteri.core :as system]
             [liiteri.db.file-metadata-store :as metadata]
             [org.httpkit.client :as http]
-            [cheshire.core :as json]))
+            [cheshire.core :as json]
+            [clojure.java.jdbc :as jdbc]))
 
 (def system-state (atom nil))
 (def config (config/new-config))
@@ -26,19 +27,26 @@
             (io/delete-file node))]
     (remove-node (temp-dir))))
 
-(defn- start-server []
+(defn- start-system []
   (let [system (or @system-state (system/new-system))]
     (reset! system-state (component/start-system system))))
 
-(defn- stop-server []
+(defn- stop-system []
   (component/stop-system @system-state))
+
+(defn clear-database! []
+  (let [datasource (-> (:db @system-state)
+                       (select-keys [:datasource]))]
+    (jdbc/db-do-commands datasource ["DROP SCHEMA IF EXISTS public CASCADE"
+                                     "CREATE SCHEMA public"])))
 
 (use-fixtures :once
   (fn [tests]
     (create-temp-dir)
-    (start-server)
+    (start-system)
     (tests)
-    (stop-server)
+    (clear-database!)
+    (stop-system)
     (remove-temp-dir)))
 
 (defn- file-stored? [file-key]
