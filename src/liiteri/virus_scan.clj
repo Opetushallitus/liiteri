@@ -19,7 +19,10 @@
                       :multipart   [{:name "file" :content file :filename filename}]}
               resp   @(http/post url params)]
           (when (= (:status resp) 200)
-            (metadata-store/set-virus-scan-status! file-key :done conn)))))))
+            (let [status (if (= "Everything ok : true\n" (:body resp))
+                           :done
+                           :failed)]
+              (metadata-store/set-virus-scan-status! file-key status conn))))))))
 
 (defn- scan-files [db storage-engine config]
   (loop []
