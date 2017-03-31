@@ -4,7 +4,7 @@
             [clojure.test :refer :all]
             [liiteri.config :as config]
             [liiteri.core :as system]
-            [liiteri.db.file-metadata-store :as metadata]
+            [liiteri.test-metadata-store :as metadata]
             [org.httpkit.client :as http]
             [cheshire.core :as json]
             [clojure.java.jdbc :as jdbc]))
@@ -65,7 +65,8 @@
     (is (= (:size body) 7777))
     (is (= (:deleted body) nil))
     (is (some? (:uploaded body)))
-    (let [[saved-metadata] (metadata/get-metadata [(:key body)] (:db @system-state))]
+    (let [saved-metadata (metadata/get-metadata-for-tests [(:key body)] (:db @system-state))]
       (is (= (:filename saved-metadata) "parrot.png"))
       (is (= (:size saved-metadata) 7777))
-      (is (nil? (:deleted saved-metadata))))))
+      (is (nil? (:deleted saved-metadata)))
+      (is (= "not_started" (:virus-scan-status saved-metadata))))))
