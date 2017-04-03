@@ -64,6 +64,8 @@ When the REPL prompt opens, you can start the service by invoking
 (reset)
 ```
 
+When you make changes to any files, run `(reset)` again.
+
 Other REPL commands are as documented in the [reloaded.repl](https://github.com/weavejester/reloaded.repl) workflow.
 
 The server runs on <http://localhost:16832/liiteri> by default.
