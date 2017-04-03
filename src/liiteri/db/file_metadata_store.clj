@@ -19,7 +19,7 @@
 
 (defn delete-file [key db]
   (let [conn {:connection db}]
-    (-> (sql-delete-file! {:key key} conn))))
+    (sql-delete-file! {:key key} conn)))
 
 (defn get-metadata [key-list db]
   (let [conn {:connection db}]

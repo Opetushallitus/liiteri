@@ -41,7 +41,8 @@
 
              :test    {:test-paths     ["test"]
                        :resource-paths ["resources" "dev-resources"]
-                       :plugins        [[lein-auto "0.1.3"]]
+                       :plugins        [[lein-auto "0.1.3"]
+                                        [jonase/eastwood "0.2.3"]]
                        :env            {:config "dev-resources/test-config.edn"}}
 
              :uberjar {:aot :all}}
@@ -60,5 +61,8 @@
 
   :aliases {"test"         ["with-profile" "test" "test"]
             "test-auto"    ["with-profile" "test" "auto" "test"]}
+
+  :eastwood {:namespaces [:source-paths]
+             :exclude-linters [:suspicious-expression]}
 
   :uberjar-name "liiteri.jar")
