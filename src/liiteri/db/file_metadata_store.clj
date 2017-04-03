@@ -21,9 +21,9 @@
   (let [conn {:connection db}]
     (-> (sql-delete-file! {:key key} conn))))
 
-(defn get-metadata [key-list db]
+(defn get-metadata [key-list av-disabled? db]
   (let [conn {:connection db}]
-    (->> (sql-get-metadata {:keys key-list} conn)
+    (->> (sql-get-metadata {:keys key-list :av_disabled av-disabled?} conn)
          (map db-utils/unwrap-data)
          (reduce (fn pick-latest-metadata [result {:keys [key uploaded] :as metadata}]
                    (cond-> result

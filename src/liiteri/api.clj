@@ -62,7 +62,7 @@
               :summary "Get metadata for one or more files"
               :query-params [key :- (api/describe [s/Str] "Key of the file")]
               :return [schema/File]
-              (let [metadata (file-metadata-store/get-metadata key db)]
+              (let [metadata (file-metadata-store/get-metadata key (not (-> config :av :enabled?)) db)]
                 (if (> (count metadata) 0)
                   (response/ok metadata)
                   (response/not-found {:message (str "File with given keys not found")}))))
@@ -70,7 +70,7 @@
             (api/GET "/files/:key" []
               :summary "Download a file"
               :path-params [key :- (api/describe s/Str "Key of the file")]
-              (if-let [file-response (file-store/get-file key storage-engine db)]
+              (if-let [file-response (file-store/get-file key storage-engine (not (-> config :av :enabled?)) db)]
                 (-> (response/ok (:body file-response))
                     (response/header
                       "Content-Disposition"

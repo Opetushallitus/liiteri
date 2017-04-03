@@ -26,8 +26,8 @@
       (.delete-file storage-engine key))
     deleted))
 
-(defn get-file [key storage-engine db]
-  (let [metadata (metadata-store/get-metadata key db)]
+(defn get-file [key storage-engine av-disabled? db]
+  (let [metadata (metadata-store/get-metadata key db av-disabled?)]
     (when (> (count metadata) 0)
       {:body (.get-file storage-engine key)
        :filename (:filename (first metadata))})))
