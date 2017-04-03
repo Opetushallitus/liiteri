@@ -13,7 +13,7 @@ To use filesystem based storage engine, the service must have following configur
  }
 ```
 
-See [dev-resources/dev-config.edn]().
+See [dev-resources/dev-config.edn](dev-resources/dev-config.edn).
 
 ## AWS S3
 
@@ -49,7 +49,7 @@ Run tests automatically on file changes by invoking
 $ lein test-auto
 ```
 
-Tests use the [dev-resources/test-config.edn]() configuration.
+Tests use the [dev-resources/test-config.edn](dev-resources/test-config.edn) configuration.
 
 ## Running The Service Locally
 
