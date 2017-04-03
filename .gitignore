@@ -6,3 +6,9 @@
 .lein-repl-history
 .nrepl-port
 *.iml
+
+eastwood.out
+forms-analyzed.txt
+forms-emitted.txt
+forms-read.txt
+

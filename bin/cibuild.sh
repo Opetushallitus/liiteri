@@ -23,8 +23,14 @@ create-uberjar() {
   ./bin/lein with-profile uberjar uberjar
 }
 
+lint() {
+  echo "Running Clojure Linter"
+  ./bin/lein with-profile test eastwood
+}
+
 run-tests() {
   clean-project
+  lint
   echo "Running tests"
   ./bin/lein test
 }
