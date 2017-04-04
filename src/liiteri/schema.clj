@@ -10,5 +10,6 @@
    :filename                  s/Str
    :content-type              s/Str
    :size                      s/Int
+   :virus-scan-status         s/Str
    (s/optional-key :uploaded) DateTime
    (s/optional-key :deleted)  (s/maybe DateTime)})

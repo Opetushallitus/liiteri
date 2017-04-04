@@ -15,7 +15,7 @@
   (-> (db-utils/kwd->snake-case spec)
       (sql-create-file<! conn)
       (db-utils/unwrap-data)
-      (dissoc :id :virus-scan-status)))
+      (dissoc :id)))
 
 (defn delete-file [key db]
   (let [conn {:connection db}]
