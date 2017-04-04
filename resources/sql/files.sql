@@ -12,7 +12,7 @@ SELECT key, filename, content_type, size, uploaded, deleted
   FROM files
   WHERE key IN (:keys)
   AND (deleted IS NULL OR deleted > NOW())
-  AND virus_scan_status = 'done';
+  AND (:av_disabled = true OR virus_scan_status = 'done');
 
 -- name: sql-get-unscanned-file
 SELECT key, filename, content_type FROM files WHERE virus_scan_status = 'not_started' LIMIT 1 FOR UPDATE SKIP LOCKED;
