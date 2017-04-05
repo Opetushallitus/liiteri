@@ -23,4 +23,5 @@
  :server {:port 16832}
  :antivirus {:enabled?              true
              :clamav-url            "http://tentti.hard.ware.fi:8765"
+             :mock? false
              :poll-interval-seconds 5}}
