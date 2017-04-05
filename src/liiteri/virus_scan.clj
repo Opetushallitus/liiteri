@@ -12,6 +12,7 @@
 
 (def ^:private successful-resp-body "Everything ok : true\n")
 (def ^:private failed-resp-body "Everything ok : false\n")
+(def ^:private mock-filename-virus-pattern #"(?i)eicar|virus")
 
 (defn- mock-enabled? [config]
   (true? (get-in config [:antivirus :mock?])))
@@ -20,11 +21,10 @@
   (Thread/sleep (rand-int 10000)))
 
 (defn- mock-scan-file [filename]
-  (let [scan-failed  (or (re-find #"(?i)eicar" filename)
-                         (re-find #"(?i)virus" filename))
-        result (if scan-failed
-                 successful-resp-body
-                 failed-resp-body)]
+  (let [scan-failed (re-find mock-filename-virus-pattern filename)
+        result      (if scan-failed
+                      successful-resp-body
+                      failed-resp-body)]
     (response/ok result)))
 
 (defn- scan-file [db storage-engine config]
