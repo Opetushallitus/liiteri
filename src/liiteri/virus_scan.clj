@@ -21,7 +21,7 @@
 
 (defn- mock-scan-file [filename]
   (let [scan-failed  (or (re-find #"(?i)eicar" filename)
-                   (re-find #"(?i)virus" filename))
+                         (re-find #"(?i)virus" filename))
         result (if scan-failed
                  successful-resp-body
                  failed-resp-body)]
