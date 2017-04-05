@@ -23,8 +23,8 @@
 (defn- mock-scan-file [filename]
   (let [scan-failed (re-find mock-filename-virus-pattern filename)
         result      (if scan-failed
-                      successful-resp-body
-                      failed-resp-body)]
+                      failed-resp-body
+                      successful-resp-body)]
     (response/ok result)))
 
 (defn- scan-file [db storage-engine config]
