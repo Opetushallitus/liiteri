@@ -22,5 +22,5 @@
                                       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]}
  :server {:port 16833}
  :antivirus {:clamav-url            "http://tentti.hard.ware.fi:8765"
-             :mock? false
+             :mock?                 true
              :poll-interval-seconds 5}}
