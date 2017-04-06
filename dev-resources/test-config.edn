@@ -21,4 +21,6 @@
                                       "application/vnd.ms-excel"
                                       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]}
  :server {:port 16833}
- :antivirus {:enabled? false}}
+ :antivirus {:clamav-url            "http://tentti.hard.ware.fi:8765"
+             :mock?                 true
+             :poll-interval-seconds 5}}
