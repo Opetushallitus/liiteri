@@ -3,8 +3,6 @@
             [liiteri.config :as config]
             [liiteri.db :as db]
             [liiteri.files.filesystem-store :as filesystem-store]
-            [liiteri.files.s3-client :as s3-client]
-            [liiteri.files.s3-store :as s3-store]
             [liiteri.migrations :as migrations]
             [liiteri.server :as server]
             [liiteri.virus-scan :as virus-scan]
