@@ -45,8 +45,7 @@
                                                          (filesystem-store/new-store)
                                                          [:config])])]  ; Make sure that migrations are run before scanning
     (apply component/system-map (concat base-components
-                                        file-components
-                                        virus-scanner))))
+                                        file-components))))
 
 (defn -main [& _]
   (let [_ (component/start-system (new-system))]
