@@ -21,7 +21,6 @@
                                       "application/vnd.ms-excel"
                                       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]}
  :server {:port {{liiteri_server_port}}}
- :antivirus {:enabled? {{liiteri_antivirus_enabled}}
-             :clamav-url "{{liiteri_clamav_url}}"
+ :antivirus {:clamav-url "{{liiteri_clamav_url}}"
              :mock? {{liiteri_antivirus_mock_mode}}
              :poll-interval-seconds {{liiteri_antivirus_poll_interval_seconds}}}}
