@@ -1,0 +1,17 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/liiteri
+    docker:
+      - image: openjdk:8
+      - image: postgres:9.5
+    environment:
+      LEIN_ROOT: nbd
+    steps:
+      - checkout
+      - run:
+          command: bin/lein deps
+      - run:
+          command: bin/lein with-profile test-ci eastwood
+      - run:
+          command: ./bin/lein test-ci

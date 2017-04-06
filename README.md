@@ -26,13 +26,13 @@ $ docker run --name liiteri-test-db -e POSTGRES_PASSWORD=oph -e POSTGRES_USER=op
 Run tests once by invoking
 
 ```bash
-$ lein test
+$ lein test-local
 ```
 
 Run tests automatically on file changes by invoking
 
 ```bash
-$ lein test-auto
+$ lein test-local-auto
 ```
 
 Tests use the [dev-resources/test-config.edn](dev-resources/test-config.edn) configuration.
