@@ -15,20 +15,6 @@ To use filesystem based storage engine, the service must have following configur
 
 See [dev-resources/dev-config.edn](dev-resources/dev-config.edn).
 
-## AWS S3
-
-To use [AWS S3](https://aws.amazon.com/s3/) based storage engine, the service must have following configuration items:
-
-```clojure
-{:file-store {:engine :s3}
- ;; Other configuration items
- }
-```
-
-Also, when AWS S3 is used, AWS access key and AWS secret key must be provided to the service. Please see the
-[Running The Service Locally](#running-the-service-locally) chapter for more info on how to provide the required
-JVM system properties on startup.
-
 ## Testing
 
 Tests require own separate database. Open your terminal and run following command to start it:
@@ -59,7 +45,7 @@ omitted.
 
 ```bash
 $ docker run --name liiteri-dev-db -e POSTGRES_PASSWORD=oph -e POSTGRES_USER=oph -e POSTGRES_DB=liiteri -p 5434:5432 -d postgres:9.5
-$ JVM_OPTS="-Daws.accessKeyId=access-key -Daws.secretKey=secret-key" lein repl
+$ lein repl
 ```
 
 When the REPL prompt opens, you can start the service by invoking
