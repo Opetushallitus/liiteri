@@ -38,11 +38,12 @@
                           :plugins        [[lein-ancient "0.6.10"]]
                           :env            {:config "dev-resources/dev-config.edn"}}
 
-             :test-ci    {:test-paths     ["test"]
-                          :resource-paths ["resources" "dev-resources"]
-                          :plugins        [[lein-auto "0.1.3"]
-                                           [jonase/eastwood "0.2.3"]]
-                          :env            {:config "dev-resources/circleci-config.edn"}}
+             :test-ci    {:test-paths            ["test"]
+                          :resource-paths        ["resources" "dev-resources"]
+                          :plugins               [[jonase/eastwood "0.2.3"]
+                                                  [test2junit "1.2.5"]]
+                          :env                   {:config "dev-resources/circleci-config.edn"}
+                          :test2junit-output-dir "target/test-reports"}
 
              :test-local {:test-paths     ["test"]
                           :resource-paths ["resources" "dev-resources"]
@@ -65,7 +66,7 @@
   :main liiteri.core
 
   :aliases {"test-local"      ["with-profile" "test-local" "test"]
-            "test-ci"         ["with-profile" "test-ci" "test"]
+            "test-ci"         ["with-profile" "test-ci" "test2junit"]
             "test-local-auto" ["with-profile" "test-local" "auto" "test"]}
 
   :eastwood {:namespaces      [:source-paths]
