@@ -1,5 +1,7 @@
 # liiteri
 
+[![CircleCI](https://circleci.com/gh/Opetushallitus/liiteri/tree/master.svg?style=svg&circle-token=bbd5744d1e6d1af5468a51b78bddb91e3deda767)](https://circleci.com/gh/Opetushallitus/liiteri/tree/master)
+
 File Storage Service For OPH
 
 ## Filesystem Based Storage
