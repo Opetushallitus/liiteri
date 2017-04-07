@@ -5,19 +5,6 @@
 
 File Storage Service For OPH
 
-## Filesystem Based Storage
-
-To use filesystem based storage engine, the service must have following configuration items:
-
-```clojure
-{:file-store {:engine :filesystem
-              :filesystem {:base-path "/path/to/storage"}}
- ;; Other configuration items
- }
-```
-
-See [dev-resources/dev-config.edn](dev-resources/dev-config.edn).
-
 ## Testing
 
 Tests require own separate database. Open your terminal and run following command to start it:
