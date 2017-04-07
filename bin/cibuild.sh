@@ -34,7 +34,7 @@ run-tests() {
   clean-project
   lint
   echo "Running tests"
-  ./bin/lein test
+  ./bin/lein test-local
 }
 
 COMMAND="$1"
