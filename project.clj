@@ -31,20 +31,26 @@
   :plugins [[lein-environ "1.1.0"]
             [lein-resource "16.11.1"]]
 
-  :profiles {:dev     {:dependencies   [[reloaded.repl "0.2.3"]]
-                       :repl-options   {:init-ns user}
-                       :source-paths   ["src" "dev-src"]
-                       :resource-paths ["resources" "dev-resources"]
-                       :plugins        [[lein-ancient "0.6.10"]]
-                       :env            {:config "dev-resources/dev-config.edn"}}
+  :profiles {:dev        {:dependencies   [[reloaded.repl "0.2.3"]]
+                          :repl-options   {:init-ns user}
+                          :source-paths   ["src" "dev-src"]
+                          :resource-paths ["resources" "dev-resources"]
+                          :plugins        [[lein-ancient "0.6.10"]]
+                          :env            {:config "dev-resources/dev-config.edn"}}
 
-             :test    {:test-paths     ["test"]
-                       :resource-paths ["resources" "dev-resources"]
-                       :plugins        [[lein-auto "0.1.3"]
-                                        [jonase/eastwood "0.2.3"]]
-                       :env            {:config "dev-resources/test-config.edn"}}
+             :test-ci    {:test-paths     ["test"]
+                          :resource-paths ["resources" "dev-resources"]
+                          :plugins        [[lein-auto "0.1.3"]
+                                           [jonase/eastwood "0.2.3"]]
+                          :env            {:config "dev-resources/circleci-config.edn"}}
 
-             :uberjar {:aot :all}}
+             :test-local {:test-paths     ["test"]
+                          :resource-paths ["resources" "dev-resources"]
+                          :plugins        [[lein-auto "0.1.3"]
+                                           [jonase/eastwood "0.2.3"]]
+                          :env            {:config "dev-resources/test-config.edn"}}
+
+             :uberjar    {:aot :all}}
 
   :resource {:resource-paths ["templates"]
              :target-path    "resources"
@@ -58,10 +64,11 @@
 
   :main liiteri.core
 
-  :aliases {"test"         ["with-profile" "test" "test"]
-            "test-auto"    ["with-profile" "test" "auto" "test"]}
+  :aliases {"test-local"      ["with-profile" "test-local" "test"]
+            "test-ci"         ["with-profile" "test-ci" "test"]
+            "test-local-auto" ["with-profile" "test-local" "auto" "test"]}
 
-  :eastwood {:namespaces [:source-paths]
+  :eastwood {:namespaces      [:source-paths]
              :exclude-linters [:suspicious-expression]}
 
   :uberjar-name "liiteri.jar")
