@@ -12,6 +12,7 @@ jobs:
       - restore_cache:
           key: liiteri-{{ checksum "project.clj" }}
       - run:
+          name: Download Dependencies
           command: bin/lein deps
       - save_cache:
           key: liiteri-{{ checksum "project.clj" }}
@@ -19,6 +20,8 @@ jobs:
             - ~/.m2
             - ~/.lein
       - run:
+          name: Clojure Linter
           command: bin/lein with-profile test-ci eastwood
       - run:
+          name: Tests
           command: ./bin/lein test-ci
