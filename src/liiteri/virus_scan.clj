@@ -27,9 +27,9 @@
                       successful-resp-body)]
     (response/ok result)))
 
-(defn- log-virus-scan-result [filename content-type config status]
+(defn- log-virus-scan-result [file-key filename content-type config status]
   (let [status-str (if (= status :successful) "OK" "FAILED")]
-    (log/info (str "Virus scan status " status-str " for file " filename " (" content-type ")"
+    (log/info (str "Virus scan status " status-str " for file " filename " with key " file-key " (" content-type ")"
                    (when (mock-enabled? config) ", virus scan process in mock mode")))))
 
 (defn- scan-file [db storage-engine config]
@@ -46,10 +46,10 @@
             (when (= (:status scan-result) 200)
               (if (= (:body scan-result) "Everything ok : true\n")
                 (do
-                  (log-virus-scan-result filename content-type config :successful)
+                  (log-virus-scan-result file-key filename content-type config :successful)
                   (metadata-store/set-virus-scan-status! file-key :done conn))
                 (do
-                  (log-virus-scan-result filename content-type config :failed)
+                  (log-virus-scan-result file-key filename content-type config :failed)
                   (metadata-store/set-virus-scan-status! file-key :failed conn)))))
           (catch Exception e
             (log/error e (str "Failed to scan file " filename " with key " file-key " (" content-type ")"))))))))
