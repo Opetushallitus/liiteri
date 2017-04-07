@@ -70,3 +70,13 @@
       (#'virus-scan/scan-files db storage-engine config))
     (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] db)]
       (is (= (:virus-scan-status metadata) "failed")))))
+
+(deftest virus-scan-throws-exception
+  (let [db             (:db @system)
+        storage-engine (:storage-engine @system)
+        config         (:config @system)]
+    (with-redefs [http/post (fn [& _]
+                              (throw (Exception. "failed to scan file")))]
+      (#'virus-scan/scan-files db storage-engine config))
+    (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] db)]
+      (is (= (:virus-scan-status metadata) "not_started")))))
