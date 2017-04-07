@@ -6,7 +6,9 @@
             [liiteri.core :as system]
             [liiteri.db.file-metadata-store :as metadata-store]
             [liiteri.test-metadata-store :as test-metadata-store]
-            [liiteri.virus-scan :as virus-scan])
+            [liiteri.virus-scan :as virus-scan]
+            [org.httpkit.client :as http]
+            [ring.util.http-response :as response])
   (:import [java.io File]
            [java.util UUID]))
 
@@ -71,6 +73,8 @@
   (let [db             (:db @system-state)
         storage-engine (:storage-engine @system-state)
         config         (:config @system-state)]
-    (#'virus-scan/scan-files db storage-engine config)
+    (with-redefs [http/post (fn [& _]
+                              (future (response/ok "Everything ok : true\n")))]
+      (#'virus-scan/scan-files db storage-engine config))
     (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] db)]
       (is (= (:virus-scan-status metadata) "done")))))
