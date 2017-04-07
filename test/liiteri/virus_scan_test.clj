@@ -5,7 +5,7 @@
             [com.stuartsierra.component :as component]
             [liiteri.core :as system]
             [liiteri.db.file-metadata-store :as metadata-store]
-            [liiteri.test-metadata-store :as test-metadata-store]
+            [liiteri.db.test-metadata-store :as test-metadata-store]
             [liiteri.virus-scan :as virus-scan]
             [org.httpkit.client :as http]
             [ring.util.http-response :as response])

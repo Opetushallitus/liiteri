@@ -4,7 +4,7 @@
             [clojure.test :refer :all]
             [liiteri.config :as config]
             [liiteri.core :as system]
-            [liiteri.test-metadata-store :as metadata]
+            [liiteri.db.test-metadata-store :as metadata]
             [org.httpkit.client :as http]
             [cheshire.core :as json]
             [clojure.java.jdbc :as jdbc]))
