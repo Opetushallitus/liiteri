@@ -6,42 +6,23 @@
             [liiteri.core :as system]
             [liiteri.db.file-metadata-store :as metadata-store]
             [liiteri.db.test-metadata-store :as test-metadata-store]
+            [liiteri.test-utils :as u]
             [liiteri.virus-scan :as virus-scan]
             [org.httpkit.client :as http]
             [ring.util.http-response :as response])
   (:import [java.io File]
            [java.util UUID]))
 
-(def system-state (atom nil))
+(def system (atom nil))
 (def metadata (atom nil))
 (def file (atom nil))
 
-(defn- start-system []
-  (let [system (or @system-state (system/new-system))]
-    (reset! system-state (component/start-system system))))
-
-(defn- stop-system []
-  (component/stop-system @system-state))
-
-(defn- clear-database! []
-  (let [datasource (-> (:db @system-state)
-                       (select-keys [:datasource]))]
-    (jdbc/db-do-commands datasource ["DROP SCHEMA IF EXISTS public CASCADE"
-                                     "CREATE SCHEMA public"])))
-
-(defn- temp-dir []
-  (-> (get-in (:config @system-state) [:file-store :filesystem :base-path])
-      (io/file)))
-
-(defn- create-temp-dir []
-  (.mkdirs (temp-dir)))
-
 (defn- init-test-file []
-  (jdbc/with-db-transaction [datasource (:db @system-state)]
+  (jdbc/with-db-transaction [datasource (:db @system)]
     (let [filename "test-file.txt"
           file-key (str (UUID/randomUUID))
           conn     {:connection datasource}
-          base-dir (get-in (:config @system-state) [:file-store :filesystem :base-path])]
+          base-dir (get-in (:config @system) [:file-store :filesystem :base-path])]
       (with-open [w (io/writer (str base-dir "/" file-key))]
         (.write w "test file\n"))
       (reset! metadata (metadata-store/create-file {:key          file-key
@@ -51,28 +32,20 @@
                                                    conn))
       (reset! file (io/file (str base-dir "/" file-key))))))
 
-(defn- remove-temp-dir []
-  (letfn [(remove-node [node]
-            (when (.isDirectory node)
-              (doseq [child-node (.listFiles node)]
-                (remove-node child-node)))
-            (io/delete-file node))]
-    (remove-node (temp-dir))))
-
 (use-fixtures :once
   (fn [tests]
-    (start-system)
-    (create-temp-dir)
+    (u/start-system system)
+    (u/create-temp-dir system)
     (init-test-file)
     (tests)
-    (clear-database!)
-    (stop-system)
-    (remove-temp-dir)))
+    (u/clear-database! system)
+    (u/stop-system system)
+    (u/remove-temp-dir system)))
 
 (deftest virus-scan-for-clean-file
-  (let [db             (:db @system-state)
-        storage-engine (:storage-engine @system-state)
-        config         (:config @system-state)]
+  (let [db             (:db @system)
+        storage-engine (:storage-engine @system)
+        config         (:config @system)]
     (with-redefs [http/post (fn [& _]
                               (future (response/ok "Everything ok : true\n")))]
       (#'virus-scan/scan-files db storage-engine config))
