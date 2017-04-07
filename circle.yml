@@ -9,8 +9,15 @@ jobs:
       LEIN_ROOT: nbd
     steps:
       - checkout
+      - restore_cache:
+          key: liiteri-{{ checksum "project.clj" }}
       - run:
           command: bin/lein deps
+      - save_cache:
+          key: liiteri-{{ checksum "project.clj" }}
+          paths:
+            - ~/.m2
+            - ~/.lein
       - run:
           command: bin/lein with-profile test-ci eastwood
       - run:
