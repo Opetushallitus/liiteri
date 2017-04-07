@@ -48,7 +48,7 @@
                           :resource-paths ["resources" "dev-resources"]
                           :plugins        [[lein-auto "0.1.3"]
                                            [jonase/eastwood "0.2.3"]]
-                          :env            {:config "dev-resources/test-config.edn"}}
+                          :env            {:config "dev-resources/local-test-config.edn"}}
 
              :uberjar    {:aot :all}}
 

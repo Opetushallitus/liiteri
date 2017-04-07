@@ -25,7 +25,7 @@ Run tests automatically on file changes by invoking
 $ lein test-local-auto
 ```
 
-Tests use the [dev-resources/test-config.edn](dev-resources/test-config.edn) configuration.
+Tests use the [dev-resources/test-config.edn](dev-resources/local-test-config.edn) configuration.
 
 ## Running The Service Locally
 

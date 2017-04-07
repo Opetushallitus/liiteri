@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+# Please note that Circle CI uses circle.yml instead of cibuild.sh
+
 OLD_CWD=$(pwd)
 
 export JAVA_HOME=/data00/oph/java/jdk1.8.0_60
@@ -25,7 +27,7 @@ create-uberjar() {
 
 lint() {
   echo "Running Clojure Linter"
-  ./bin/lein with-profile test eastwood
+  ./bin/lein with-profile test-local eastwood
 }
 
 run-tests() {
