@@ -48,4 +48,4 @@ When you make changes to any files, run `(reset)` again.
 
 Other REPL commands are as documented in the [reloaded.repl](https://github.com/weavejester/reloaded.repl) workflow.
 
-The server runs on <http://localhost:16832/liiteri> by default. See <http://localhost:16832/liiteri/api-docs/index.html> for the Swagger API documentation. It is generated from the API specified in [src/liiteri/api.clj](src/liiteri/api.clj#L28).
+The server runs on <http://localhost:16832/liiteri> by default. See <http://localhost:16832/liiteri/api-docs/index.html> for the Swagger API documentation.
