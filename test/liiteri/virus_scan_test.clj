@@ -32,15 +32,24 @@
                                                    conn))
       (reset! file (io/file (str base-dir "/" file-key))))))
 
+(defn- remove-test-file []
+  (metadata-store/delete-file (:key @metadata) (:db @system))
+  (io/delete-file @file))
+
 (use-fixtures :once
   (fn [tests]
     (u/start-system system)
     (u/create-temp-dir system)
-    (init-test-file)
     (tests)
     (u/clear-database! system)
     (u/stop-system system)
     (u/remove-temp-dir system)))
+
+(use-fixtures :each
+  (fn [tests]
+    (init-test-file)
+    (tests)
+    (remove-test-file)))
 
 (deftest virus-scan-for-clean-file
   (let [db             (:db @system)
@@ -51,3 +60,13 @@
       (#'virus-scan/scan-files db storage-engine config))
     (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] db)]
       (is (= (:virus-scan-status metadata) "done")))))
+
+(deftest virus-scan-for-contaminated-file
+  (let [db             (:db @system)
+        storage-engine (:storage-engine @system)
+        config         (:config @system)]
+    (with-redefs [http/post (fn [& _]
+                              (future (response/ok "Everything ok : false\n")))]
+      (#'virus-scan/scan-files db storage-engine config))
+    (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] db)]
+      (is (= (:virus-scan-status metadata) "failed")))))
