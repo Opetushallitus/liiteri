@@ -8,9 +8,11 @@
   component/Lifecycle
 
   (start [this]
-    (let [port    (get-in config [:server :port] 16832)
-          api     (api/new-api this)
-          server  (server/run-server api {:port port})]
+    (let [port   (get-in config [:server :port] 16832)
+          api    (api/new-api this)
+          server (server/run-server api {:port     port
+                                         ;; 134217728 = 128MB
+                                         :max-body 134217728})]
       (log/info (str "Started server on port " port))
       (assoc this :server server)))
 
