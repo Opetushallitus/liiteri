@@ -1,8 +1,8 @@
-(ns liiteri.test-metadata-store
+(ns liiteri.db.test-metadata-store
   (:require [liiteri.db.db-utils :as db-utils]
             [yesql.core :as sql]))
 
-(sql/defqueries "test-files.sql")
+(sql/defqueries "sql/test-files.sql")
 
 (defn get-metadata-for-tests [key-list db]
   (let [conn {:connection db}]

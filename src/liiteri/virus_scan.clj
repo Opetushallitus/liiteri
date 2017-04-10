@@ -27,29 +27,32 @@
                       successful-resp-body)]
     (response/ok result)))
 
-(defn- log-virus-scan-result [filename content-type config status]
+(defn- log-virus-scan-result [file-key filename content-type config status]
   (let [status-str (if (= status :successful) "OK" "FAILED")]
-    (log/info (str "Virus scan status " status-str " for file " filename " (" content-type ")"
+    (log/info (str "Virus scan status " status-str " for file " filename " with key " file-key " (" content-type ")"
                    (when (mock-enabled? config) ", virus scan process in mock mode")))))
 
 (defn- scan-file [db storage-engine config]
   (jdbc/with-db-transaction [datasource db]
     (let [conn {:connection db}]
       (when-let [{file-key :key filename :filename content-type :content-type} (metadata-store/get-unscanned-file conn)]
-        (let [file        (.get-file storage-engine file-key)
-              clamav-url  (str (get-in config [:antivirus :clamav-url]) "/scan")
-              scan-result (if (mock-enabled? config)
-                            (mock-scan-file filename)
-                            @(http/post clamav-url {:form-params {"name" filename}
-                                                    :multipart   [{:name "file" :content file :filename filename}]}))]
-          (when (= (:status scan-result) 200)
-            (if (= (:body scan-result) "Everything ok : true\n")
-              (do
-                (log-virus-scan-result filename content-type config :successful)
-                (metadata-store/set-virus-scan-status! file-key :done conn))
-              (do
-                (log-virus-scan-result filename content-type config :failed)
-                (metadata-store/set-virus-scan-status! file-key :failed conn)))))))))
+        (try
+          (let [file        (.get-file storage-engine file-key)
+                clamav-url  (str (get-in config [:antivirus :clamav-url]) "/scan")
+                scan-result (if (mock-enabled? config)
+                              (mock-scan-file filename)
+                              @(http/post clamav-url {:form-params {"name" filename}
+                                                      :multipart   [{:name "file" :content file :filename filename}]}))]
+            (when (= (:status scan-result) 200)
+              (if (= (:body scan-result) "Everything ok : true\n")
+                (do
+                  (log-virus-scan-result file-key filename content-type config :successful)
+                  (metadata-store/set-virus-scan-status! file-key :done conn))
+                (do
+                  (log-virus-scan-result file-key filename content-type config :failed)
+                  (metadata-store/set-virus-scan-status! file-key :failed conn)))))
+          (catch Exception e
+            (log/error e (str "Failed to scan file " filename " with key " file-key " (" content-type ")"))))))))
 
 (defn- scan-files [db storage-engine config]
   (loop []

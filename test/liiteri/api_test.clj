@@ -4,50 +4,23 @@
             [clojure.test :refer :all]
             [liiteri.config :as config]
             [liiteri.core :as system]
-            [liiteri.test-metadata-store :as metadata]
+            [liiteri.db.test-metadata-store :as metadata]
+            [liiteri.test-utils :as u]
             [org.httpkit.client :as http]
             [cheshire.core :as json]
             [clojure.java.jdbc :as jdbc]))
 
-(def system-state (atom nil))
+(def system (atom nil))
 (def config (config/new-config))
-
-(defn- temp-dir []
-  (-> (get-in config [:file-store :filesystem :base-path])
-      (io/file)))
-
-(defn- create-temp-dir []
-  (.mkdirs (temp-dir)))
-
-(defn- remove-temp-dir []
-  (letfn [(remove-node [node]
-            (when (.isDirectory node)
-              (doseq [child-node (.listFiles node)]
-                (remove-node child-node)))
-            (io/delete-file node))]
-    (remove-node (temp-dir))))
-
-(defn- start-system []
-  (let [system (or @system-state (system/new-system))]
-    (reset! system-state (component/start-system system))))
-
-(defn- stop-system []
-  (component/stop-system @system-state))
-
-(defn clear-database! []
-  (let [datasource (-> (:db @system-state)
-                       (select-keys [:datasource]))]
-    (jdbc/db-do-commands datasource ["DROP SCHEMA IF EXISTS public CASCADE"
-                                     "CREATE SCHEMA public"])))
 
 (use-fixtures :once
   (fn [tests]
-    (create-temp-dir)
-    (start-system)
+    (u/start-system system)
+    (u/create-temp-dir system)
     (tests)
-    (clear-database!)
-    (stop-system)
-    (remove-temp-dir)))
+    (u/clear-database! system)
+    (u/stop-system system)
+    (u/remove-temp-dir system)))
 
 (defn- file-stored? [file-key]
   (let [file (io/file (str (get-in config [:file-store :filesystem :base-path]) "/" file-key))]
@@ -65,7 +38,7 @@
     (is (= (:size body) 7777))
     (is (= (:deleted body) nil))
     (is (some? (:uploaded body)))
-    (let [saved-metadata (metadata/get-metadata-for-tests [(:key body)] (:db @system-state))]
+    (let [saved-metadata (metadata/get-metadata-for-tests [(:key body)] (:db @system))]
       (is (= (:filename saved-metadata) "parrot.png"))
       (is (= (:size saved-metadata) 7777))
       (is (nil? (:deleted saved-metadata)))
