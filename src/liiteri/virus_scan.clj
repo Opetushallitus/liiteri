@@ -33,11 +33,9 @@
                    (when (mock-enabled? config) ", virus scan process in mock mode")))))
 
 (defn- scan-file [db storage-engine config]
-  (log/info "scan-file")
   (jdbc/with-db-transaction [datasource db]
     (let [conn {:connection db}]
       (when-let [{file-key :key filename :filename content-type :content-type} (metadata-store/get-unscanned-file conn)]
-        (log/info "scanning file" filename)
         (try
           (let [file        (.get-file storage-engine file-key)
                 clamav-url  (str (get-in config [:antivirus :clamav-url]) "/scan")
