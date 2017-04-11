@@ -43,3 +43,11 @@
       (is (= (:size saved-metadata) 7777))
       (is (nil? (:deleted saved-metadata)))
       (is (= "not_started" (:virus-scan-status saved-metadata))))))
+
+(deftest virus-download
+  (let [file (io/file (io/resource "virus.txt"))
+        path (str "http://localhost:" (get-in config [:server :port]) "/liiteri/api/files")
+        upload-resp @(http/post path {:multipart [{:name "file" :content file :filename "virus.txt" :content-type "image/png"}]})
+        key (:key (json/parse-string (:body upload-resp) true))
+        download-resp @(http/get (str path "/" key))]
+    (is (= (:status download-resp) 404))))
