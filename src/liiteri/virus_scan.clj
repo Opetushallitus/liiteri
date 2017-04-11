@@ -61,7 +61,10 @@
     (when (scan-file db storage-engine config)
       (recur))))
 
-(defrecord Scanner [db storage-engine config]
+(defprotocol Scanner
+  (scan-files! [this]))
+
+(defrecord VirusScanner [db storage-engine config]
   component/Lifecycle
 
   (start [this]
@@ -79,7 +82,12 @@
     (when-let [chan (:chan this)]
       (a/close! chan))
     (log/info "Stopped virus scan process")
-    (assoc this :chan nil)))
+    (assoc this :chan nil))
+
+  Scanner
+
+  (scan-files! [this]
+    (scan-files db storage-engine config)))
 
 (defn new-scanner []
-  (map->Scanner {}))
+  (map->VirusScanner {}))

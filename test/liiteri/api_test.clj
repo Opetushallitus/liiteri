@@ -49,5 +49,8 @@
         path (str "http://localhost:" (get-in config [:server :port]) "/liiteri/api/files")
         upload-resp @(http/post path {:multipart [{:name "file" :content file :filename "virus.txt" :content-type "image/png"}]})
         key (:key (json/parse-string (:body upload-resp) true))
+        _ (.scan-files! (:virus-scan @system))
+        saved-metadata (metadata/get-metadata-for-tests [key] (:db @system))
         download-resp @(http/get (str path "/" key))]
+    (is (= "failed" (:virus-scan-status saved-metadata)))
     (is (= (:status download-resp) 404))))
