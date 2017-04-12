@@ -35,7 +35,7 @@ run-tests() {
   lint
   echo "Running tests"
   ./bin/lein test-local
-
+}
 
 create-db-schema() {
   echo "Creating DB schema diagrams"
