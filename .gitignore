@@ -1,6 +1,7 @@
 /.idea
 /target
 
+.DS_Store
 .lein-env
 .lein-failures
 .lein-repl-history
