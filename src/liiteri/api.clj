@@ -3,6 +3,7 @@
             [compojure.api.exception :as ex]
             [compojure.api.sweet :as api]
             [compojure.api.upload :as upload]
+            [liiteri.audit-log :as audit-log]
             [liiteri.db.file-metadata-store :as file-metadata-store]
             [liiteri.files.file-store :as file-store]
             [liiteri.schema :as schema]
@@ -53,8 +54,10 @@
               :return schema/File
               (try
                 (let [real-file-type (mime/validate-file-content-type config (:tempfile file) (:filename file) (:content-type file))
-                      fixed-filename (mime/file-name-according-to-content-type (:filename file) real-file-type)]
-                  (response/ok (file-store/create-file (assoc file :filename fixed-filename) storage-engine db)))
+                      fixed-filename (mime/file-name-according-to-content-type (:filename file) real-file-type)
+                      {:keys [key] :as resp} (file-store/create-file (assoc file :filename fixed-filename) storage-engine db)]
+                  (audit-log/log {:id key :operation audit-log/operation-new :message resp})
+                  (response/ok resp))
                 (finally
                   (io/delete-file (:tempfile file) true))))
 
@@ -63,6 +66,7 @@
               :query-params [key :- (api/describe [s/Str] "Key of the file")]
               :return [schema/File]
               (let [metadata (file-metadata-store/get-metadata key db)]
+                (audit-log/log {:id key :operation audit-log/operation-query :message metadata})
                 (if (> (count metadata) 0)
                   (response/ok metadata)
                   (response/not-found {:message (str "File with given keys not found")}))))
@@ -71,6 +75,7 @@
               :summary "Download a file"
               :path-params [key :- (api/describe s/Str "Key of the file")]
               (let [metadata (file-metadata-store/get-metadata key db)]
+                (audit-log/log {:id key :operation audit-log/operation-query :message metadata})
                 (if (= "done" (:virus-scan-status metadata))
                   (if-let [file-response (file-store/get-file key storage-engine db)]
                     (-> (response/ok (:body file-response))
@@ -84,7 +89,9 @@
               :summary "Delete a file"
               :path-params [key :- (api/describe s/Str "Key of the file")]
               :return {:key s/Str}
-              (if (> (file-store/delete-file key storage-engine db) 0)
-                (response/ok {:key key})
-                (response/not-found {:message (str "File with key " key " not found")}))))))
+              (let [deleted-count (file-store/delete-file key storage-engine db)]
+                (audit-log/log {:id key :operation audit-log/operation-delete :message {:deleted-count deleted-count}})
+                (if (> deleted-count 0)
+                  (response/ok {:key key})
+                  (response/not-found {:message (str "File with key " key " not found")})))))))
       (c/if-url-starts-with "/liiteri/api/" logger-mw/wrap-with-logger)))
