@@ -12,6 +12,7 @@
                  [metosin/compojure-api "1.1.10"]
                  [com.stuartsierra/component "0.3.2"]
                  [org.flywaydb/flyway-core "4.1.2"]
+                 [fi.vm.sade/auditlogger "5.0.0-SNAPSHOT"]
                  [hikari-cp "1.7.5"]
                  [http-kit "2.2.0"]
                  [org.clojure/java.jdbc "0.7.0-alpha1"]
@@ -27,6 +28,8 @@
                  [environ "1.1.0"]
                  [com.novemberain/pantomime "2.9.0"]
                  [jarohen/chime "0.2.0"]]
+
+  :repositories [["snapshots" {:url "https://artifactory.oph.ware.fi/artifactory/oph-sade-snapshot-local"}]]
 
   :plugins [[lein-environ "1.1.0"]
             [lein-resource "16.11.1"]]
