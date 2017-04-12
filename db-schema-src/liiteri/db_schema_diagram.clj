@@ -17,6 +17,7 @@
                           version
                           username
                           password)]
+    (clojure.pprint/pprint ret)
     (:exit ret)))
 
 (defn -main [& _]
