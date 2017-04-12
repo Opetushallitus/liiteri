@@ -35,6 +35,11 @@ run-tests() {
   lint
   echo "Running tests"
   ./bin/lein test-local
+
+
+create-db-schema() {
+  echo "Creating DB schema diagrams"
+  ./bin/lein db-schema
 }
 
 COMMAND="$1"
@@ -45,6 +50,9 @@ case "$COMMAND" in
     ;;
   "run-tests" )
     run-tests
+    ;;
+  "create-db-schema" )
+    create-db-schema
     ;;
   *)
     echo "Unknown command: $COMMAND"
