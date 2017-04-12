@@ -54,7 +54,10 @@
                                            [jonase/eastwood "0.2.3"]]
                           :env            {:config "dev-resources/local-test-config.edn"}}
 
-             :uberjar    {:aot :all}}
+             :uberjar    {:aot :all}
+
+             :db-schema  {:source-paths ["src" "db-schema-src"]
+                          :main         liiteri.db-schema-diagram}}
 
   :resource {:resource-paths ["templates"]
              :target-path    "resources"
@@ -70,7 +73,8 @@
 
   :aliases {"test-local"      ["with-profile" "test-local" "test"]
             "test-ci"         ["with-profile" "test-ci" "test2junit"]
-            "test-local-auto" ["with-profile" "test-local" "auto" "test"]}
+            "test-local-auto" ["with-profile" "test-local" "auto" "test"]
+            "db-schema"       ["with-profile" "db-schema" "run"]}
 
   :eastwood {:namespaces      [:source-paths]
              :exclude-linters [:suspicious-expression]}
