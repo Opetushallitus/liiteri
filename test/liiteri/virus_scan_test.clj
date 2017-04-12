@@ -13,7 +13,7 @@
   (:import [java.io File]
            [java.util UUID]))
 
-(def system (atom nil))
+(def system (atom (system/new-system {:antivirus {:mock? false :poll-interval-seconds 5}})))
 (def metadata (atom nil))
 (def file (atom nil))
 

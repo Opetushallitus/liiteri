@@ -74,13 +74,15 @@
             (api/GET "/files/:key" []
               :summary "Download a file"
               :path-params [key :- (api/describe s/Str "Key of the file")]
-              (let [file-response (file-store/get-file key storage-engine db)]
-                (audit-log/log {:id key :operation audit-log/operation-query :message (dissoc file-response :body)})
-                (if (some? file-response)
-                  (-> (response/ok (:body file-response))
-                      (response/header
-                        "Content-Disposition"
-                        (str "attachment; filename=\"" (:filename file-response) "\"")))
+              (let [metadata (file-metadata-store/get-metadata key db)]
+                (audit-log/log {:id key :operation audit-log/operation-query :message metadata})
+                (if (= "done" (:virus-scan-status metadata))
+                  (if-let [file-response (file-store/get-file key storage-engine db)]
+                    (-> (response/ok (:body file-response))
+                        (response/header
+                          "Content-Disposition"
+                          (str "attachment; filename=\"" (:filename file-response) "\"")))
+                    (response/not-found))
                   (response/not-found))))
 
             (api/DELETE "/files/:key" []

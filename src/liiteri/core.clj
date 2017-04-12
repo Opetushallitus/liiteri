@@ -11,11 +11,11 @@
   (:import [java.util TimeZone])
   (:gen-class))
 
-(defn new-system []
+(defn new-system [& [config-overrides]]
   (s/set-fn-validation! true)
   (log/merge-config! {:timestamp-opts {:pattern  "yyyy-MM-dd HH:mm:ss ZZ"
                                        :timezone (TimeZone/getTimeZone "Europe/Helsinki")}})
-  (component/system-map :config         (config/new-config)
+  (component/system-map :config         (config/new-config config-overrides)
 
                         :db             (component/using
                                           (db/new-pool)
