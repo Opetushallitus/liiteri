@@ -4,15 +4,12 @@
             [cheshire.core :as json])
   (:import [fi.vm.sade.auditlog Audit ApplicationType CommonLogMessageFields AbstractLogMessage]))
 
-(def ^:private logger (atom nil))
+(def ^:private logger (Audit. "liiteri" ApplicationType/BACKEND))
 (def ^:private date-time-formatter (f/formatter :date-time))
 
 (def operation-new "lisäys")
 (def operation-delete "poisto")
 (def operation-query "haku")
-
-(defn- new-logger []
-  (Audit. "liiteri" ApplicationType/BACKEND))
 
 (defn- not-blank? [string]
   (not (clojure.string/blank? string)))
@@ -29,8 +26,7 @@
         log-map   {CommonLogMessageFields/ID        (json/generate-string id-map)
                    CommonLogMessageFields/TIMESTAMP timestamp
                    CommonLogMessageFields/OPERAATIO operation
-                   CommonLogMessageFields/MESSAGE   (json/generate-string message)}
-        logger    (or @logger (reset! logger (new-logger)))]
+                   CommonLogMessageFields/MESSAGE   (json/generate-string message)}]
     (clojure.pprint/pprint log-map)
     (->> (proxy [AbstractLogMessage] [log-map])
          (.log logger))))
