@@ -7,14 +7,16 @@
             [liiteri.migrations :as migrations]))
 
 (defn- generate-db-schema-diagram [config]
-  (let [{:keys [server-name port-number database-name username password]} (:db config)
-        ret (shell/sh "./bin/generate-db-schema-diagram.sh"
-                      server-name
-                      (str port-number)
-                      database-name
-                      "./target/db-schema"
-                      username
-                      password)]
+  (let [version (-> "./project.clj" slurp read-string (nth 2))
+        {:keys [server-name port-number database-name username password]} (:db config)
+        ret     (shell/sh "./bin/generate-db-schema-diagram.sh"
+                          server-name
+                          (str port-number)
+                          database-name
+                          "./target/db-schema"
+                          version
+                          username
+                          password)]
     (:exit ret)))
 
 (defn -main [& _]
