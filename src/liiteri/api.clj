@@ -26,7 +26,7 @@
   ([^Exception e data req]
    (error-logger internal-server-error e data req)))
 
-(defn new-api [{:keys [storage-engine db config]}]
+(defn new-api [{:keys [storage-engine db config audit-logger]}]
   (-> (api/api {:swagger    {:spec    "/liiteri/swagger.json"
                              :ui      "/liiteri/api-docs"
                              :data    {:info {:version     "0.1.0"
@@ -56,7 +56,7 @@
                 (let [real-file-type (mime/validate-file-content-type config (:tempfile file) (:filename file) (:content-type file))
                       fixed-filename (mime/file-name-according-to-content-type (:filename file) real-file-type)
                       {:keys [key] :as resp} (file-store/create-file (assoc file :filename fixed-filename) storage-engine db)]
-                  (audit-log/log {:id key :operation audit-log/operation-new :message resp})
+                  (.log audit-logger key audit-log/operation-new resp)
                   (response/ok resp))
                 (finally
                   (io/delete-file (:tempfile file) true))))
@@ -66,7 +66,7 @@
               :query-params [key :- (api/describe [s/Str] "Key of the file")]
               :return [schema/File]
               (let [metadata (file-metadata-store/get-metadata key db)]
-                (audit-log/log {:id key :operation audit-log/operation-query :message metadata})
+                (.log audit-logger key audit-log/operation-query metadata)
                 (if (> (count metadata) 0)
                   (response/ok metadata)
                   (response/not-found {:message (str "File with given keys not found")}))))
@@ -75,7 +75,7 @@
               :summary "Download a file"
               :path-params [key :- (api/describe s/Str "Key of the file")]
               (let [metadata (file-metadata-store/get-metadata key db)]
-                (audit-log/log {:id key :operation audit-log/operation-query :message metadata})
+                (.log audit-logger key audit-log/operation-query metadata)
                 (if (= "done" (:virus-scan-status metadata))
                   (if-let [file-response (file-store/get-file key storage-engine db)]
                     (-> (response/ok (:body file-response))
@@ -90,7 +90,7 @@
               :path-params [key :- (api/describe s/Str "Key of the file")]
               :return {:key s/Str}
               (let [deleted-count (file-store/delete-file key storage-engine db)]
-                (audit-log/log {:id key :operation audit-log/operation-delete :message {:deleted-count deleted-count}})
+                (.log audit-logger key audit-log/operation-delete {:deleted-count deleted-count})
                 (if (> deleted-count 0)
                   (response/ok {:key key})
                   (response/not-found {:message (str "File with key " key " not found")})))))))

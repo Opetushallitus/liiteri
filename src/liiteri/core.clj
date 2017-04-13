@@ -1,5 +1,6 @@
 (ns liiteri.core
   (:require [com.stuartsierra.component :as component]
+            [liiteri.audit-log :as audit-log]
             [liiteri.config :as config]
             [liiteri.db :as db]
             [liiteri.files.filesystem-store :as filesystem-store]
@@ -17,13 +18,15 @@
                                        :timezone (TimeZone/getTimeZone "Europe/Helsinki")}})
   (component/system-map :config         (config/new-config config-overrides)
 
+                        :audit-logger   (audit-log/new-logger)
+
                         :db             (component/using
                                           (db/new-pool)
                                           [:config])
 
                         :server         (component/using
                                           (server/new-server)
-                                          [:storage-engine :db :config])
+                                          [:storage-engine :db :config :audit-logger])
 
                         :migrations     (component/using
                                           (migrations/new-migration)
