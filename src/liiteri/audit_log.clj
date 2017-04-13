@@ -5,7 +5,6 @@
             [com.stuartsierra.component :as component])
   (:import [fi.vm.sade.auditlog Audit ApplicationType CommonLogMessageFields AbstractLogMessage]))
 
-(def ^:private logger (Audit. "liiteri" ApplicationType/BACKEND))
 (def ^:private date-time-formatter (f/formatter :date-time))
 
 (def operation-new "lisäys")
@@ -36,7 +35,8 @@
                     (every? not-blank? id)))
            (some #{operation} [operation-new operation-delete operation-query])
            (some? message)]}
-    (let [timestamp (f/unparse date-time-formatter (t/now))
+    (let [logger    (:logger this)
+          timestamp (f/unparse date-time-formatter (t/now))
           id-map    {:file-keys (if (string? id) [id] id)}
           log-map   {CommonLogMessageFields/ID        (json/generate-string id-map)
                      CommonLogMessageFields/TIMESTAMP timestamp
