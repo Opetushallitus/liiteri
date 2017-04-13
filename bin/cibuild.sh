@@ -32,7 +32,6 @@ lint() {
 
 run-tests() {
   clean-project
-  lint
   echo "Running tests"
   ./bin/lein test-local
 }
@@ -49,6 +48,7 @@ case "$COMMAND" in
     create-uberjar
     ;;
   "run-tests" )
+    lint
     run-tests
     ;;
   "create-db-schema" )
