@@ -58,6 +58,10 @@
                       {:keys [key] :as resp} (file-store/create-file (assoc file :filename fixed-filename) storage-engine db)]
                   (.log audit-logger key audit-log/operation-new resp)
                   (response/ok resp))
+                (catch Exception e
+                  (let [error (ex-data e)]
+                    (.log audit-logger "" audit-log/operation-new (:response error))
+                    (response/bad-request! (-> error :response :body))))
                 (finally
                   (io/delete-file (:tempfile file) true))))
 
