@@ -29,12 +29,6 @@
   AuditLog
 
   (log [this id operation message]
-    {:pre [(or (and (string? id)
-                    (not-blank? id))
-               (and (vector? id)
-                    (every? not-blank? id)))
-           (some #{operation} [operation-new operation-delete operation-query])
-           (some? message)]}
     (let [logger    (:logger this)
           timestamp (f/unparse date-time-formatter (t/now))
           id-map    {:file-keys (if (string? id) [id] id)}
