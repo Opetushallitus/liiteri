@@ -11,9 +11,6 @@
 (def operation-delete "poisto")
 (def operation-query "haku")
 
-(defn- not-blank? [string]
-  (not (clojure.string/blank? string)))
-
 (defprotocol AuditLog
   (log [this id operation message]))
 
