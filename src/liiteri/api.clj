@@ -74,7 +74,7 @@
             (api/GET "/files/:key" []
               :summary "Download a file"
               :path-params [key :- (api/describe s/Str "Key of the file")]
-              (let [[metadata] (file-metadata-store/get-metadata key db)]
+              (let [metadata (file-metadata-store/get-metadata key db)]
                 (.log audit-logger key audit-log/operation-query metadata)
                 (if (= "done" (:virus-scan-status metadata))
                   (if-let [file-response (file-store/get-file key storage-engine db)]
