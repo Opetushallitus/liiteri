@@ -51,8 +51,8 @@
                   (metadata-store/set-virus-scan-status! file-key :done conn))
                 (do
                   (log-virus-scan-result file-key filename content-type config :failed)
-                  (metadata-store/set-virus-scan-status! file-key :failed conn)
-                  (file-store/delete-file file-key storage-engine conn)))))
+                  (file-store/delete-file file-key storage-engine conn)
+                  (metadata-store/set-virus-scan-status! file-key :failed conn)))))
           (catch Exception e
             (log/error e (str "Failed to scan file " filename " with key " file-key " (" content-type ")"))))))))
 
