@@ -61,7 +61,7 @@
                 (catch Exception e
                   (let [error (ex-data e)]
                     (.log audit-logger "" audit-log/operation-new (:response error))
-                    (ring.util.http-response/bad-request! (-> error :response :body))))
+                    (response/bad-request! (-> error :response :body))))
                 (finally
                   (io/delete-file (:tempfile file) true))))
 
