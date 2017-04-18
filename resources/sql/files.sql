@@ -8,9 +8,10 @@ UPDATE files SET deleted = NOW() WHERE key = :key AND deleted IS NULL;
 SELECT key, filename, content_type, size, uploaded, deleted, virus_scan_status
 FROM files
 WHERE key IN (:keys)
-  AND deleted IS NULL
-  OR deleted > NOW()
-  OR virus_scan_status = 'failed';
+  AND (
+    deleted IS NULL
+    OR deleted > NOW()
+    OR virus_scan_status = 'failed');
 
 -- name: sql-get-unscanned-file
 SELECT key, filename, content_type FROM files WHERE virus_scan_status = 'not_started' LIMIT 1 FOR UPDATE SKIP LOCKED;
