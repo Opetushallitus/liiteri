@@ -20,7 +20,7 @@
                  [prismatic/schema "1.1.5"]
                  [metosin/schema-tools "0.9.0"]
                  [javax.servlet/servlet-api "2.5"]
-                 [com.taoensso/timbre "4.8.0"]
+                 [com.taoensso/timbre "4.10.0"]
                  [ring-logger-timbre "0.7.5"]
                  [ch.qos.logback/logback-classic "1.2.3"]
                  [yesql "0.5.3"]
