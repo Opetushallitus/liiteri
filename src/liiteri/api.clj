@@ -26,6 +26,13 @@
   ([^Exception e data req]
    (error-logger internal-server-error e data req)))
 
+(def ^:private file-extension-blacklist-pattern #"(?i)\.exe$")
+
+(defn- fail-if-file-extension-blacklisted! [filename]
+  {:pre [(not (clojure.string/blank? filename))]}
+  (when (re-find file-extension-blacklist-pattern filename)
+    (throw (IllegalArgumentException. (str "File " filename " has invalid extension")))))
+
 (defn new-api [{:keys [storage-engine db config audit-logger]}]
   (-> (api/api {:swagger    {:spec    "/liiteri/swagger.json"
                              :ui      "/liiteri/api-docs"
@@ -53,6 +60,7 @@
               :middleware [upload/wrap-multipart-params]
               :return schema/File
               (try
+                (fail-if-file-extension-blacklisted! (:filename file))
                 (let [real-file-type (mime/validate-file-content-type config (:tempfile file) (:filename file) (:content-type file))
                       fixed-filename (mime/file-name-according-to-content-type (:filename file) real-file-type)
                       {:keys [key] :as resp} (file-store/create-file (assoc file :filename fixed-filename) storage-engine db)]
