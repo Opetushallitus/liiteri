@@ -31,8 +31,7 @@
                          (t/before? (get-in result [key :uploaded]) uploaded))
                      (assoc key metadata)))
                  {})
-         (map second)
-         (first))))
+         (map second))))
 
 (defn get-unscanned-file [conn]
   (->> (sql-get-unscanned-file {} conn)
