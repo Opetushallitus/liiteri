@@ -34,7 +34,7 @@
 
 (defn- remove-test-file []
   (metadata-store/delete-file (:key @metadata) (:db @system))
-  (io/delete-file @file))
+  (io/delete-file @file true))
 
 (use-fixtures :once
   (fn [tests]
@@ -61,6 +61,9 @@
     (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] db)]
       (is (= (:virus-scan-status metadata) "done")))))
 
+(defn- file-stored? []
+  (.exists @file))
+
 (deftest virus-scan-for-contaminated-file
   (let [db             (:db @system)
         storage-engine (:storage-engine @system)
@@ -69,7 +72,8 @@
                               (future (response/ok "Everything ok : false\n")))]
       (#'virus-scan/scan-files db storage-engine config))
     (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] db)]
-      (is (= (:virus-scan-status metadata) "failed")))))
+      (is (= (:virus-scan-status metadata) "failed"))
+      (is (not (file-stored?))))))
 
 (deftest virus-scan-throws-exception
   (let [db             (:db @system)

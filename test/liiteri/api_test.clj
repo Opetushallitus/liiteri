@@ -44,6 +44,16 @@
       (is (nil? (:deleted saved-metadata)))
       (is (= "not_started" (:virus-scan-status saved-metadata))))))
 
+(deftest exe-extension-refused
+  (let [file (io/file (io/resource "parrot.png"))
+        path (str "http://localhost:" (get-in config [:server :port]) "/liiteri/api/files")
+        resp @(http/post path {:multipart [{:name "file" :content file :filename "parrot.exe" :content-type "image/png"}]})
+        body (json/parse-string (:body resp) true)]
+    (is (= (:status resp) 400))
+    (is (nil? body))
+    (let [saved-metadata (metadata/get-metadata-for-tests [(:key body)] (:db @system))]
+      (is (nil? saved-metadata)))))
+
 (deftest virus-download
   (let [file (io/file (io/resource "virus.txt"))
         path (str "http://localhost:" (get-in config [:server :port]) "/liiteri/api/files")

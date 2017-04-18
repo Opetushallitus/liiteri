@@ -11,18 +11,27 @@
 ;; conn = datasource wrapped inside a DB transaction
 ;; db   = a datasource, auto-commit
 
-(defn create-file [spec conn]
-  (-> (db-utils/kwd->snake-case spec)
-      (sql-create-file<! conn)
-      (db-utils/unwrap-data)
-      (dissoc :id)))
+(defmacro with-db [bindings & body]
+  `(let [conn-arg# ~(second bindings)
+         ~(first bindings) (if (and (map? conn-arg#)
+                                    (contains? conn-arg# :connection))
+                             conn-arg#
+                             {:connection conn-arg#})]
+     ~@body))
+
+(defn create-file [spec db]
+  (with-db [conn db]
+    (-> (db-utils/kwd->snake-case spec)
+        (sql-create-file<! conn)
+        (db-utils/unwrap-data)
+        (dissoc :id))))
 
 (defn delete-file [key db]
-  (let [conn {:connection db}]
+  (with-db [conn db]
     (sql-delete-file! {:key key} conn)))
 
 (defn get-metadata [key-list db]
-  (let [conn {:connection db}]
+  (with-db [conn db]
     (->> (sql-get-metadata {:keys key-list} conn)
          (map db-utils/unwrap-data)
          (reduce (fn pick-latest-metadata [result {:keys [key uploaded] :as metadata}]
@@ -34,11 +43,14 @@
          (map second))))
 
 (defn get-unscanned-file [conn]
+  {:pre [(map? conn)
+         (contains? conn :connection)]} ; force transaction
   (->> (sql-get-unscanned-file {} conn)
        (map db-utils/unwrap-data)
        (first)))
 
-(defn set-virus-scan-status! [file-key status conn]
-  (sql-set-virus-scan-status! {:file_key          file-key
-                               :virus_scan_status (name status)}
-                              conn))
+(defn set-virus-scan-status! [file-key status db]
+  (with-db [conn db]
+    (sql-set-virus-scan-status! {:file_key          file-key
+                                 :virus_scan_status (name status)}
+                                conn)))
