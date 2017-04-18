@@ -14,7 +14,11 @@ WHERE key IN (:keys)
     OR virus_scan_status = 'failed');
 
 -- name: sql-get-unscanned-file
-SELECT key, filename, content_type FROM files WHERE virus_scan_status = 'not_started' LIMIT 1 FOR UPDATE SKIP LOCKED;
+SELECT key, filename, content_type
+  FROM files
+  WHERE virus_scan_status = 'not_started'
+  AND deleted IS NULL
+  LIMIT 1 FOR UPDATE SKIP LOCKED;
 
 -- name: sql-set-virus-scan-status!
 UPDATE files SET virus_scan_status = :virus_scan_status::virus_scan_status WHERE key = :file_key;
