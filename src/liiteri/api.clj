@@ -26,9 +26,9 @@
   ([^Exception e data req]
    (error-logger internal-server-error e data req)))
 
-(def ^:private file-extension-blacklist-pattern #"(?i)\.exe")
+(def ^:private file-extension-blacklist-pattern #"(?i)\.exe$")
 
-(defn- fail-if-file-extension-blacklisted [filename]
+(defn- fail-if-file-extension-blacklisted! [filename]
   {:pre [(not (clojure.string/blank? filename))]}
   (println (str "filename extension: " filename))
   (when (re-find file-extension-blacklist-pattern filename)
@@ -61,7 +61,7 @@
               :middleware [upload/wrap-multipart-params]
               :return schema/File
               (try
-                (fail-if-file-extension-blacklisted (:filename file))
+                (fail-if-file-extension-blacklisted! (:filename file))
                 (let [real-file-type (mime/validate-file-content-type config (:tempfile file) (:filename file) (:content-type file))
                       fixed-filename (mime/file-name-according-to-content-type (:filename file) real-file-type)
                       {:keys [key] :as resp} (file-store/create-file (assoc file :filename fixed-filename) storage-engine db)]
