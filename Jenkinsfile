@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    environment {
+        CONFIG= 'dev-resources/local-test-config.edn'
+    }
     stages {
         stage('test') {
             steps {
