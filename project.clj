@@ -45,7 +45,6 @@
                           :resource-paths        ["resources" "dev-resources"]
                           :plugins               [[jonase/eastwood "0.2.3"]
                                                   [test2junit "1.2.5"]]
-                          :env                   {:config "dev-resources/circleci-config.edn"}
                           :test2junit-output-dir "target/test-reports"}
 
              :test-local {:test-paths     ["test"]

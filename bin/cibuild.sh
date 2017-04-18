@@ -33,7 +33,7 @@ lint() {
 run-tests() {
   clean-project
   echo "Running tests"
-  ./bin/lein test-local
+  ./bin/lein test-ci
 }
 
 create-db-schema() {
