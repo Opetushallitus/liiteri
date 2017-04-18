@@ -30,7 +30,6 @@
 
 (defn- fail-if-file-extension-blacklisted! [filename]
   {:pre [(not (clojure.string/blank? filename))]}
-  (println (str "filename extension: " filename))
   (when (re-find file-extension-blacklist-pattern filename)
     (throw (IllegalArgumentException. (str "File " filename " has invalid extension")))))
 
