@@ -6,6 +6,7 @@
             [clj-time.periodic :as p]
             [com.stuartsierra.component :as component]
             [liiteri.db.file-metadata-store :as metadata-store]
+            [liiteri.files.file-store :as file-store]
             [org.httpkit.client :as http]
             [ring.util.http-response :as response]
             [taoensso.timbre :as log]))
@@ -50,6 +51,7 @@
                   (metadata-store/set-virus-scan-status! file-key :done conn))
                 (do
                   (log-virus-scan-result file-key filename content-type config :failed)
+                  (file-store/delete-file file-key storage-engine conn)
                   (metadata-store/set-virus-scan-status! file-key :failed conn)))))
           (catch Exception e
             (log/error e (str "Failed to scan file " filename " with key " file-key " (" content-type ")"))))))))
