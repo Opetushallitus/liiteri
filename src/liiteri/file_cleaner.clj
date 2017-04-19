@@ -7,8 +7,6 @@
             [com.stuartsierra.component :as component]
             [liiteri.db.file-metadata-store :as metadata-store]
             [liiteri.files.file-store :as file-store]
-            [org.httpkit.client :as http]
-            [ring.util.http-response :as response]
             [taoensso.timbre :as log]))
 
 (defn- clean-files [db storage-engine config]
