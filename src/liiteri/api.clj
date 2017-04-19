@@ -76,7 +76,6 @@
             (api/POST "/files/finalize" []
               :summary "Finalize one or more files"
               :query-params [keys :- [s/Str]]
-              (clojure.pprint/pprint keys)
               (doseq [key keys]
                 (file-metadata-store/finalize-file key db))
               (response/ok))
