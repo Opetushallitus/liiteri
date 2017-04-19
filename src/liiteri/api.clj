@@ -62,7 +62,7 @@
               (let [filename (:filename file)]
                 (try
                   (fail-if-file-extension-blacklisted! filename)
-                  (let [real-file-type (mime/validate-file-content-type config (:tempfile file) filename (:content-type file))
+                  (let [real-file-type (mime/validate-file-content-type! config (:tempfile file) filename (:content-type file))
                         {:keys [key] :as resp} (file-store/create-file file storage-engine db)]
                     (.log audit-logger key audit-log/operation-new resp)
                     (response/ok resp))

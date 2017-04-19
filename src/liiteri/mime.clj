@@ -3,7 +3,7 @@
             [ring.util.http-response :as http-response]
             [pantomime.mime :as mime]))
 
-(defn validate-file-content-type [config file filename provided-content-type]
+(defn validate-file-content-type! [config file filename provided-content-type]
   (let [allowed-mime-types (-> config :file-store :attachment-mime-types)
         real-content-type (mime/mime-type-of file)]
     (if (not-any? (partial = real-content-type) allowed-mime-types)
