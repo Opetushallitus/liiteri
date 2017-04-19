@@ -60,6 +60,6 @@
                                  :virus_scan_status (name status)}
                                 conn)))
 
-(defn finalize-file [key db]
+(defn finalize-files [keys db]
   (with-db [conn db]
-    (sql-finalize-file! {:key key} conn)))
+    (sql-finalize-files! {:keys keys} conn)))
