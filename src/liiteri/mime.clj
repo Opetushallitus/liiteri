@@ -1,6 +1,5 @@
 (ns liiteri.mime
-  (:require [clojure.string :as str]
-            [taoensso.timbre :as log]
+  (:require [taoensso.timbre :as log]
             [ring.util.http-response :as http-response]
             [pantomime.mime :as mime]))
 
@@ -15,10 +14,3 @@
                                                :allowed-content-types allowed-mime-types})))
       real-content-type)))
 
-(defn file-name-according-to-content-type [filename real-content-type]
-  (let [file-extension (mime/extension-for-name real-content-type)]
-    (if (or (str/blank? file-extension) (.endsWith (.toLowerCase filename) file-extension))
-      filename
-      (let [fixed-filename (str filename file-extension)]
-        (log/warn (str "Request with filename '" filename "' has wrong extension for it's content-type '" real-content-type "'. Renaming to '" fixed-filename "'"))
-        fixed-filename))))
