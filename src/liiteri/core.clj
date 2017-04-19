@@ -7,6 +7,7 @@
             [liiteri.migrations :as migrations]
             [liiteri.server :as server]
             [liiteri.virus-scan :as virus-scan]
+            [liiteri.file-cleaner :as file-cleaner]
             [schema.core :as s]
             [taoensso.timbre :as log])
   (:import [java.util TimeZone])
@@ -34,6 +35,10 @@
 
                         :virus-scan     (component/using
                                           (virus-scan/new-scanner)
+                                          [:db :storage-engine :config :migrations])
+
+                        :file-cleaner   (component/using
+                                          (file-cleaner/new-cleaner)
                                           [:db :storage-engine :config :migrations])
 
                         :storage-engine (component/using

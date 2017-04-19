@@ -22,4 +22,5 @@
  :server {:port {{liiteri_server_port}}}
  :antivirus {:clamav-url "{{liiteri_clamav_url}}"
              :mock? {{liiteri_antivirus_mock_mode}}
-             :poll-interval-seconds {{liiteri_antivirus_poll_interval_seconds}}}}
+             :poll-interval-seconds {{liiteri_antivirus_poll_interval_seconds}}}
+ :file-cleaner {:poll-interval-seconds {{liiteri_file_cleaner_poll_interval_seconds}}}}

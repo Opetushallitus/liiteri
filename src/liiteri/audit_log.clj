@@ -8,6 +8,7 @@
 (def ^:private date-time-formatter (f/formatter :date-time))
 
 (def operation-new "lisäys")
+(def operation-finalize "vahvistus")
 (def operation-delete "poisto")
 (def operation-query "haku")
 

@@ -37,12 +37,17 @@
     (is (= (:content-type body) "image/png"))
     (is (= (:size body) 7777))
     (is (= (:deleted body) nil))
+    (is (= (:final body) false))
     (is (some? (:uploaded body)))
     (let [saved-metadata (metadata/get-metadata-for-tests [(:key body)] (:db @system))]
       (is (= (:filename saved-metadata) "parrot.png"))
       (is (= (:size saved-metadata) 7777))
       (is (nil? (:deleted saved-metadata)))
-      (is (= "not_started" (:virus-scan-status saved-metadata))))))
+      (is (= "not_started" (:virus-scan-status saved-metadata))))
+    (let [resp           @(http/post (str path "/finalize")
+                                     {:query-params {:keys [(:key body)]}})
+          saved-metadata (metadata/get-metadata-for-tests [(:key body)] (:db @system))]
+      (is (= (:final saved-metadata) true)))))
 
 (deftest exe-extension-refused
   (let [file (io/file (io/resource "parrot.png"))
