@@ -39,7 +39,7 @@
 
                         :file-cleaner   (component/using
                                           (file-cleaner/new-cleaner)
-                                          [:db :storage-engine :config])
+                                          [:db :storage-engine :config :migrations])
 
                         :storage-engine (component/using
                                           (filesystem-store/new-store)
