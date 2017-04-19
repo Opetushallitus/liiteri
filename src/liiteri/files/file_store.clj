@@ -13,7 +13,7 @@
   (get-file [this file-key]))
 
 (defn create-file [file storage-engine db]
-  (let [key     (str (UUID/randomUUID))]
+  (let [key (str (UUID/randomUUID))]
     (.create-file storage-engine (:tempfile file) key)
     (jdbc/with-db-transaction [datasource db]
       (let [conn {:connection datasource}]
