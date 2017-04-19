@@ -73,6 +73,14 @@
                 (finally
                   (io/delete-file (:tempfile file) true))))
 
+            (api/POST "/files/finalize" []
+              :summary "Finalize one or more files"
+              :query-params [keys :- [s/Str]]
+              (clojure.pprint/pprint keys)
+              (doseq [key keys]
+                (file-metadata-store/finalize-file key db))
+              (response/ok))
+
             (api/GET "/files/metadata" []
               :summary "Get metadata for one or more files"
               :query-params [key :- (api/describe [s/Str] "Key of the file")]

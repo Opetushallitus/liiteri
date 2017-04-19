@@ -54,3 +54,7 @@
     (sql-set-virus-scan-status! {:file_key          file-key
                                  :virus_scan_status (name status)}
                                 conn)))
+
+(defn finalize-file [key db]
+  (with-db [conn db]
+    (sql-finalize-file! {:key key} conn)))
