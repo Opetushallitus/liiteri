@@ -49,6 +49,11 @@
        (map db-utils/unwrap-data)
        (first)))
 
+(defn get-old-draft-files [db]
+  (with-db [conn db]
+    (->> (sql-get-draft-files {} conn)
+         (map db-utils/unwrap-data))))
+
 (defn set-virus-scan-status! [file-key status db]
   (with-db [conn db]
     (sql-set-virus-scan-status! {:file_key          file-key

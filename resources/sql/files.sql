@@ -22,3 +22,11 @@ UPDATE files SET virus_scan_status = :virus_scan_status::virus_scan_status WHERE
 
 -- name: sql-finalize-file!
 UPDATE files SET final = TRUE WHERE key = :key;
+
+-- name: sql-get-draft-files
+SELECT key, filename, content_type, size, uploaded, deleted, virus_scan_status, final
+  FROM files
+  WHERE
+    NOT final
+    AND deleted IS NULL
+    AND uploaded < NOW() - INTERVAL '1 day';
