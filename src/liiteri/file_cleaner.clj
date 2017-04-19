@@ -16,7 +16,7 @@
   (jdbc/with-db-transaction [datasource db]
     (doseq [file (metadata-store/get-old-draft-files db)]
       (log/info (str "Cleaning file: " (:key file)))
-      (file-store/delete-file (:key file) storage-engine db))))
+      (file-store/delete-file-and-metadata (:key file) storage-engine db))))
 
 (defrecord FileCleaner [db storage-engine config]
   component/Lifecycle

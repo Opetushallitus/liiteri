@@ -63,7 +63,7 @@
                 (fail-if-file-extension-blacklisted! (:filename file))
                 (let [real-file-type (mime/validate-file-content-type config (:tempfile file) (:filename file) (:content-type file))
                       fixed-filename (mime/file-name-according-to-content-type (:filename file) real-file-type)
-                      {:keys [key] :as resp} (file-store/create-file (assoc file :filename fixed-filename) storage-engine db)]
+                      {:keys [key] :as resp} (file-store/create-file-and-metadata (assoc file :filename fixed-filename) storage-engine db)]
                   (.log audit-logger key audit-log/operation-new resp)
                   (response/ok resp))
                 (catch Exception e
@@ -108,7 +108,7 @@
               :summary "Delete a file"
               :path-params [key :- (api/describe s/Str "Key of the file")]
               :return {:key s/Str}
-              (let [deleted-count (file-store/delete-file key storage-engine db)]
+              (let [deleted-count (file-store/delete-file-and-metadata key storage-engine db)]
                 (.log audit-logger key audit-log/operation-delete {:deleted-count deleted-count})
                 (if (> deleted-count 0)
                   (response/ok {:key key})
