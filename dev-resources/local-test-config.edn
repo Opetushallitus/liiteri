@@ -22,4 +22,5 @@
  :server {:port 16833}
  :antivirus {:clamav-url            "http://localhost:8765"
              :mock?                 true
-             :poll-interval-seconds 5}}
+             :poll-interval-seconds 5}
+ :file-cleaner {:poll-interval-seconds 10}}

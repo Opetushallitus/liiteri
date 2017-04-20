@@ -63,7 +63,7 @@
                 (let [filename (:filename file)]
                   (fail-if-file-extension-blacklisted! filename)
                   (let [real-file-type (mime/validate-file-content-type! config (:tempfile file) filename (:content-type file))
-                        {:keys [key] :as resp} (file-store/create-file file storage-engine db)]
+                        {:keys [key] :as resp} (file-store/create-file-and-metadata file storage-engine db)]
                     (.log audit-logger key audit-log/operation-new resp)
                     (response/ok resp)))
                 (catch Exception e
@@ -72,6 +72,13 @@
                     (response/bad-request! (-> error :response :body))))
                 (finally
                   (io/delete-file (:tempfile file) true))))
+
+            (api/POST "/files/finalize" []
+              :summary "Finalize one or more files"
+              :query-params [keys :- [s/Str]]
+              (.log audit-logger keys audit-log/operation-finalize {})
+              (file-metadata-store/finalize-files keys db)
+              (response/ok))
 
             (api/GET "/files/metadata" []
               :summary "Get metadata for one or more files"
@@ -101,7 +108,7 @@
               :summary "Delete a file"
               :path-params [key :- (api/describe s/Str "Key of the file")]
               :return {:key s/Str}
-              (let [deleted-count (file-store/delete-file key storage-engine db)]
+              (let [deleted-count (file-store/delete-file-and-metadata key storage-engine db)]
                 (.log audit-logger key audit-log/operation-delete {:deleted-count deleted-count})
                 (if (> deleted-count 0)
                   (response/ok {:key key})
