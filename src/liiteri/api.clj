@@ -69,7 +69,7 @@
                 (catch Exception e
                   (let [error (ex-data e)]
                     (.log audit-logger "" audit-log/operation-new (:response error))
-                    (response/bad-request! (-> error :response :body))))
+                    (response/bad-request! (get-in error [:response :body]))))
                 (finally
                   (io/delete-file (:tempfile file) true))))
 
