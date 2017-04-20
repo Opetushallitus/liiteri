@@ -60,9 +60,9 @@
               :middleware [upload/wrap-multipart-params]
               :return schema/File
               (try
-                (let [filename (:filename file)]
+                (let [{:keys [filename tempfile content-type]} file]
                   (fail-if-file-extension-blacklisted! filename)
-                  (let [real-file-type (mime/validate-file-content-type! config (:tempfile file) filename (:content-type file))
+                  (let [real-file-type (mime/validate-file-content-type! config tempfile filename content-type)
                         {:keys [key] :as resp} (file-store/create-file-and-metadata file storage-engine db)]
                     (.log audit-logger key audit-log/operation-new resp)
                     (response/ok resp)))
