@@ -19,7 +19,6 @@ process-resources() {
 }
 
 create-uberjar() {
-  clean-project
   process-resources
   echo "Creating uberjar"
   ./bin/lein with-profile uberjar uberjar
@@ -31,7 +30,6 @@ lint() {
 }
 
 run-tests() {
-  clean-project
   echo "Running tests"
   ./bin/lein test-ci
 }
@@ -45,13 +43,16 @@ COMMAND="$1"
 
 case "$COMMAND" in
   "create-uberjar" )
+    clean-project
     create-uberjar
     ;;
   "run-tests" )
+    clean-project
     lint
     run-tests
     ;;
   "create-db-schema" )
+    clean-project
     create-db-schema
     ;;
   *)
