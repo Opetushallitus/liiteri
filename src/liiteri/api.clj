@@ -60,16 +60,16 @@
               :middleware [upload/wrap-multipart-params]
               :return schema/File
               (try
-                (fail-if-file-extension-blacklisted! (:filename file))
-                (let [real-file-type (mime/validate-file-content-type config (:tempfile file) (:filename file) (:content-type file))
-                      fixed-filename (mime/file-name-according-to-content-type (:filename file) real-file-type)
-                      {:keys [key] :as resp} (file-store/create-file-and-metadata (assoc file :filename fixed-filename) storage-engine db)]
-                  (.log audit-logger key audit-log/operation-new resp)
-                  (response/ok resp))
+                (let [{:keys [filename tempfile content-type]} file]
+                  (fail-if-file-extension-blacklisted! filename)
+                  (let [real-file-type (mime/validate-file-content-type! config tempfile filename content-type)
+                        {:keys [key] :as resp} (file-store/create-file-and-metadata file storage-engine db)]
+                    (.log audit-logger key audit-log/operation-new resp)
+                    (response/ok resp)))
                 (catch Exception e
                   (let [error (ex-data e)]
                     (.log audit-logger "" audit-log/operation-new (:response error))
-                    (response/bad-request! (-> error :response :body))))
+                    (response/bad-request! (get-in error [:response :body]))))
                 (finally
                   (io/delete-file (:tempfile file) true))))
 
