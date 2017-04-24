@@ -1,26 +1,18 @@
-{:db {:database-name "{{liiteri_db_name}}"
-      :pool-name "liiteri-pool"
-      :username "{{liiteri_db_username}}"
-      :password "{{liiteri_db_password}}"
-      :server-name "{{liiteri_db_host}}"
-      :port-number {{liiteri_db_port}}
-      :minimum-idle {{liiteri_db_max_pool_size}}
-      :maximum-pool-size {{liiteri_db_max_pool_size}}}
- :file-store {:filesystem {:base-path "{{liiteri_filesystem_base_path}}"}
-              :attachment-mime-types ["text/plain"
-                                      "image/jpeg"
-                                      "image/png"
-                                      "image/gif"
-                                      "application/rtf"
-                                      "application/pdf"
-                                      "application/vnd.oasis.opendocument.text"
-                                      "application/msword"
-                                      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                                      "application/vnd.oasis.opendocument.spreadsheet"
-                                      "application/vnd.ms-excel"
-                                      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]}
- :server {:port {{liiteri_server_port}}}
- :antivirus {:clamav-url "{{liiteri_clamav_url}}"
-             :mock? {{liiteri_antivirus_mock_mode}}
-             :poll-interval-seconds {{liiteri_antivirus_poll_interval_seconds}}}
+{:db           {:database-name     "{{liiteri_db_name}}"
+                :pool-name         "liiteri-pool"
+                :username          "{{liiteri_db_username}}"
+                :password          "{{liiteri_db_password}}"
+                :server-name       "{{liiteri_db_host}}"
+                :port-number       {{liiteri_db_port}}
+                :minimum-idle      {{liiteri_db_max_pool_size}}
+                :maximum-pool-size {{liiteri_db_max_pool_size}}}
+ :file-store   {:filesystem            {:base-path "{{liiteri_filesystem_base_path}}"}
+                :attachment-mime-types ["image/jpeg"
+                                        "image/png"
+                                        "image/gif"
+                                        "application/pdf"]}
+ :server       {:port {{liiteri_server_port}}}
+ :antivirus    {:clamav-url            "{{liiteri_clamav_url}}"
+                :mock?                 {{liiteri_antivirus_mock_mode}}
+                :poll-interval-seconds {{liiteri_antivirus_poll_interval_seconds}}}
  :file-cleaner {:poll-interval-seconds {{liiteri_file_cleaner_poll_interval_seconds}}}}

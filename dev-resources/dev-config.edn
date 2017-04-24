@@ -1,26 +1,18 @@
-{:db {:database-name     "liiteri"
-      :pool-name         "liiteri-pool"
-      :username          "oph"
-      :password          "oph"
-      :server-name       "localhost"
-      :port-number       5434
-      :minimum-idle      20
-      :maximum-pool-size 20}
- :file-store {:filesystem {:base-path "/tmp"}
-              :attachment-mime-types ["text/plain"
-                                      "image/jpeg"
-                                      "image/png"
-                                      "image/gif"
-                                      "application/rtf"
-                                      "application/pdf"
-                                      "application/vnd.oasis.opendocument.text"
-                                      "application/msword"
-                                      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                                      "application/vnd.oasis.opendocument.spreadsheet"
-                                      "application/vnd.ms-excel"
-                                      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]}
- :server {:port 16832}
- :antivirus {:clamav-url            "http://tentti.hard.ware.fi:8765"
-             :mock? false
-             :poll-interval-seconds 5}
+{:db           {:database-name     "liiteri"
+                :pool-name         "liiteri-pool"
+                :username          "oph"
+                :password          "oph"
+                :server-name       "localhost"
+                :port-number       5434
+                :minimum-idle      20
+                :maximum-pool-size 20}
+ :file-store   {:filesystem            {:base-path "/tmp"}
+                :attachment-mime-types ["image/jpeg"
+                                        "image/png"
+                                        "image/gif"
+                                        "application/pdf"]}
+ :server       {:port 16832}
+ :antivirus    {:clamav-url            "http://tentti.hard.ware.fi:8765"
+                :mock?                 false
+                :poll-interval-seconds 5}
  :file-cleaner {:poll-interval-seconds 10}}
