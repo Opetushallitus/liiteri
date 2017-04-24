@@ -9,7 +9,7 @@
                  [camel-snake-kebab "0.4.0"]
                  [cheshire "5.7.1"]
                  [clj-time "0.13.0"]
-                 [metosin/compojure-api "1.1.10"]
+                 [metosin/compojure-api "1.2.0-alpha5"]
                  [com.stuartsierra/component "0.3.2"]
                  [org.flywaydb/flyway-core "4.1.2"]
                  [fi.vm.sade/auditlogger "5.0.0-SNAPSHOT"]

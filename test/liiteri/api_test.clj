@@ -44,8 +44,9 @@
       (is (= (:size saved-metadata) 7777))
       (is (nil? (:deleted saved-metadata)))
       (is (= "not_started" (:virus-scan-status saved-metadata))))
-    (let [resp           @(http/post (str path "/finalize")
-                                     {:query-params {:keys [(:key body)]}})
+    (let [_              @(http/post (str path "/finalize")
+                                     {:headers {"Content-Type" "application/json"}
+                                      :body    (json/generate-string {:keys [(:key body)]})})
           saved-metadata (metadata/get-metadata-for-tests [(:key body)] (:db @system))]
       (is (= (:final saved-metadata) true)))))
 

@@ -75,7 +75,7 @@
 
             (api/POST "/files/finalize" []
               :summary "Finalize one or more files"
-              :query-params [keys :- [s/Str]]
+              :body-params [keys :- [s/Str]]
               (.log audit-logger keys audit-log/operation-finalize {})
               (file-metadata-store/finalize-files keys db)
               (response/ok))
