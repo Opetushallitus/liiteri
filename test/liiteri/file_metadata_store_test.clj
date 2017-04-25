@@ -2,7 +2,7 @@
   (:require [clojure.test :refer :all]
             [liiteri.db.file-metadata-store :as metadata-store]))
 
-(deftest normalize-filename
+(deftest sanitize-filename
   (doseq [[filename expected] [["parrot.png" "parrot.png"]
                                ["parrot..png" "parrot..png"]
                                ["parrot/:;.png" "parrot.png"]
@@ -12,6 +12,13 @@
                                ["pärrötå.png" "parrota.png"]
                                ["parrot🍺.png" "parrot.png"]
                                [":::.png" "liite.png"]
+                               ["nfd-ä.png" "nfd-a.png"]
                                [".png" "liite.png"]]]
-    (let [actual (#'metadata-store/normalize filename)]
+    (let [actual (#'metadata-store/sanitize filename)]
+      (is (= expected actual)))))
+
+(deftest unicode-normalize-filename
+  (doseq [[filename expected] [["nfd-ä.png" "nfd-ä.png"]
+                               ["nfc-ä.png" "nfc-ä.png"]]]
+    (let [actual (#'metadata-store/unicode-normalize filename)]
       (is (= expected actual)))))
