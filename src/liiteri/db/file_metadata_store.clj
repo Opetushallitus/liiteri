@@ -19,7 +19,7 @@
                              {:connection conn-arg#})]
      ~@body))
 
-(def ^:private non-valid-character-pattern #"(?i)[^a-z\.\-_0-9]")
+(def ^:private non-valid-character-pattern #"(?i)[^a-z\.\-_0-9 ]")
 
 (defn- normalize [string]
   (clojure.string/replace string non-valid-character-pattern ""))
