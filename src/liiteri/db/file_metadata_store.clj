@@ -19,11 +19,17 @@
                              {:connection conn-arg#})]
      ~@body))
 
+(def ^:private non-valid-character-pattern #"(?i)[^a-z\.\-_0-9 ]")
+
+(defn- normalize [string]
+  (clojure.string/replace string non-valid-character-pattern ""))
+
 (defn create-file [spec db]
   (with-db [conn db]
     (-> (db-utils/kwd->snake-case spec)
         (sql-create-file<! conn)
         (db-utils/unwrap-data)
+        (update :filename normalize)
         (dissoc :id))))
 
 (defn delete-file [key db]
@@ -33,7 +39,8 @@
 (defn get-metadata [key-list db]
   (with-db [conn db]
     (->> (sql-get-metadata {:keys key-list} conn)
-         (map db-utils/unwrap-data)
+         (eduction (map db-utils/unwrap-data)
+                   (map #(update % :filename normalize)))
          (reduce (fn pick-latest-metadata [result {:keys [key uploaded] :as metadata}]
                    (cond-> result
                      (or (not (contains? result key))
@@ -46,7 +53,8 @@
   {:pre [(map? conn)
          (contains? conn :connection)]} ; force transaction
   (->> (sql-get-unscanned-file {} conn)
-       (map db-utils/unwrap-data)
+       (eduction (map db-utils/unwrap-data)
+                 (map #(update % :filename normalize)))
        (first)))
 
 (defn get-old-draft-files [db]

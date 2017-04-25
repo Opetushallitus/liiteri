@@ -24,11 +24,6 @@ create-uberjar() {
   ./bin/lein with-profile uberjar uberjar
 }
 
-lint() {
-  echo "Running Clojure Linter"
-  ./bin/lein with-profile test-local eastwood
-}
-
 run-tests() {
   echo "Running tests"
   ./bin/lein test-ci
@@ -48,7 +43,6 @@ case "$COMMAND" in
     ;;
   "run-tests" )
     clean-project
-    lint
     run-tests
     ;;
   "create-db-schema" )
