@@ -20,9 +20,22 @@
      ~@body))
 
 (def ^:private non-valid-character-pattern #"(?i)[^a-z\.\-_0-9 ]")
+(def ^:private empty-filename-pattern #"(?i)^\.([a-z0-9]+)$")
 
 (defn- normalize [string]
-  (clojure.string/replace string non-valid-character-pattern ""))
+  (let [normalized (-> string
+                       (clojure.string/replace #"ä" "a")
+                       (clojure.string/replace #"Ä" "A")
+                       (clojure.string/replace #"ö" "o")
+                       (clojure.string/replace #"Ö" "O")
+                       (clojure.string/replace #"å" "a")
+                       (clojure.string/replace #"Å" "a")
+                       (clojure.string/replace non-valid-character-pattern ""))
+        matcher    (re-matcher empty-filename-pattern normalized)
+        extension  (second (re-find matcher))]
+    (if (empty? extension)
+      normalized
+      (str "liite." extension))))
 
 (defn create-file [spec db]
   (with-db [conn db]
