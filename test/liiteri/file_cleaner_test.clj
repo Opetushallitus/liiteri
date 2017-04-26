@@ -25,7 +25,7 @@
     (u/stop-system system)
     (u/remove-temp-dir system)))
 
-(defn- init-test-file []
+(defn- init-test-file [uploaded]
   (jdbc/with-db-transaction [datasource (:db @system)]
     (let [filename "test-file.txt"
           file-key (str (UUID/randomUUID))
@@ -36,10 +36,7 @@
                                                          :filename     filename
                                                          :content-type "text/plain"
                                                          :size         1
-                                                         :uploaded     (-> (t/now)
-                                                                           (t/minus (t/months 1))
-                                                                           (.getMillis)
-                                                                           (Timestamp.))}
+                                                         :uploaded     uploaded}
                                                         datasource))
       (reset! file (io/file (str base-dir "/" file-key))))))
 
@@ -49,16 +46,33 @@
 
 (use-fixtures :each
   (fn [tests]
-    (init-test-file)
     (tests)
     (remove-test-file)))
 
 (deftest file-cleaner-removes-file
   (let [db             (:db @system)
         storage-engine (:storage-engine @system)
-        config         (:config @system)]
+        config         (:config @system)
+        uploaded       (-> (t/now)
+                           (t/minus (t/months 1))
+                           (.getMillis)
+                           (Timestamp.))]
+    (init-test-file uploaded)
     (#'cleaner/clean-files db storage-engine config)
     (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] db)]
       (is (some? (:deleted metadata)))
       (is (t/before? (:deleted metadata) (t/now)))
       (is (not (.exists (File. (.getPath @file))))))))
+
+(deftest file-cleaner-does-not-remove-file
+  (let [db             (:db @system)
+        storage-engine (:storage-engine @system)
+        config         (:config @system)
+        uploaded       (-> (t/now)
+                           (.getMillis)
+                           (Timestamp.))]
+    (init-test-file uploaded)
+    (#'cleaner/clean-files db storage-engine config)
+    (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] db)]
+      (is (nil? (:deleted metadata)))
+      (is (.exists (File. (.getPath @file)))))))
