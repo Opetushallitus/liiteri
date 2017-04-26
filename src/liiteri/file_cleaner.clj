@@ -20,10 +20,11 @@
             (log/error e (str "Failed to delete file " (:key file)))))))))
 
 (defn- clean-files [db storage-engine config]
+  (log/info "Cleaning files")
   (loop []
-    (log/info "Cleaning files")
     (when (scan-file db storage-engine config)
-      (recur))))
+      (recur)))
+  (log/info "Finished cleaning files"))
 
 (defrecord FileCleaner [db storage-engine config]
   component/Lifecycle
