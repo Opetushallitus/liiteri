@@ -8,14 +8,6 @@
 
 (sql/defqueries "sql/files.sql")
 
-(defmacro with-db [bindings & body]
-  `(let [conn-arg# ~(second bindings)
-         ~(first bindings) (if (and (map? conn-arg#)
-                                    (contains? conn-arg# :connection))
-                             conn-arg#
-                             {:connection conn-arg#})]
-     ~@body))
-
 (def ^:private non-valid-character-pattern #"(?i)[^a-z\.\-_0-9 ]")
 (def ^:private empty-filename-pattern #"(?i)^\.([a-z0-9]+)$")
 
@@ -74,6 +66,5 @@
                                :virus_scan_status (name status)}
                               conn))
 
-(defn finalize-files [keys db]
-  (with-db [conn db]
-    (sql-finalize-files! {:keys keys} conn)))
+(defn finalize-files [keys conn]
+  (sql-finalize-files! {:keys keys} conn))

@@ -77,7 +77,7 @@
               :summary "Finalize one or more files"
               :body-params [keys :- [s/Str]]
               (.log audit-logger keys audit-log/operation-finalize {})
-              (file-metadata-store/finalize-files keys db)
+              (file-metadata-store/finalize-files keys {:connection db})
               (response/ok))
 
             (api/GET "/files/metadata" []
@@ -96,7 +96,7 @@
               (let [[metadata] (file-metadata-store/get-metadata key {:connection db})]
                 (.log audit-logger key audit-log/operation-query metadata)
                 (if (= "done" (:virus-scan-status metadata))
-                  (if-let [file-response (file-store/get-file key storage-engine db)]
+                  (if-let [file-response (file-store/get-file key storage-engine {:connection db})]
                     (-> (response/ok (:body file-response))
                         (response/header
                           "Content-Disposition"
