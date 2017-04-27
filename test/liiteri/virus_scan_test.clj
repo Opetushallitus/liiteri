@@ -57,7 +57,7 @@
     (with-redefs [http/post (fn [& _]
                               (future (response/ok "Everything ok : true\n")))]
       (#'virus-scan/scan-files db storage-engine config))
-    (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] db)]
+    (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] {:connection db})]
       (is (= (:virus-scan-status metadata) "done")))))
 
 (defn- file-stored? []
@@ -70,7 +70,7 @@
     (with-redefs [http/post (fn [& _]
                               (future (response/ok "Everything ok : false\n")))]
       (#'virus-scan/scan-files db storage-engine config))
-    (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] db)]
+    (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] {:connection db})]
       (is (= (:virus-scan-status metadata) "failed"))
       (is (not (file-stored?))))))
 
@@ -81,5 +81,5 @@
     (with-redefs [http/post (fn [& _]
                               (throw (Exception. "failed to scan file")))]
       (#'virus-scan/scan-files db storage-engine config))
-    (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] db)]
+    (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] {:connection db})]
       (is (= (:virus-scan-status metadata) "not_started")))))
