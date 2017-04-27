@@ -34,13 +34,12 @@
       normalized
       (str "liite." extension))))
 
-(defn create-file [spec db]
-  (with-db [conn db]
-    (-> (db-utils/kwd->snake-case spec)
-        (sql-create-file<! conn)
-        (db-utils/unwrap-data)
-        (update :filename normalize)
-        (dissoc :id))))
+(defn create-file [spec conn]
+  (-> (db-utils/kwd->snake-case spec)
+      (sql-create-file<! conn)
+      (db-utils/unwrap-data)
+      (update :filename normalize)
+      (dissoc :id)))
 
 (defn delete-file [key db]
   (with-db [conn db]
