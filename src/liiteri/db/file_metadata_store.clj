@@ -70,17 +70,15 @@
                  (map #(update % :filename normalize)))
        (first)))
 
-(defn get-old-draft-file [db]
-  (with-db [conn db]
-    (->> (sql-get-draft-file {} conn)
-         (map db-utils/unwrap-data)
-         (first))))
+(defn get-old-draft-file [conn]
+  (->> (sql-get-draft-file {} conn)
+       (map db-utils/unwrap-data)
+       (first)))
 
-(defn set-virus-scan-status! [file-key status db]
-  (with-db [conn db]
-    (sql-set-virus-scan-status! {:file_key          file-key
-                                 :virus_scan_status (name status)}
-                                conn)))
+(defn set-virus-scan-status! [file-key status conn]
+  (sql-set-virus-scan-status! {:file_key          file-key
+                               :virus_scan_status (name status)}
+                              conn))
 
 (defn finalize-files [keys db]
   (with-db [conn db]
