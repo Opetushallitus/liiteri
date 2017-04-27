@@ -20,8 +20,8 @@
         (metadata-store/create-file (assoc (select-keys file [:filename :content-type :size]) :key key)
                                     conn)))))
 
-(defn delete-file-and-metadata [key storage-engine db]
-  (let [deleted (metadata-store/delete-file key db)]
+(defn delete-file-and-metadata [key storage-engine conn]
+  (let [deleted (metadata-store/delete-file key conn)]
     (when (> deleted 0)
       (.delete-file storage-engine key))
     deleted))
