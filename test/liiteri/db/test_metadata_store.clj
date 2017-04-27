@@ -10,8 +10,7 @@
          (map db-utils/unwrap-data)
          (first))))
 
-(defn create-file [spec db]
-  (let [conn {:connection db}]
-    (-> (db-utils/kwd->snake-case spec)
-        (sql-create-file<! conn)
-        (db-utils/unwrap-data))))
+(defn create-file [spec conn]
+  (-> (db-utils/kwd->snake-case spec)
+      (sql-create-file<! conn)
+      (db-utils/unwrap-data)))

@@ -18,19 +18,18 @@
 (def file (atom nil))
 
 (defn- init-test-file []
-  (jdbc/with-db-transaction [tx (:db @system)]
-    (let [filename "test-file.txt"
-          file-key (str (UUID/randomUUID))
-          conn     {:connection tx}
-          base-dir (get-in (:config @system) [:file-store :filesystem :base-path])]
-      (with-open [w (io/writer (str base-dir "/" file-key))]
-        (.write w "test file\n"))
-      (reset! metadata (metadata-store/create-file {:key          file-key
-                                                    :filename     filename
-                                                    :content-type "text/plain"
-                                                    :size         1}
-                                                   conn))
-      (reset! file (io/file (str base-dir "/" file-key))))))
+  (let [filename "test-file.txt"
+        file-key (str (UUID/randomUUID))
+        conn     {:connection (:db @system)}
+        base-dir (get-in (:config @system) [:file-store :filesystem :base-path])]
+    (with-open [w (io/writer (str base-dir "/" file-key))]
+      (.write w "test file\n"))
+    (reset! metadata (metadata-store/create-file {:key          file-key
+                                                  :filename     filename
+                                                  :content-type "text/plain"
+                                                  :size         1}
+                                                 conn))
+    (reset! file (io/file (str base-dir "/" file-key)))))
 
 (defn- remove-test-file []
   (metadata-store/delete-file (:key @metadata) {:connection (:db @system)})
