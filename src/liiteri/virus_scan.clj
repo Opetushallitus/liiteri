@@ -35,7 +35,7 @@
 
 (defn- scan-file [db storage-engine config]
   (jdbc/with-db-transaction [datasource db]
-    (let [conn {:connection db}]
+    (let [conn {:connection datasource}]
       (when-let [{file-key :key filename :filename content-type :content-type} (metadata-store/get-unscanned-file conn)]
         (try
           (let [file        (.get-file storage-engine file-key)

@@ -11,11 +11,11 @@
 
 (defn- scan-file [db storage-engine config]
   (jdbc/with-db-transaction [datasource db]
-    (let [conn {:connection db}]
-      (when-let [file (metadata-store/get-old-draft-file db)]
+    (let [conn {:connection datasource}]
+      (when-let [file (metadata-store/get-old-draft-file conn)]
         (log/info (str "Cleaning file: " (:key file)))
         (try
-          (file-store/delete-file-and-metadata (:key file) storage-engine db)
+          (file-store/delete-file-and-metadata (:key file) storage-engine conn)
           (catch Exception e
             (log/error e (str "Failed to delete file " (:key file)))))))))
 
