@@ -8,9 +8,6 @@
 
 (sql/defqueries "sql/files.sql")
 
-;; conn = datasource wrapped inside a DB transaction
-;; db   = a datasource, auto-commit
-
 (defmacro with-db [bindings & body]
   `(let [conn-arg# ~(second bindings)
          ~(first bindings) (if (and (map? conn-arg#)

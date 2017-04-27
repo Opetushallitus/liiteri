@@ -26,7 +26,7 @@
     (u/remove-temp-dir system)))
 
 (defn- init-test-file [uploaded]
-  (jdbc/with-db-transaction [datasource (:db @system)]
+  (jdbc/with-db-transaction [tx (:db @system)]
     (let [filename "test-file.txt"
           file-key (str (UUID/randomUUID))
           base-dir (get-in (:config @system) [:file-store :filesystem :base-path])]
@@ -37,7 +37,7 @@
                                                          :content-type "text/plain"
                                                          :size         1
                                                          :uploaded     uploaded}
-                                                        datasource))
+                                                        tx))
       (reset! file (io/file (str base-dir "/" file-key))))))
 
 (defn- remove-test-file []

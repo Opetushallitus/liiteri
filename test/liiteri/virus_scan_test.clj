@@ -18,10 +18,10 @@
 (def file (atom nil))
 
 (defn- init-test-file []
-  (jdbc/with-db-transaction [datasource (:db @system)]
+  (jdbc/with-db-transaction [tx (:db @system)]
     (let [filename "test-file.txt"
           file-key (str (UUID/randomUUID))
-          conn     {:connection datasource}
+          conn     {:connection tx}
           base-dir (get-in (:config @system) [:file-store :filesystem :base-path])]
       (with-open [w (io/writer (str base-dir "/" file-key))]
         (.write w "test file\n"))

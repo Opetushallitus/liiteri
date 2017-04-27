@@ -10,8 +10,8 @@
             [taoensso.timbre :as log]))
 
 (defn- scan-file [db storage-engine config]
-  (jdbc/with-db-transaction [datasource db]
-    (let [conn {:connection datasource}]
+  (jdbc/with-db-transaction [tx db]
+    (let [conn {:connection tx}]
       (when-let [file (metadata-store/get-old-draft-file conn)]
         (log/info (str "Cleaning file: " (:key file)))
         (try
