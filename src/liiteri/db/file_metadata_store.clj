@@ -49,8 +49,6 @@
        (map second)))
 
 (defn get-unscanned-file [conn]
-  {:pre [(map? conn)
-         (contains? conn :connection)]} ; force transaction
   (->> (sql-get-unscanned-file {} conn)
        (eduction (map db-utils/unwrap-data)
                  (map #(update % :filename normalize)))
