@@ -44,18 +44,17 @@
 (defn delete-file [key conn]
   (sql-delete-file! {:key key} conn))
 
-(defn get-metadata [key-list db]
-  (with-db [conn db]
-    (->> (sql-get-metadata {:keys key-list} conn)
-         (eduction (map db-utils/unwrap-data)
-                   (map #(update % :filename normalize)))
-         (reduce (fn pick-latest-metadata [result {:keys [key uploaded] :as metadata}]
-                   (cond-> result
-                     (or (not (contains? result key))
-                         (t/before? (get-in result [key :uploaded]) uploaded))
-                     (assoc key metadata)))
-                 {})
-         (map second))))
+(defn get-metadata [key-list conn]
+  (->> (sql-get-metadata {:keys key-list} conn)
+       (eduction (map db-utils/unwrap-data)
+                 (map #(update % :filename normalize)))
+       (reduce (fn pick-latest-metadata [result {:keys [key uploaded] :as metadata}]
+                 (cond-> result
+                         (or (not (contains? result key))
+                             (t/before? (get-in result [key :uploaded]) uploaded))
+                         (assoc key metadata)))
+               {})
+       (map second)))
 
 (defn get-unscanned-file [conn]
   {:pre [(map? conn)
