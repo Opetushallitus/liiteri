@@ -41,9 +41,8 @@
       (update :filename normalize)
       (dissoc :id)))
 
-(defn delete-file [key db]
-  (with-db [conn db]
-    (sql-delete-file! {:key key} conn)))
+(defn delete-file [key conn]
+  (sql-delete-file! {:key key} conn))
 
 (defn get-metadata [key-list db]
   (with-db [conn db]

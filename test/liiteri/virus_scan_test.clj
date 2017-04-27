@@ -33,7 +33,8 @@
       (reset! file (io/file (str base-dir "/" file-key))))))
 
 (defn- remove-test-file []
-  (metadata-store/delete-file (:key @metadata) (:db @system))
+  (jdbc/with-db-transaction [tx (:db @system)]
+    (metadata-store/delete-file (:key @metadata) {:connection (:db @system)}))
   (io/delete-file @file true))
 
 (use-fixtures :once
