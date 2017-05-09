@@ -39,7 +39,7 @@
     (is (= (:deleted body) nil))
     (is (= (:final body) false))
     (is (some? (:uploaded body)))
-    (let [saved-metadata (metadata/get-metadata-for-tests [(:key body)] (:db @system))]
+    (let [saved-metadata (metadata/get-metadata-for-tests [(:key body)] {:connection (:db @system)})]
       (is (= (:filename saved-metadata) "parrot.png"))
       (is (= (:size saved-metadata) 7777))
       (is (nil? (:deleted saved-metadata)))
@@ -47,7 +47,7 @@
     (let [_              @(http/post (str path "/finalize")
                                      {:headers {"Content-Type" "application/json"}
                                       :body    (json/generate-string {:keys [(:key body)]})})
-          saved-metadata (metadata/get-metadata-for-tests [(:key body)] (:db @system))]
+          saved-metadata (metadata/get-metadata-for-tests [(:key body)] {:connection (:db @system)})]
       (is (= (:final saved-metadata) true)))))
 
 (deftest exe-extension-refused
@@ -57,7 +57,7 @@
         body (json/parse-string (:body resp) true)]
     (is (= (:status resp) 400))
     (is (nil? body))
-    (let [saved-metadata (metadata/get-metadata-for-tests [(:key body)] (:db @system))]
+    (let [saved-metadata (metadata/get-metadata-for-tests [(:key body)] {:connection (:db @system)})]
       (is (nil? saved-metadata)))))
 
 (deftest virus-download
@@ -66,7 +66,7 @@
         upload-resp @(http/post path {:multipart [{:name "file" :content file :filename "virus.txt" :content-type "image/png"}]})
         key (:key (json/parse-string (:body upload-resp) true))
         _ (.scan-files! (:virus-scan @system))
-        saved-metadata (metadata/get-metadata-for-tests [key] (:db @system))
+        saved-metadata (metadata/get-metadata-for-tests [key] {:connection (:db @system)})
         download-resp @(http/get (str path "/" key))]
     (is (= "failed" (:virus-scan-status saved-metadata)))
     (is (= (:status download-resp) 404))))

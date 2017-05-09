@@ -63,7 +63,7 @@
                 (let [{:keys [filename tempfile content-type]} file]
                   (fail-if-file-extension-blacklisted! filename)
                   (let [real-file-type (mime/validate-file-content-type! config tempfile filename content-type)
-                        {:keys [key] :as resp} (file-store/create-file-and-metadata file storage-engine db)]
+                        {:keys [key] :as resp} (file-store/create-file-and-metadata file storage-engine {:connection db})]
                     (.log audit-logger key audit-log/operation-new resp)
                     (response/ok resp)))
                 (catch Exception e
@@ -77,14 +77,14 @@
               :summary "Finalize one or more files"
               :body-params [keys :- [s/Str]]
               (.log audit-logger keys audit-log/operation-finalize {})
-              (file-metadata-store/finalize-files keys db)
+              (file-metadata-store/finalize-files keys {:connection db})
               (response/ok))
 
             (api/GET "/files/metadata" []
               :summary "Get metadata for one or more files"
               :query-params [key :- (api/describe [s/Str] "Key of the file")]
               :return [schema/File]
-              (let [metadata (file-metadata-store/get-metadata key db)]
+              (let [metadata (file-metadata-store/get-metadata key {:connection db})]
                 (.log audit-logger key audit-log/operation-query metadata)
                 (if (> (count metadata) 0)
                   (response/ok metadata)
@@ -93,10 +93,10 @@
             (api/GET "/files/:key" []
               :summary "Download a file"
               :path-params [key :- (api/describe s/Str "Key of the file")]
-              (let [[metadata] (file-metadata-store/get-metadata key db)]
+              (let [[metadata] (file-metadata-store/get-metadata key {:connection db})]
                 (.log audit-logger key audit-log/operation-query metadata)
                 (if (= "done" (:virus-scan-status metadata))
-                  (if-let [file-response (file-store/get-file key storage-engine db)]
+                  (if-let [file-response (file-store/get-file key storage-engine {:connection db})]
                     (-> (response/ok (:body file-response))
                         (response/header
                           "Content-Disposition"

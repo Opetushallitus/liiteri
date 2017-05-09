@@ -34,8 +34,8 @@
                    (when (mock-enabled? config) ", virus scan process in mock mode")))))
 
 (defn- scan-file [db storage-engine config]
-  (jdbc/with-db-transaction [datasource db]
-    (let [conn {:connection db}]
+  (jdbc/with-db-transaction [tx db]
+    (let [conn {:connection tx}]
       (when-let [{file-key :key filename :filename content-type :content-type} (metadata-store/get-unscanned-file conn)]
         (try
           (let [file        (.get-file storage-engine file-key)

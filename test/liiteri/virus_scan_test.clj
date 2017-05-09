@@ -18,22 +18,21 @@
 (def file (atom nil))
 
 (defn- init-test-file []
-  (jdbc/with-db-transaction [datasource (:db @system)]
-    (let [filename "test-file.txt"
-          file-key (str (UUID/randomUUID))
-          conn     {:connection datasource}
-          base-dir (get-in (:config @system) [:file-store :filesystem :base-path])]
-      (with-open [w (io/writer (str base-dir "/" file-key))]
-        (.write w "test file\n"))
-      (reset! metadata (metadata-store/create-file {:key          file-key
-                                                    :filename     filename
-                                                    :content-type "text/plain"
-                                                    :size         1}
-                                                   conn))
-      (reset! file (io/file (str base-dir "/" file-key))))))
+  (let [filename "test-file.txt"
+        file-key (str (UUID/randomUUID))
+        conn     {:connection (:db @system)}
+        base-dir (get-in (:config @system) [:file-store :filesystem :base-path])]
+    (with-open [w (io/writer (str base-dir "/" file-key))]
+      (.write w "test file\n"))
+    (reset! metadata (metadata-store/create-file {:key          file-key
+                                                  :filename     filename
+                                                  :content-type "text/plain"
+                                                  :size         1}
+                                                 conn))
+    (reset! file (io/file (str base-dir "/" file-key)))))
 
 (defn- remove-test-file []
-  (metadata-store/delete-file (:key @metadata) (:db @system))
+  (metadata-store/delete-file (:key @metadata) {:connection (:db @system)})
   (io/delete-file @file true))
 
 (use-fixtures :once
@@ -58,7 +57,7 @@
     (with-redefs [http/post (fn [& _]
                               (future (response/ok "Everything ok : true\n")))]
       (#'virus-scan/scan-files db storage-engine config))
-    (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] db)]
+    (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] {:connection db})]
       (is (= (:virus-scan-status metadata) "done")))))
 
 (defn- file-stored? []
@@ -71,7 +70,7 @@
     (with-redefs [http/post (fn [& _]
                               (future (response/ok "Everything ok : false\n")))]
       (#'virus-scan/scan-files db storage-engine config))
-    (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] db)]
+    (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] {:connection db})]
       (is (= (:virus-scan-status metadata) "failed"))
       (is (not (file-stored?))))))
 
@@ -82,5 +81,5 @@
     (with-redefs [http/post (fn [& _]
                               (throw (Exception. "failed to scan file")))]
       (#'virus-scan/scan-files db storage-engine config))
-    (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] db)]
+    (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] {:connection db})]
       (is (= (:virus-scan-status metadata) "not_started")))))

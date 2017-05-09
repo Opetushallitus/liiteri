@@ -12,22 +12,20 @@
 
   (get-file [this file-key]))
 
-(defn create-file-and-metadata [file storage-engine db]
-  (let [key (str (UUID/randomUUID))]
+(defn create-file-and-metadata [file storage-engine conn]
+  (let [key       (str (UUID/randomUUID))
+        file-spec (assoc (select-keys file [:filename :content-type :size]) :key key)]
     (.create-file storage-engine (:tempfile file) key)
-    (jdbc/with-db-transaction [datasource db]
-      (let [conn {:connection datasource}]
-        (metadata-store/create-file (assoc (select-keys file [:filename :content-type :size]) :key key)
-                                    conn)))))
+    (metadata-store/create-file file-spec conn)))
 
-(defn delete-file-and-metadata [key storage-engine db]
-  (let [deleted (metadata-store/delete-file key db)]
+(defn delete-file-and-metadata [key storage-engine conn]
+  (let [deleted (metadata-store/delete-file key conn)]
     (when (> deleted 0)
       (.delete-file storage-engine key))
     deleted))
 
-(defn get-file [key storage-engine db]
-  (let [metadata (metadata-store/get-metadata key db)]
+(defn get-file [key storage-engine conn]
+  (let [metadata (metadata-store/get-metadata key conn)]
     (when (> (count metadata) 0)
       {:body (.get-file storage-engine key)
        :filename (:filename (first metadata))})))
