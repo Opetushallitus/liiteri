@@ -5,7 +5,7 @@
             [schema-tools.core :as st]
             [yesql.core :as sql])
   (:import [org.joda.time DateTime]
-           (java.text Normalizer Normalizer$Form)))
+           [java.text Normalizer Normalizer$Form]))
 
 (sql/defqueries "sql/files.sql")
 
