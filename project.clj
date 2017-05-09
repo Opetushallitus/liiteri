@@ -27,7 +27,7 @@
                  [ring.middleware.conditional "0.2.0"]
                  [environ "1.1.0"]
                  [com.novemberain/pantomime "2.9.0"]
-                 [jarohen/chime "0.2.0"]]
+                 [jarohen/chime "0.2.1"]]
 
   :repositories [["snapshots" {:url "https://artifactory.oph.ware.fi/artifactory/oph-sade-snapshot-local"}]]
 
