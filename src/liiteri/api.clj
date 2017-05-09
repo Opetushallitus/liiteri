@@ -77,7 +77,8 @@
               :summary "Finalize one or more files"
               :body-params [keys :- [s/Str]]
               (.log audit-logger keys audit-log/operation-finalize {})
-              (file-metadata-store/finalize-files keys {:connection db})
+              (when (> (count keys) 0)
+                (file-metadata-store/finalize-files keys {:connection db}))
               (response/ok))
 
             (api/GET "/files/metadata" []
