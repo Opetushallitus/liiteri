@@ -109,7 +109,7 @@
               :summary "Delete a file"
               :path-params [key :- (api/describe s/Str "Key of the file")]
               :return {:key s/Str}
-              (let [deleted-count (file-store/delete-file-and-metadata key storage-engine db)]
+              (let [deleted-count (file-store/delete-file-and-metadata key storage-engine {:connection db})]
                 (.log audit-logger key audit-log/operation-delete {:deleted-count deleted-count})
                 (if (> deleted-count 0)
                   (response/ok {:key key})
