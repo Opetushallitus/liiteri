@@ -48,7 +48,10 @@
                                      {:headers {"Content-Type" "application/json"}
                                       :body    (json/generate-string {:keys [(:key body)]})})
           saved-metadata (metadata/get-metadata-for-tests [(:key body)] {:connection (:db @system)})]
-      (is (= (:final saved-metadata) true)))))
+      (is (= (:final saved-metadata) true)))
+    (let [delete-resp @(http/delete (str path "/" (:key body)))]
+      (is (= (:status delete-resp) 200))
+      (is (= (json/parse-string (:body delete-resp) true) {:key (:key body)})))))
 
 (deftest exe-extension-refused
   (let [file (io/file (io/resource "parrot.png"))
