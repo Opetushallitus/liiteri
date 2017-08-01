@@ -8,6 +8,7 @@
 .nrepl-port
 *.iml
 
+auditlog.log
 build.xml
 eastwood.out
 forms-analyzed.txt
