@@ -15,7 +15,7 @@
                  [fi.vm.sade/auditlogger "5.0.0-SNAPSHOT"]
                  [hikari-cp "1.7.6"]
                  [http-kit "2.2.0"]
-                 [org.clojure/java.jdbc "0.7.0-alpha1"]
+                 [org.clojure/java.jdbc "0.7.0"]
                  [org.postgresql/postgresql "42.0.0"]
                  [prismatic/schema "1.1.5"]
                  [metosin/schema-tools "0.9.0"]
