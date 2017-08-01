@@ -75,7 +75,4 @@
             "test-local-auto" ["with-profile" "test-local" "auto" "test"]
             "db-schema"       ["with-profile" "db-schema" "run"]}
 
-  :eastwood {:namespaces      [:source-paths]
-             :exclude-linters [:suspicious-expression]}
-
   :uberjar-name "liiteri.jar")
