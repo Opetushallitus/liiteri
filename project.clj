@@ -7,7 +7,7 @@
 
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [camel-snake-kebab "0.4.0"]
-                 [cheshire "5.7.1"]
+                 [cheshire "5.8.0"]
                  [clj-time "0.14.0"]
                  [metosin/compojure-api "1.2.0-alpha5"]
                  [com.stuartsierra/component "0.3.2"]
