@@ -59,10 +59,13 @@
       (log/error e (str "Failed to scan file " filename " with key " file-key " (" content-type ")")))))
 
 (defn- scan-next-file [db storage-engine config]
-  (jdbc/with-db-transaction [tx db]
-    (let [conn {:connection tx}]
-      (when-let [file (metadata-store/get-unscanned-file conn)]
-        (scan-file conn storage-engine config file)))))
+  (try
+    (jdbc/with-db-transaction [tx db]
+      (let [conn {:connection tx}]
+        (when-let [file (metadata-store/get-unscanned-file conn)]
+          (scan-file conn storage-engine config file))))
+    (catch Exception e
+      (log/error e "Failed to scan the next file"))))
 
 (defn- scan-files [db storage-engine config]
   (loop []
