@@ -9,20 +9,23 @@
             [liiteri.files.file-store :as file-store]
             [taoensso.timbre :as log]))
 
-(defn- clean-file [db storage-engine]
+(defn- clean-file [conn storage-engine file]
+  (log/info (str "Cleaning file: " (:key file)))
+  (try
+    (file-store/delete-file-and-metadata (:key file) storage-engine conn)
+    (catch Exception e
+      (log/error e (str "Failed to clean file " (:key file))))))
+
+(defn- clean-next-file [db storage-engine]
   (jdbc/with-db-transaction [tx db]
     (let [conn {:connection tx}]
       (when-let [file (metadata-store/get-old-draft-file conn)]
-        (log/info (str "Cleaning file: " (:key file)))
-        (try
-          (file-store/delete-file-and-metadata (:key file) storage-engine conn)
-          (catch Exception e
-            (log/error e (str "Failed to delete file " (:key file)))))))))
+        (clean-file conn storage-engine file)))))
 
 (defn- clean-files [db storage-engine]
   (log/info "Cleaning files")
   (loop []
-    (when (clean-file db storage-engine)
+    (when (clean-next-file db storage-engine)
       (recur)))
   (log/info "Finished cleaning files"))
 
