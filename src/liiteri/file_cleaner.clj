@@ -17,10 +17,13 @@
       (log/error e (str "Failed to clean file " (:key file))))))
 
 (defn- clean-next-file [db storage-engine]
-  (jdbc/with-db-transaction [tx db]
-    (let [conn {:connection tx}]
-      (when-let [file (metadata-store/get-old-draft-file conn)]
-        (clean-file conn storage-engine file)))))
+  (try
+    (jdbc/with-db-transaction [tx db]
+      (let [conn {:connection tx}]
+        (when-let [file (metadata-store/get-old-draft-file conn)]
+          (clean-file conn storage-engine file))))
+    (catch Exception e
+      (log/error e "Failed to clean the next file"))))
 
 (defn- clean-files [db storage-engine]
   (log/info "Cleaning files")
