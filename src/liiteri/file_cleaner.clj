@@ -9,20 +9,26 @@
             [liiteri.files.file-store :as file-store]
             [taoensso.timbre :as log]))
 
-(defn- scan-file [db storage-engine config]
-  (jdbc/with-db-transaction [tx db]
-    (let [conn {:connection tx}]
-      (when-let [file (metadata-store/get-old-draft-file conn)]
-        (log/info (str "Cleaning file: " (:key file)))
-        (try
-          (file-store/delete-file-and-metadata (:key file) storage-engine conn)
-          (catch Exception e
-            (log/error e (str "Failed to delete file " (:key file)))))))))
+(defn- clean-file [conn storage-engine file]
+  (log/info (str "Cleaning file: " (:key file)))
+  (try
+    (file-store/delete-file-and-metadata (:key file) storage-engine conn)
+    (catch Exception e
+      (log/error e (str "Failed to clean file " (:key file))))))
 
-(defn- clean-files [db storage-engine config]
+(defn- clean-next-file [db storage-engine]
+  (try
+    (jdbc/with-db-transaction [tx db]
+      (let [conn {:connection tx}]
+        (when-let [file (metadata-store/get-old-draft-file conn)]
+          (clean-file conn storage-engine file))))
+    (catch Exception e
+      (log/error e "Failed to clean the next file"))))
+
+(defn- clean-files [db storage-engine]
   (log/info "Cleaning files")
   (loop []
-    (when (scan-file db storage-engine config)
+    (when (clean-next-file db storage-engine)
       (recur)))
   (log/info "Finished cleaning files"))
 
@@ -36,7 +42,7 @@
       (log/info "Starting file cleaner process")
       (a/go-loop []
         (when-let [_ (a/<! times)]
-          (clean-files db storage-engine config)
+          (clean-files db storage-engine)
           (recur)))
       (assoc this :chan times)))
 

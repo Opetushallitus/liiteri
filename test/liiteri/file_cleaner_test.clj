@@ -58,7 +58,7 @@
                            (.getMillis)
                            (Timestamp.))]
     (init-test-file uploaded)
-    (#'cleaner/clean-files db storage-engine config)
+    (#'cleaner/clean-files db storage-engine)
     (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] {:connection db})]
       (is (some? (:deleted metadata)))
       (is (t/before? (:deleted metadata) (t/now)))
@@ -72,7 +72,7 @@
                            (.getMillis)
                            (Timestamp.))]
     (init-test-file uploaded)
-    (#'cleaner/clean-files db storage-engine config)
+    (#'cleaner/clean-files db storage-engine)
     (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] {:connection db})]
       (is (nil? (:deleted metadata)))
       (is (.exists (File. (.getPath @file)))))))
