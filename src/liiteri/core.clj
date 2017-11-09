@@ -43,7 +43,9 @@
                                            (file-cleaner/new-cleaner)
                                            [:db :storage-engine :config :migrations])
 
-                          :s3-client      (s3-client/new-client)
+                          :s3-client      (component/using
+                                           (s3-client/new-client)
+                                           [:config])
 
                           :storage-engine (case (get-in config [:file-store :engine])
                                             :filesystem (component/using
@@ -51,7 +53,7 @@
                                                          [:config])
                                             :s3         (component/using
                                                          (s3-store/new-store)
-                                                         [:s3-client])))))
+                                                         [:s3-client :config])))))
 
 (defn -main [& _]
   (let [_ (component/start-system (new-system))]
