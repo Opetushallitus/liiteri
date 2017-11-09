@@ -8,6 +8,8 @@
       :maximum-pool-size {{liiteri_db_max_pool_size}}}
  :file-store {:engine {{liiteri_file_engine}}
               :filesystem {:base-path "{{liiteri_filesystem_base_path}}"}
+              :s3 {:bucket "{{liiteri_s3_bucket}}"
+                   :region "{{liiteri_s3_region}}"}
               :attachment-mime-types ["text/plain"
                                       "image/jpeg"
                                       "image/png"
