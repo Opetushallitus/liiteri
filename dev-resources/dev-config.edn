@@ -6,8 +6,11 @@
       :port-number       5434
       :minimum-idle      20
       :maximum-pool-size 20}
- :file-store {:engine :filesystem
+ :file-store {:engine :s3
               :filesystem {:base-path "/tmp"}
+              :s3 {:bucket "opintopolku-pallero-liiteri"
+                   :region "eu-west-1"
+                   :credentials-profile "oph-opintopolku-session-dev"}
               :attachment-mime-types ["text/plain"
                                       "image/jpeg"
                                       "image/png"
@@ -21,7 +24,7 @@
                                       "application/vnd.ms-excel"
                                       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]}
  :server {:port 16832}
- :antivirus {:clamav-url            "http://tentti.hard.ware.fi:8765"
+ :antivirus {:clamav-url            "http://localhost:8765"
              :mock? false
              :poll-interval-seconds 5}
  :file-cleaner {:poll-interval-seconds 100}}
