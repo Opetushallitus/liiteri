@@ -19,7 +19,8 @@
   (log/merge-config! {:timestamp-opts {:pattern  "yyyy-MM-dd HH:mm:ss ZZ"
                                        :timezone (TimeZone/getTimeZone "Europe/Helsinki")}})
   (let [config (config/new-config config-overrides)]
-    (component/system-map :config         config
+    (apply component/system-map
+                          :config         config
 
                           :audit-logger   (audit-log/new-logger)
 
@@ -43,17 +44,16 @@
                                            (file-cleaner/new-cleaner)
                                            [:db :storage-engine :config :migrations])
 
-                          :s3-client      (component/using
-                                           (s3-client/new-client)
-                                           [:config])
-
-                          :storage-engine (case (get-in config [:file-store :engine])
-                                            :filesystem (component/using
-                                                         (filesystem-store/new-store)
-                                                         [:config])
-                                            :s3         (component/using
-                                                         (s3-store/new-store)
-                                                         [:s3-client :config])))))
+                          (case (get-in config [:file-store :engine])
+                            :filesystem [:storage-engine (component/using
+                                                          (filesystem-store/new-store)
+                                                          [:config])]
+                            :s3         [:s3-client      (component/using
+                                                          (s3-client/new-client)
+                                                          [:config])
+                                         :storage-engine (component/using
+                                                          (s3-store/new-store)
+                                                          [:s3-client :config])]))))
 
 (defn -main [& _]
   (let [_ (component/start-system (new-system))]
