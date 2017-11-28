@@ -9,7 +9,8 @@
             [liiteri.files.file-store :as file-store]
             [org.httpkit.client :as http]
             [ring.util.http-response :as response]
-            [taoensso.timbre :as log]))
+            [taoensso.timbre :as log])
+  (:import java.util.concurrent.TimeUnit))
 
 (def ^:private successful-resp-body "Everything ok : true\n")
 (def ^:private failed-resp-body "Everything ok : false\n")
@@ -45,7 +46,8 @@
           scan-result (if (mock-enabled? config)
                         (mock-scan-file filename)
                         @(http/post clamav-url {:form-params {"name" filename}
-                                                :multipart   [{:name "file" :content file :filename filename}]}))]
+                                                :multipart   [{:name "file" :content file :filename filename}]
+                                                :timeout     (.toMillis TimeUnit/SECONDS 10)}))]
       (when (= (:status scan-result) 200)
         (if (= (:body scan-result) "Everything ok : true\n")
           (do
