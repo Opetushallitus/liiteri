@@ -39,7 +39,7 @@
                           :repl-options   {:init-ns user}
                           :source-paths   ["src" "dev-src"]
                           :resource-paths ["resources" "dev-resources"]
-                          :plugins        [[lein-ancient "0.6.10"]]
+                          :plugins        [[lein-ancient "0.6.15"]]
                           :env            {:config "dev-resources/dev-config.edn"}}
 
              :test-ci    {:test-paths            ["test"]
