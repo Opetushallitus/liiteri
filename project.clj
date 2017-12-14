@@ -44,7 +44,7 @@
 
              :test-ci    {:test-paths            ["test"]
                           :resource-paths        ["resources" "dev-resources"]
-                          :plugins               [[jonase/eastwood "0.2.3"]
+                          :plugins               [[jonase/eastwood "0.2.5"]
                                                   [test2junit "1.2.5"]]
                           :test2junit-output-dir "target/test-reports"}
 
