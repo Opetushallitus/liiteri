@@ -14,7 +14,7 @@
                  [com.stuartsierra/component "0.3.2"]
                  [org.flywaydb/flyway-core "5.0.2"]
                  [fi.vm.sade/auditlogger "5.0.0-SNAPSHOT"]
-                 [hikari-cp "1.7.6"]
+                 [hikari-cp "2.0.0"]
                  [http-kit "2.2.0"]
                  [org.clojure/java.jdbc "0.7.1"]
                  [org.postgresql/postgresql "42.1.4"]
