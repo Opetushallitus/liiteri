@@ -6,7 +6,7 @@
             :url  "https://www.tldrlegal.com/l/eupl-1.1"}
 
   :dependencies [[org.clojure/clojure "1.9.0"]
-                 [com.amazonaws/aws-java-sdk-s3 "1.11.112"]
+                 [com.amazonaws/aws-java-sdk-s3 "1.11.248"]
                  [camel-snake-kebab "0.4.0"]
                  [cheshire "5.8.0"]
                  [clj-time "0.14.0"]
