@@ -35,7 +35,7 @@
   :plugins [[lein-environ "1.1.0"]
             [lein-resource "17.06.1"]]
 
-  :profiles {:dev        {:dependencies   [[reloaded.repl "0.2.3"]]
+  :profiles {:dev        {:dependencies   [[reloaded.repl "0.2.4"]]
                           :repl-options   {:init-ns user}
                           :source-paths   ["src" "dev-src"]
                           :resource-paths ["resources" "dev-resources"]
