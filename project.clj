@@ -18,7 +18,7 @@
                  [http-kit "2.2.0"]
                  [org.clojure/java.jdbc "0.7.3"]
                  [org.postgresql/postgresql "42.1.4"]
-                 [prismatic/schema "1.1.6"]
+                 [prismatic/schema "1.1.7"]
                  [metosin/schema-tools "0.9.0"]
                  [javax.servlet/servlet-api "2.5"]
                  [com.taoensso/timbre "4.10.0"]
