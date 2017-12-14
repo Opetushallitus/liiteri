@@ -5,7 +5,7 @@
   :licence {:name "EUPL"
             :url  "https://www.tldrlegal.com/l/eupl-1.1"}
 
-  :dependencies [[org.clojure/clojure "1.8.0"]
+  :dependencies [[org.clojure/clojure "1.9.0"]
                  [com.amazonaws/aws-java-sdk-s3 "1.11.112"]
                  [camel-snake-kebab "0.4.0"]
                  [cheshire "5.8.0"]
