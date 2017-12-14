@@ -33,7 +33,7 @@
   :repositories [["snapshots" {:url "https://artifactory.oph.ware.fi/artifactory/oph-sade-snapshot-local"}]]
 
   :plugins [[lein-environ "1.1.0"]
-            [lein-resource "16.11.1"]]
+            [lein-resource "17.06.1"]]
 
   :profiles {:dev        {:dependencies   [[reloaded.repl "0.2.3"]]
                           :repl-options   {:init-ns user}
