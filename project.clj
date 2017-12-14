@@ -9,7 +9,7 @@
                  [com.amazonaws/aws-java-sdk-s3 "1.11.248"]
                  [camel-snake-kebab "0.4.0"]
                  [cheshire "5.8.0"]
-                 [clj-time "0.14.0"]
+                 [clj-time "0.14.2"]
                  [metosin/compojure-api "1.2.0-alpha5"]
                  [com.stuartsierra/component "0.3.2"]
                  [org.flywaydb/flyway-core "4.2.0"]
