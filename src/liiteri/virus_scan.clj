@@ -41,6 +41,7 @@
                    filename :filename
                    content-type :content-type}]
   (try
+    (log/info (str "Virus scan for " filename " with key " file-key))
     (let [file        (.get-file storage-engine file-key)
           clamav-url  (str (get-in config [:antivirus :clamav-url]) "/scan")
           scan-result (if (mock-enabled? config)
