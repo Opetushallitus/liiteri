@@ -56,6 +56,8 @@
 
             (api/POST "/files" []
               :summary "Upload a file"
+              :header-params [{x-real-ip :- s/Str nil}
+                              {user-agent :- s/Str nil}]
               :multipart-params [file :- (api/describe upload/TempFileUpload "File to upload")]
               :middleware [upload/wrap-multipart-params]
               :return schema/File
@@ -63,66 +65,101 @@
                 (let [{:keys [filename tempfile content-type]} file]
                   (fail-if-file-extension-blacklisted! filename)
                   (let [real-file-type (mime/validate-file-content-type! config tempfile filename content-type)
-                        {:keys [key] :as resp} (file-store/create-file-and-metadata file storage-engine {:connection db})]
-                    (.log audit-logger key audit-log/operation-new resp)
+                        resp (file-store/create-file-and-metadata file storage-engine {:connection db})]
+                    (audit-log/log audit-logger
+                                   (audit-log/unknown-user x-real-ip user-agent)
+                                   audit-log/operation-new
+                                   (audit-log/file-target (:key resp))
+                                   (audit-log/new-file-changes resp))
                     (response/ok resp)))
-                (catch Exception e
-                  (let [error (ex-data e)]
-                    (.log audit-logger "" audit-log/operation-new (:response error))
-                    (response/bad-request! (get-in error [:response :body]))))
+                (catch IllegalArgumentException e
+                  (response/bad-request! (get-in (ex-data e) [:response :body])))
                 (finally
                   (io/delete-file (:tempfile file) true))))
 
             (api/POST "/files/finalize" []
               :summary "Finalize one or more files"
+              :header-params [{x-real-ip :- s/Str nil}
+                              {user-agent :- s/Str nil}]
               :body-params [keys :- [s/Str]]
-              (.log audit-logger keys audit-log/operation-finalize {})
               (when (> (count keys) 0)
-                (file-metadata-store/finalize-files keys {:connection db}))
+                (file-metadata-store/finalize-files keys {:connection db})
+                (doseq [key keys]
+                  (audit-log/log audit-logger
+                                 (audit-log/unknown-user x-real-ip user-agent)
+                                 audit-log/operation-finalize
+                                 (audit-log/file-target key)
+                                 audit-log/no-changes)))
               (response/ok))
 
             (api/GET "/files/metadata" []
               :summary "Get metadata for one or more files"
               :query-params [key :- (api/describe [s/Str] "Key of the file")]
+              :header-params [{x-real-ip :- s/Str nil}
+                              {user-agent :- s/Str nil}]
               :return [schema/File]
               (let [metadata (file-metadata-store/get-metadata key {:connection db})]
-                (.log audit-logger key audit-log/operation-query metadata)
                 (if (> (count metadata) 0)
-                  (response/ok metadata)
+                  (do (doseq [{:keys [key]} metadata]
+                        (audit-log/log audit-logger
+                                       (audit-log/unknown-user x-real-ip user-agent)
+                                       audit-log/operation-metadata-query
+                                       (audit-log/file-target key)
+                                       audit-log/no-changes))
+                      (response/ok metadata))
                   (response/not-found {:message (str "File with given keys not found")}))))
 
             (api/POST "/files/metadata" []
               :summary "Get metadata for one or more files"
               :body-params [keys :- (api/describe [s/Str] "Keys of the files")]
+              :header-params [{x-real-ip :- s/Str nil}
+                              {user-agent :- s/Str nil}]
               :return [schema/File]
               (let [metadata (file-metadata-store/get-metadata keys {:connection db})]
-                (.log audit-logger keys audit-log/operation-query metadata)
                 (if (> (count metadata) 0)
-                  (response/ok metadata)
+                  (do (doseq [{:keys [key]} metadata]
+                        (audit-log/log audit-logger
+                                       (audit-log/unknown-user x-real-ip user-agent)
+                                       audit-log/operation-metadata-query
+                                       (audit-log/file-target key)
+                                       audit-log/no-changes))
+                      (response/ok metadata))
                   (response/not-found {:message (str "Files with given keys not found")}))))
 
             (api/GET "/files/:key" []
               :summary "Download a file"
+              :header-params [{x-real-ip :- s/Str nil}
+                              {user-agent :- s/Str nil}]
               :path-params [key :- (api/describe s/Str "Key of the file")]
               (let [[metadata] (file-metadata-store/get-metadata key {:connection db})]
-                (.log audit-logger key audit-log/operation-query metadata)
                 (if (= "done" (:virus-scan-status metadata))
                   (if-let [file-response (file-store/get-file key storage-engine {:connection db})]
-                    (-> (response/ok (:body file-response))
-                        (response/header
-                          "Content-Disposition"
-                          (str "attachment; filename=\"" (:filename file-response) "\"")))
+                    (do (audit-log/log audit-logger
+                                       (audit-log/unknown-user x-real-ip user-agent)
+                                       audit-log/operation-file-query
+                                       (audit-log/file-target key)
+                                       audit-log/no-changes)
+                        (-> (response/ok (:body file-response))
+                            (response/header
+                             "Content-Disposition"
+                             (str "attachment; filename=\"" (:filename file-response) "\""))))
                     (response/not-found))
                   (response/not-found))))
 
             (api/DELETE "/files/:key" []
               :summary "Delete a file"
+              :header-params [{x-real-ip :- s/Str nil}
+                              {user-agent :- s/Str nil}]
               :path-params [key :- (api/describe s/Str "Key of the file")]
               :return {:key s/Str}
               (let [deleted-count (file-store/delete-file-and-metadata key storage-engine {:connection db})]
-                (.log audit-logger key audit-log/operation-delete {:deleted-count deleted-count})
                 (if (> deleted-count 0)
-                  (response/ok {:key key})
+                  (do (audit-log/log audit-logger
+                                     (audit-log/unknown-user x-real-ip user-agent)
+                                     audit-log/operation-delete
+                                     (audit-log/file-target key)
+                                     audit-log/no-changes)
+                      (response/ok {:key key}))
                   (response/not-found {:message (str "File with key " key " not found")}))))
 
             (api/GET "/queue-status" []

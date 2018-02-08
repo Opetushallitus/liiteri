@@ -22,7 +22,9 @@
     (apply component/system-map
                           :config         config
 
-                          :audit-logger   (audit-log/new-logger)
+                          :audit-logger   (component/using
+                                           (audit-log/new-logger)
+                                           [:config])
 
                           :db             (component/using
                                            (db/new-pool)
