@@ -24,6 +24,7 @@
                                       "application/vnd.ms-excel"
                                       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]}
  :server {:port 16832}
+ :audit-log {:path "/tmp/auditlog_liiteri.log"}
  :antivirus {:clamav-url            "http://localhost:8765"
              :mock? false
              :poll-interval-seconds 5}
