@@ -8,7 +8,7 @@
       :maximum-pool-size 20}
  :file-store {:engine :s3
               :filesystem {:base-path "/tmp"}
-              :s3 {:bucket "opintopolku-pallero-liiteri"
+              :s3 {:bucket "opintopolku-untuva-liiteri"
                    :region "eu-west-1"
                    :credentials-profile "oph-opintopolku-session-dev"}
               :attachment-mime-types ["text/plain"
