@@ -91,6 +91,16 @@
                   (response/ok metadata)
                   (response/not-found {:message (str "File with given keys not found")}))))
 
+            (api/POST "/files/metadata" []
+              :summary "Get metadata for one or more files"
+              :body-params [keys :- (api/describe [s/Str] "Keys of the files")]
+              :return [schema/File]
+              (let [metadata (file-metadata-store/get-metadata keys {:connection db})]
+                (.log audit-logger keys audit-log/operation-query metadata)
+                (if (> (count metadata) 0)
+                  (response/ok metadata)
+                  (response/not-found {:message (str "Files with given keys not found")}))))
+
             (api/GET "/files/:key" []
               :summary "Download a file"
               :path-params [key :- (api/describe s/Str "Key of the file")]
