@@ -128,11 +128,14 @@
             (api/GET "/queue-status" []
               :summary "Display virus scan file queue status metrics"
               :return {:unprocessed-queue-length s/Int
-                       :oldest-unprocessed-file  (s/maybe {:id  s/Int
-                                                           :key s/Str
-                                                           :age s/Int})}
-              (response/ok
-                {:unprocessed-queue-length (file-metadata-store/get-queue-length {:connection db})
-                 :oldest-unprocessed-file  (file-metadata-store/get-oldest-unscanned-file {:connection db})})))))
+                       :oldest-unprocessed-file  {:id  (s/maybe s/Int)
+                                                  :key (s/maybe s/Str)
+                                                  :age s/Int}}
+              (let [queue-length (file-metadata-store/get-queue-length {:connection db})
+                    {:keys [id key age] :or {age 0}} (file-metadata-store/get-oldest-unscanned-file {:connection db})]
+                (response/ok {:unprocessed-queue-length queue-length
+                              :oldest-unprocessed-file  {:id  id
+                                                         :key key
+                                                         :age age}}))))))
 
       (c/if-url-starts-with "/liiteri/api/" logger-mw/wrap-with-logger)))
