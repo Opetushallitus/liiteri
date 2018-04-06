@@ -76,3 +76,16 @@
 
 (defn finalize-files [keys conn]
   (sql-finalize-files! {:keys keys} conn))
+
+(defn get-queue-length
+  [conn]
+  (->> conn
+      (sql-get-queue-length {})
+      (first)
+      :count))
+
+(defn get-oldest-unscanned-file
+  [conn]
+  (->> conn
+      (sql-get-oldest-unscanned-file {})
+      (first)))

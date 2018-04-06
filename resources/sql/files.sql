@@ -34,3 +34,18 @@ SELECT key, filename, content_type, size, uploaded, deleted, virus_scan_status, 
     AND deleted IS NULL
     AND uploaded < NOW() - INTERVAL '1 day'
   LIMIT 1 FOR UPDATE SKIP LOCKED;
+
+-- name: sql-get-queue-length
+SELECT count(*) AS count
+FROM files
+WHERE virus_scan_status = 'not_started' AND deleted IS NULL;
+
+-- name: sql-get-oldest-unscanned-file
+SELECT
+  id,
+  key,
+  (extract(EPOCH FROM age(now(), uploaded)) :: INTEGER) AS age
+FROM files
+WHERE virus_scan_status = 'not_started' AND deleted IS NULL
+ORDER BY age(uploaded) DESC
+LIMIT 1;
