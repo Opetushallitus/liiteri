@@ -131,11 +131,13 @@
                        :oldest-unprocessed-file  {:id  (s/maybe s/Int)
                                                   :key (s/maybe s/Str)
                                                   :age s/Int}}
-              (let [queue-length (file-metadata-store/get-queue-length {:connection db})
-                    {:keys [id key age] :or {age 0}} (file-metadata-store/get-oldest-unscanned-file {:connection db})]
-                (response/ok {:unprocessed-queue-length queue-length
-                              :oldest-unprocessed-file  {:id  id
-                                                         :key key
-                                                         :age age}}))))))
+              (let [queue-length    (file-metadata-store/get-queue-length {:connection db})
+                    {:keys [id key age] :or {age 0}} (file-metadata-store/get-oldest-unscanned-file {:connection db})
+                    status-ok?      (and (< queue-length 10) (< age 600))
+                    response-status (if status-ok? response/ok response/internal-server-error)]
+                (response-status {:unprocessed-queue-length queue-length
+                                  :oldest-unprocessed-file  {:id  id
+                                                             :key key
+                                                             :age age}}))))))
 
       (c/if-url-starts-with "/liiteri/api/" logger-mw/wrap-with-logger)))
