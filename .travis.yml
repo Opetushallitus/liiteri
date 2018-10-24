@@ -1,0 +1,27 @@
+sudo: required
+language: generic
+services:
+  - docker
+env:
+  global:
+    # AWS_ACCESS_KEY_ID
+    - secure: "djq3VTFbr9ts9BrXw6hMgh/6K3G4Glh/e4cCN83074PEa9HyA+c7uL3+nnrf6D9fgUO+Wcd5+SmaRwZf1fkb9nDAF7LwFEtTEbY+u4FeAQinJiiGjx0W1l4n0Rh8Tb5uQ/3UvcBIZ8ixPCxCmy8TirEWwmn5zTHX/360ohzyxmQPJXFfLSIrqFZ4Lx4w088tKY+FYlEHXv/5iFJocaFsTopIVXyZ7NV8RUevxKVdM9MvNoLDIo2wHXhXjAFG/YNY9WU4zNuM5apETadfQgcIaX/tChctW4dX/OIrwkFbxWI1it6c8DpitaGQdAJYyrblSbMmvr/CrGiLhtD0EBO0TpBrZMpLZfTX/BzxK5C9Ov1JzyxWkx7zWMNV0EDHqnTp/4g8MU6C0PKCLkXhUBo0AJsiezI6pl4C8nsgb/fP2kakiG4MylkdxA4Th44F/l3JNe9N/UnzAIZMnkJeXaKrpqZOWDzpP4zpbxBef2697ihRSeac+xS6bgCiyfQl3Rcc67FBDE96mnBM5jhulCTYRj83cdMfl/Fhp7peHTC3wRSBmJbjraeoje49EWEDVpqIg6EEaM++SNOJVDedyKPc+p3iLqB73ZobRxpCjveUgy8tY012E1MPiN8WerjZTtaLqW2gGl0fyXa5X+kp9TvRIeFGI/HNIENT0JhohO08Mvc="
+    # AWS_SECRET_ACCESS_KEY
+    - secure: "Qy8CHuVO+60VhT/MG7omlb0lN9lJphliG9l3nr+3neRZaW8DoMjXnloyC5KcEn6RovR3jKnl8Ylv15GU2gsIrkO82mKW52eQnfnnKyaCbgXH3hsBlkdXpciBl9Gr0ksOEIuaoRc8bmncbNW/ZbBlaUPn9oFfJmcfABo99TkuVsFS4cFc3gO4E16+G8xYd2qh1JI8r6f10nBdVloQ29RUu86C1FliAhfmatqdlq6SnlXy1bd4+KWcvMj62B7mh6xi8EyYuPTlQ20lVPpc+jRYHh7Hpz20q1EAWNam0NURr8sVXL2L1e17AOI6syon2m8eqLWkBXWblr8vKe7JzSwaxz0lkU59jbLyAsnSPLbYMMy0VTi0ORR1541k333NLBEMO86DKdp7U1jT2gugFkH8Up4LSDARkgLbPkUdLlhPj0kWG6JNFSMQ/loQDXeObvlTmtM58o0OsvF9bjXjwKM8G4cd3n0f4LoZTT4Ed28+JeBUChmnSMt49XInzAU/Jft/nBsGT7Yg6YbOgiZEabyAAWlTHYdjSl4PcmBoIY2vtHMnmr2WqdlbLyDzvnNkqBBdJv/c92RdAoXjGN8jopU7WQ1LGtzH55gWZRCBnJKbUKvYJagfGrXINb+M/AlVli45o7JKxyJUqhGpSF6/BnsRs2bk25zcWd0S6Cu1F5sH5nQ="
+install:
+  - git clone https://github.com/Opetushallitus/ci-tools.git
+  - source ci-tools/common/setup-tools.sh
+before_script:
+  - docker run --name liiteri-test-db -e POSTGRES_PASSWORD=oph -e POSTGRES_USER=oph -e POSTGRES_DB=liiteri -p 5435:5432 -d postgres:9.5
+script: >-
+  CONFIG=dev-resources/local-test-config.edn ./bin/cibuild.sh run-tests-and-create-uberjar &&
+  export BASE_IMAGE="baseimage-fatjar:master" &&
+  ./ci-tools/common/pull-image.sh &&
+  cp -v ./target/liiteri.jar $DOCKER_BUILD_DIR/artifact/liiteri.jar &&
+  cp -vr ./oph-configuration $DOCKER_BUILD_DIR/config/ &&
+  ./ci-tools/build/build-fatjar.sh liiteri
+deploy:
+  provider: script
+  script: ./ci-tools/build/upload-image.sh liiteri
+  on:
+    all_branches: true
