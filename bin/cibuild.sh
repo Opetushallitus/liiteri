@@ -45,6 +45,11 @@ case "$COMMAND" in
     clean-project
     run-tests
     ;;
+  "run-tests-and-create-uberjar" )
+    clean-project
+    run-tests
+    create-uberjar
+    ;;
   "create-db-schema" )
     clean-project
     create-db-schema
