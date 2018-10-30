@@ -10,7 +10,7 @@
               :filesystem {:base-path "{{liiteri_filesystem_base_path}}"}
               :s3 {:bucket "{{liiteri_s3_bucket}}"
                    :region "{{liiteri_s3_region}}"}
-              :attachment-max-size-bytes {{liiteri_file_max_size}}
+              :attachment-max-size-bytes "{{liiteri_file_max_size}}"
               :attachment-mime-types ["text/plain"
                                       "image/jpeg"
                                       "image/png"
