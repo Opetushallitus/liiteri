@@ -10,12 +10,8 @@
   (start [this]
     (let [port   (get-in config [:server :port] 16832)
           api    (api/new-api this)
-          max-attachment-size (read-string
-                                (or
-                                  (not-empty (get-in config [:file-store :attachment-max-size-bytes]))
-                                  "1073741824"))
           server (server/run-server api {:port     port
-                                         :max-body max-attachment-size})]
+                                         :max-body (get-in config [:file-store :attachment-max-size-bytes] 1073741824)})]
       (log/info (str "Started server on port " port))
       (assoc this :server server)))
 
