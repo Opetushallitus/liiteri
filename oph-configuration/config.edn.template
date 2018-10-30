@@ -21,7 +21,24 @@
                                       "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                                       "application/vnd.oasis.opendocument.spreadsheet"
                                       "application/vnd.ms-excel"
-                                      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]}
+                                      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                                      "audio/aac"
+                                      "audio/ogg"
+                                      "audio/wav"
+                                      "audio/webm"
+                                      "audio/3gpp"
+                                      "audio/3gpp2"
+                                      "audio/mp3"
+                                      "video/x-msvideo"
+                                      "video/mpeg"
+                                      "video/ogg"
+                                      "video/webm"
+                                      "video/3gpp"
+                                      "video/3gpp2"
+                                      "video/mp4"
+                                      "video/MP2T"
+                                      "video/quicktime"
+                                      "video/x-ms-wmv"]}
  :server {:port {{liiteri_server_port}}}
  :audit-log {:path "{{liiteri_auditlog_path}}"}
  :antivirus {:clamav-url "{{liiteri_clamav_url}}"
