@@ -29,9 +29,9 @@
                       successful-resp-body)]
     (response/ok result)))
 
-(defn- log-virus-scan-result [file-key filename content-type config status]
+(defn- log-virus-scan-result [file-key filename content-type config status elapsed-time]
   (let [status-str (if (= status :successful) "OK" "FAILED")]
-    (log/info (str "Virus scan status " status-str " for file " filename " with key " file-key " (" content-type ")"
+    (log/info (str "Virus scan took " elapsed-time " ms, status " status-str " for file " filename " with key " file-key " (" content-type ")"
                    (when (mock-enabled? config) ", virus scan process in mock mode")))))
 
 (defn- scan-file [conn
@@ -44,19 +44,20 @@
     (log/info (str "Virus scan for " filename " with key " file-key))
     (let [file        (.get-file storage-engine file-key)
           clamav-url  (str (get-in config [:antivirus :clamav-url]) "/scan")
+          start-time  (System/currentTimeMillis)
           scan-result (if (mock-enabled? config)
                         (mock-scan-file filename)
                         @(http/post clamav-url {:form-params {"name" filename}
                                                 :multipart   [{:name "file" :content file :filename filename}]
-                                                :timeout     (.toMillis TimeUnit/SECONDS 10)}))]
                                                 :timeout     (.toMillis TimeUnit/SECONDS 180)}))
+          elapsed-time (- (System/currentTimeMillis) start-time)]
       (if (= (:status scan-result) 200)
         (if (= (:body scan-result) "Everything ok : true\n")
           (do
-            (log-virus-scan-result file-key filename content-type config :successful)
+            (log-virus-scan-result file-key filename content-type config :successful elapsed-time)
             (metadata-store/set-virus-scan-status! file-key :done conn))
           (do
-            (log-virus-scan-result file-key filename content-type config :failed)
+            (log-virus-scan-result file-key filename content-type config :failed elapsed-time)
             (file-store/delete-file-and-metadata file-key storage-engine conn)
             (metadata-store/set-virus-scan-status! file-key :failed conn)))
         (log/error (str "Failed to scan file " filename " with key " file-key ": " scan-result))))
