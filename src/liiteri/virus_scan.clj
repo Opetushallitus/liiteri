@@ -49,6 +49,7 @@
                         @(http/post clamav-url {:form-params {"name" filename}
                                                 :multipart   [{:name "file" :content file :filename filename}]
                                                 :timeout     (.toMillis TimeUnit/SECONDS 10)}))]
+                                                :timeout     (.toMillis TimeUnit/SECONDS 180)}))
       (if (= (:status scan-result) 200)
         (if (= (:body scan-result) "Everything ok : true\n")
           (do
