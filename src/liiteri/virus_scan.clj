@@ -7,7 +7,7 @@
             [com.stuartsierra.component :as component]
             [liiteri.db.file-metadata-store :as metadata-store]
             [liiteri.files.file-store :as file-store]
-            [org.httpkit.client :as http]
+            [clj-http.client :as http-client]
             [ring.util.http-response :as response]
             [taoensso.timbre :as log])
   (:import java.util.concurrent.TimeUnit))
@@ -42,14 +42,15 @@
                    content-type :content-type}]
   (try
     (log/info (str "Virus scan for " filename " with key " file-key))
-    (let [file        (.get-file storage-engine file-key)
-          clamav-url  (str (get-in config [:antivirus :clamav-url]) "/scan")
-          start-time  (System/currentTimeMillis)
-          scan-result (if (mock-enabled? config)
-                        (mock-scan-file filename)
-                        @(http/post clamav-url {:form-params {"name" filename}
-                                                :multipart   [{:name "file" :content file :filename filename}]
-                                                :timeout     (.toMillis TimeUnit/SECONDS 180)}))
+    (let [file         (.get-file storage-engine file-key)
+          clamav-url   (str (get-in config [:antivirus :clamav-url]) "/scan")
+          start-time   (System/currentTimeMillis)
+          scan-result  (if (mock-enabled? config)
+                         (mock-scan-file filename)
+                         (http-client/post clamav-url {:multipart      [{:name "file" :content file :filename filename}
+                                                                        {:name "name" :content filename}]
+                                                       :socket-timeout (.toMillis TimeUnit/SECONDS 180)
+                                                       :conn-timeout   (.toMillis TimeUnit/SECONDS 2)}))
           elapsed-time (- (System/currentTimeMillis) start-time)]
       (if (= (:status scan-result) 200)
         (if (= (:body scan-result) "Everything ok : true\n")
