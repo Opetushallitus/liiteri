@@ -1,7 +1,7 @@
 (ns liiteri.server
   (:require [com.stuartsierra.component :as component]
             [liiteri.api :as api]
-            [org.httpkit.server :as server]
+            [aleph.http :as http-server]
             [taoensso.timbre :as log]))
 
 (defrecord Server [config]
@@ -10,14 +10,13 @@
   (start [this]
     (let [port   (get-in config [:server :port] 16832)
           api    (api/new-api this)
-          server (server/run-server api {:port     port
-                                         :max-body (get-in config [:file-store :attachment-max-size-bytes] 1073741824)})]
+          server (http-server/start-server api {:port port})]
       (log/info (str "Started server on port " port))
       (assoc this :server server)))
 
   (stop [this]
-    (when-let [stop (:server this)]
-      (stop)
+    (when-let [server (:server this)]
+      (.close server)
       (log/info (str "Stopped server")))
     (assoc this :server nil)))
 
