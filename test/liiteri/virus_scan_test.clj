@@ -8,7 +8,7 @@
             [liiteri.db.test-metadata-store :as test-metadata-store]
             [liiteri.test-utils :as u]
             [liiteri.virus-scan :as virus-scan]
-            [org.httpkit.client :as http]
+            [clj-http.client :as http-client]
             [ring.util.http-response :as response])
   (:import [java.io File]
            [java.util UUID]))
@@ -54,8 +54,7 @@
   (let [db             (:db @system)
         storage-engine (:storage-engine @system)
         config         (:config @system)]
-    (with-redefs [http/post (fn [& _]
-                              (future (response/ok "Everything ok : true\n")))]
+    (with-redefs [http-client/post (fn [& _] (response/ok "Everything ok : true\n"))]
       (#'virus-scan/scan-files db storage-engine config))
     (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] {:connection db})]
       (is (= (:virus-scan-status metadata) "done")))))
@@ -67,8 +66,7 @@
   (let [db             (:db @system)
         storage-engine (:storage-engine @system)
         config         (:config @system)]
-    (with-redefs [http/post (fn [& _]
-                              (future (response/ok "Everything ok : false\n")))]
+    (with-redefs [http-client/post (fn [& _] (response/ok "Everything ok : false\n"))]
       (#'virus-scan/scan-files db storage-engine config))
     (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] {:connection db})]
       (is (= (:virus-scan-status metadata) "failed"))
@@ -78,8 +76,7 @@
   (let [db             (:db @system)
         storage-engine (:storage-engine @system)
         config         (:config @system)]
-    (with-redefs [http/post (fn [& _]
-                              (throw (Exception. "failed to scan file")))]
+    (with-redefs [http-client/post (fn [& _] (throw (Exception. "failed to scan file")))]
       (#'virus-scan/scan-files db storage-engine config))
     (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] {:connection db})]
       (is (= (:virus-scan-status metadata) "not_started")))))
