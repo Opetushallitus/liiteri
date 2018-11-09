@@ -30,6 +30,12 @@
                                       "audio/3gpp"
                                       "audio/3gpp2"
                                       "audio/mp3"
+                                      "audio/m4a"
+                                      "audio/aiff"
+                                      "audio/x-aiff"
+                                      "audio/x-ms-wma"
+                                      "audio/mpeg"
+                                      "video/x-m4v"
                                       "video/x-msvideo"
                                       "video/mpeg"
                                       "video/ogg"
@@ -39,7 +45,8 @@
                                       "video/mp4"
                                       "video/MP2T"
                                       "video/quicktime"
-                                      "video/x-ms-wmv"]}
+                                      "video/x-ms-wmv"
+                                      "video/x-ms-vob"]}
  :server {:port {{liiteri_server_port}}}
  :audit-log {:path "{{liiteri_auditlog_path}}"}
  :antivirus {:clamav-url "{{liiteri_clamav_url}}"
