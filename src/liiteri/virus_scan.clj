@@ -49,7 +49,7 @@
                          (mock-scan-file filename)
                          (http-client/post clamav-url {:multipart      [{:name "file" :content file :filename filename}
                                                                         {:name "name" :content filename}]
-                                                       :socket-timeout (.toMillis TimeUnit/SECONDS 180)
+                                                       :socket-timeout (.toMillis TimeUnit/MINUTES 10)
                                                        :conn-timeout   (.toMillis TimeUnit/SECONDS 2)}))
           elapsed-time (- (System/currentTimeMillis) start-time)]
       (if (= (:status scan-result) 200)
