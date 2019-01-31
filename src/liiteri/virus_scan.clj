@@ -47,10 +47,11 @@
           start-time   (System/currentTimeMillis)
           scan-result  (if (mock-enabled? config)
                          (mock-scan-file filename)
-                         (http-client/post clamav-url {:multipart      [{:name "file" :content file :filename filename}
-                                                                        {:name "name" :content filename}]
-                                                       :socket-timeout (.toMillis TimeUnit/MINUTES 10)
-                                                       :conn-timeout   (.toMillis TimeUnit/SECONDS 2)}))
+                         (http-client/post clamav-url {:multipart        [{:name "file" :content file :filename filename}
+                                                                          {:name "name" :content filename}]
+                                                       :throw-exceptions false
+                                                       :socket-timeout   (.toMillis TimeUnit/MINUTES 10)
+                                                       :conn-timeout     (.toMillis TimeUnit/SECONDS 2)}))
           elapsed-time (- (System/currentTimeMillis) start-time)]
       (if (= (:status scan-result) 200)
         (if (= (:body scan-result) "Everything ok : true\n")
