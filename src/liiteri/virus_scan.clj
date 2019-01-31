@@ -53,16 +53,19 @@
                                                        :socket-timeout   (.toMillis TimeUnit/MINUTES 10)
                                                        :conn-timeout     (.toMillis TimeUnit/SECONDS 2)}))
           elapsed-time (- (System/currentTimeMillis) start-time)]
-      (if (= (:status scan-result) 200)
-        (if (= (:body scan-result) "Everything ok : true\n")
-          (do
-            (log-virus-scan-result file-key filename content-type config :successful elapsed-time)
-            (metadata-store/set-virus-scan-status! file-key :done conn))
-          (do
-            (log-virus-scan-result file-key filename content-type config :failed elapsed-time)
-            (file-store/delete-file-and-metadata file-key storage-engine conn)
-            (metadata-store/set-virus-scan-status! file-key :failed conn)))
-        (log/error (str "Failed to scan file " filename " with key " file-key ": " scan-result))))
+      (cond (= (:status scan-result) 200)
+            (if (= (:body scan-result) "Everything ok : true\n")
+              (do
+                (log-virus-scan-result file-key filename content-type config :successful elapsed-time)
+                (metadata-store/set-virus-scan-status! file-key :done conn))
+              (do
+                (log-virus-scan-result file-key filename content-type config :failed elapsed-time)
+                (file-store/delete-file-and-metadata file-key storage-engine conn)
+                (metadata-store/set-virus-scan-status! file-key :failed conn)))
+            (= (:status scan-result) 429)
+            (log/warn "Failed to scan file" filename "with key" file-key ": Too Many Requests")
+            :else
+            (log/error (str "Failed to scan file " filename " with key " file-key ": " scan-result))))
     (catch Exception e
       (log/error e (str "Failed to scan file " filename " with key " file-key " (" content-type ")")))))
 
