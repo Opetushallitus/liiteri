@@ -62,8 +62,8 @@
                 (log-virus-scan-result file-key filename content-type config :failed elapsed-time)
                 (file-store/delete-file-and-metadata file-key storage-engine conn)
                 (metadata-store/set-virus-scan-status! file-key :failed conn)))
-            (= (:status scan-result) 429)
-            (log/warn "Failed to scan file" filename "with key" file-key ": Too Many Requests")
+            (= (:status scan-result) 503)
+            (log/warn "Failed to scan file" filename "with key" file-key ": Service Unavailable")
             :else
             (log/error (str "Failed to scan file " filename " with key " file-key ": " scan-result))))
     (catch Exception e
