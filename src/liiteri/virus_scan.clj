@@ -50,7 +50,7 @@
                          (http-client/post clamav-url {:multipart        [{:name "file" :content file :filename filename}
                                                                           {:name "name" :content filename}]
                                                        :throw-exceptions false
-                                                       :socket-timeout   (.toMillis TimeUnit/MINUTES 10)
+                                                       :socket-timeout   (.toMillis TimeUnit/MINUTES 12)
                                                        :conn-timeout     (.toMillis TimeUnit/SECONDS 2)}))
           elapsed-time (- (System/currentTimeMillis) start-time)]
       (cond (= (:status scan-result) 200)
