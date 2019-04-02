@@ -21,7 +21,7 @@
 
 (defn- error-logger
   ([response-fn ^Exception e data req]
-   (log/error e req)
+   (log/error e)
    (response-fn e data req))
   ([^Exception e data req]
    (error-logger internal-server-error e data req)))
