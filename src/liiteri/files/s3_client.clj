@@ -3,15 +3,13 @@
             [liiteri.files.file-store :as file-store])
   (:import [com.amazonaws.services.s3 AmazonS3Client]
            [com.amazonaws.regions Regions]
-           [com.amazonaws.auth InstanceProfileCredentialsProvider]
+           [com.amazonaws.auth DefaultAWSCredentialsProviderChain]
            [com.amazonaws.auth.profile ProfileCredentialsProvider]))
 
 (defn- credentials-provider [config]
   (if-let [profile-name (get-in config [:file-store :s3 :credentials-profile])]
-    [(new ProfileCredentialsProvider profile-name)
-     false]
-    [(new InstanceProfileCredentialsProvider true)
-     true]))
+    (new ProfileCredentialsProvider profile-name)
+    (DefaultAWSCredentialsProviderChain/getInstance)))
 
 (defn- region [config]
   (Regions/fromName (get-in config [:file-store :s3 :region])))
@@ -20,24 +18,17 @@
   component/Lifecycle
 
   (start [this]
-    (let [[credentials-provider closable] (credentials-provider config)
-          client (-> (AmazonS3Client/builder)
-                     (.withRegion (region config))
-                     (.withCredentials credentials-provider)
-                     (.build))]
-      (-> this
-          (assoc :s3-client client)
-          (assoc :credentials-provider [credentials-provider closable]))))
+    (if (nil? (:s3-client this))
+      (assoc this :s3-client (-> (AmazonS3Client/builder)
+                                 (.withRegion (region config))
+                                 (.withCredentials (credentials-provider config))
+                                 (.build)))
+      this))
 
   (stop [this]
     (when-let [client (:s3-client this)]
       (.shutdown client))
-    (when-let [[credentials-provider closable] (:credentials-provider this)]
-      (when closable
-        (.close credentials-provider)))
-    (-> this
-        (assoc :s3-client nil)
-        (assoc :credentials-provider nil))))
+    (assoc this :s3-client nil)))
 
 (defn new-client []
   (map->S3Client {}))
