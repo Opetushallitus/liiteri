@@ -31,7 +31,7 @@
                  [clj-http "3.9.1"]
                  [aleph "0.4.6"]]
 
-  :repositories [["snapshots" {:url "https://artifactory.oph.ware.fi/artifactory/oph-sade-snapshot-local"}]]
+  :repositories [["snapshots" {:url "https://artifactory.opintopolku.fi/artifactory/oph-sade-snapshot-local"}]]
 
   :plugins [[lein-environ "1.1.0"]
             [lein-resource "17.06.1"]]
