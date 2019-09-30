@@ -13,7 +13,7 @@ module.exports = {
       log_file: 'liiteri.log',
       pid_file: '.liiteri.pid',
       combine_logs: true,
-      min_uptime: 3000,
+      min_uptime: 30000,
       max_restarts: 5,
       restart_delay: 4000,
       wait_ready: true,
