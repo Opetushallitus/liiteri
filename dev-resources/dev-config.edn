@@ -3,7 +3,7 @@
       :username          "oph"
       :password          "oph"
       :server-name       "localhost"
-      :port-number       5434
+      :port-number       16432
       :minimum-idle      20
       :maximum-pool-size 20}
  :file-store {:engine :s3
@@ -49,7 +49,7 @@
                                       "video/x-ms-vob"]}
  :server {:port 16832}
  :audit-log {:path "/tmp/auditlog_liiteri.log"}
- :antivirus {:clamav-url            "http://localhost:8765"
+ :antivirus {:clamav-url "http://localhost:8765"
              :mock? false
              :poll-interval-seconds 5}
  :file-cleaner {:poll-interval-seconds 100}}
