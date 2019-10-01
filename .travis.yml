@@ -17,7 +17,7 @@ before_script:
   - docker run --name liiteri-test-db -e POSTGRES_PASSWORD=oph -e POSTGRES_USER=oph -e POSTGRES_DB=liiteri -p 5435:5432 -d postgres:9.5
 script: >-
   CONFIG=dev-resources/local-test-config.edn ./bin/cibuild.sh run-tests-and-create-uberjar &&
-  export BASE_IMAGE="baseimage-fatjar:master" &&
+  export BASE_IMAGE="baseimage-fatjar:ci-216" &&
   ./ci-tools/common/pull-image.sh &&
   cp -v ./target/liiteri.jar $DOCKER_BUILD_DIR/artifact/liiteri.jar &&
   cp -vr ./oph-configuration $DOCKER_BUILD_DIR/config/ &&
