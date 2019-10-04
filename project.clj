@@ -39,7 +39,8 @@
                  [com.novemberain/pantomime "2.11.0"]
                  [jarohen/chime "0.2.2"]
                  [clj-http "3.10.0"]
-                 [aleph "0.4.6"]]
+                 [aleph "0.4.6"]
+                 [me.raynes/fs "1.4.6"]]
 
   :repositories [["snapshots" {:url "https://artifactory.opintopolku.fi/artifactory/oph-sade-snapshot-local"}]]
 

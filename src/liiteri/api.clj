@@ -64,8 +64,12 @@
               (try
                 (let [{:keys [filename tempfile content-type]} file]
                   (fail-if-file-extension-blacklisted! filename)
-                  (let [real-file-type (mime/validate-file-content-type! config tempfile filename content-type)
-                        resp (file-store/create-file-and-metadata file storage-engine {:connection db})]
+                  (let [detected-content-type (mime/validate-file-content-type! config tempfile filename content-type)
+                        updated-filename (mime/fix-extension filename detected-content-type)
+                        sanitized-file (assoc file
+                                              :content-type detected-content-type
+                                              :filename updated-filename)
+                        resp (file-store/create-file-and-metadata sanitized-file storage-engine {:connection db})]
                     (audit-log/log audit-logger
                                    (audit-log/unknown-user x-real-ip user-agent)
                                    audit-log/operation-new
