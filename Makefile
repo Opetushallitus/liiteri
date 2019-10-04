@@ -81,7 +81,7 @@ stop: stop-pm2
 restart: stop-pm2 start-pm2
 
 clean: stop clean-lein clean-docker
-	rm *.log
+	rm -f *.log
 	rm -rf node_modules
 
 status: $(NODE_MODULES)
