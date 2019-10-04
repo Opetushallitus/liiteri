@@ -16,7 +16,6 @@
       real-content-type)))
 
 (defn fix-extension [filename real-content-type]
-  (let [extension-from-filename (mime/mime-type-of filename)
-        extension-from-mimetype (mime/extension-for-name real-content-type)
+  (let [extension-from-mimetype (mime/extension-for-name real-content-type)
         [fname ext] (fs/split-ext filename)]
-    filename))
+    (format "%s%s" fname extension-from-mimetype)))
