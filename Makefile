@@ -105,8 +105,7 @@ help:
 # ----------------
 
 test: start-docker
-	# TODO: fix
-	CONFIG=config/test.edn ./bin/cibuild.sh run-tests
+	lein test-local
 
 # ----------------
 # Kill PM2 and all apps managed by it (= everything)

@@ -3,7 +3,7 @@
       :username          "oph"
       :password          "oph"
       :server-name       "localhost"
-      :port-number       5435
+      :port-number       16433
       :minimum-idle      20
       :maximum-pool-size 20}
  :file-store {:engine :filesystem
