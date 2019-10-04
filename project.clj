@@ -5,6 +5,16 @@
   :licence {:name "EUPL"
             :url  "https://www.tldrlegal.com/l/eupl-1.1"}
 
+  :managed-dependencies [[instaparse/instaparse "1.4.10"]
+                         [org.apache.httpcomponents/httpclient "4.5.10"]
+                         [org.apache.httpcomponents/httpcore "4.4.12"]
+                         [commons-logging/commons-logging "1.2"]
+                         [com.fasterxml.jackson.core/jackson-core "2.10.0"]
+                         [com.fasterxml.jackson.core/jackson-databind "2.10.0"]
+                         [com.fasterxml.jackson.core/jackson-annotations "2.10.0"]
+                         [riddley/riddley "0.2.0"]
+                         [org.clojure/tools.reader "1.3.2"]]
+
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [com.amazonaws/aws-java-sdk-s3 "1.11.641"]
                  [camel-snake-kebab "0.4.0"]
