@@ -1,7 +1,7 @@
 version: '3.2'
 services:
   liiteri-dev-db:
-    image: postgres:9.5
+    image: postgres:11
     environment:
       - POSTGRES_DB=liiteri
       - POSTGRES_PASSWORD=oph
@@ -22,7 +22,7 @@ services:
       - './.localstack:/tmp/localstack'
       - '/var/run/docker.sock:/var/run/docker.sock'
   liiteri-test-db:
-    image: postgres:9.5
+    image: postgres:11
     environment:
       - POSTGRES_DB=liiteri
       - POSTGRES_PASSWORD=oph
