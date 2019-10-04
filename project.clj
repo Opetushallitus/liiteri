@@ -13,7 +13,7 @@
                  [metosin/compojure-api "2.0.0-alpha30"]
                  [com.stuartsierra/component "0.4.0"]
                  [org.flywaydb/flyway-core "6.0.4"]
-                 [fi.vm.sade/auditlogger "8.0.0-SNAPSHOT"]
+                 [fi.vm.sade/auditlogger "8.3.1-SNAPSHOT"]
                  [hikari-cp "2.9.0"]
                  [http-kit "2.3.0"]
                  [org.clojure/java.jdbc "0.7.10"]
