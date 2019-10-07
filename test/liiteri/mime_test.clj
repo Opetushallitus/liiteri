@@ -8,8 +8,8 @@
 (def config (config/new-config))
 
 (deftest mime-type-detected
-  (let [parrot-file (io/file (io/resource "parrot.png"))]
-    (mime/validate-file-content-type! config parrot-file "parrot.png" "application/pngf")))
+  (let [png-file (io/file (io/resource "test-files/sample.png"))]
+    (mime/validate-file-content-type! config png-file "sample.png" "application/png")))
 
 (deftest extensions-fixed
   )

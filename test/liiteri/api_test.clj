@@ -27,20 +27,20 @@
     (.exists file)))
 
 (deftest file-upload
-  (let [file (io/file (io/resource "parrot.png"))
+  (let [file (io/file (io/resource "test-files/sample.png"))
         path (str "http://localhost:" (get-in config [:server :port]) "/liiteri/api/files")
-        resp @(http/post path {:multipart [{:name "file" :content file :filename "parrot.png" :content-type "image/png"}]})
+        resp @(http/post path {:multipart [{:name "file" :content file :filename "sample.png" :content-type "image/png"}]})
         body (json/parse-string (:body resp) true)]
     (is (= (:status resp) 200))
     (is (file-stored? (:key body)))
-    (is (= (:filename body) "parrot.png"))
+    (is (= (:filename body) "sample.png"))
     (is (= (:content-type body) "image/png"))
     (is (= (:size body) 7777))
     (is (= (:deleted body) nil))
     (is (= (:final body) false))
     (is (some? (:uploaded body)))
     (let [saved-metadata (metadata/get-metadata-for-tests [(:key body)] {:connection (:db @system)})]
-      (is (= (:filename saved-metadata) "parrot.png"))
+      (is (= (:filename saved-metadata) "sample.png"))
       (is (= (:size saved-metadata) 7777))
       (is (nil? (:deleted saved-metadata)))
       (is (= "not_started" (:virus-scan-status saved-metadata))))
@@ -54,9 +54,9 @@
       (is (= (json/parse-string (:body delete-resp) true) {:key (:key body)})))))
 
 (deftest exe-extension-refused
-  (let [file (io/file (io/resource "parrot.png"))
+  (let [file (io/file (io/resource "test-files/sample.exe"))
         path (str "http://localhost:" (get-in config [:server :port]) "/liiteri/api/files")
-        resp @(http/post path {:multipart [{:name "file" :content file :filename "parrot.exe" :content-type "image/png"}]})
+        resp @(http/post path {:multipart [{:name "file" :content file :filename "sample.exe" :content-type "image/png"}]})
         body (json/parse-string (:body resp) true)]
     (is (= (:status resp) 400))
     (is (nil? body))
@@ -64,7 +64,7 @@
       (is (nil? saved-metadata)))))
 
 (deftest virus-download
-  (let [file (io/file (io/resource "virus.txt"))
+  (let [file (io/file (io/resource "test-files/virus.txt"))
         path (str "http://localhost:" (get-in config [:server :port]) "/liiteri/api/files")
         upload-resp @(http/post path {:multipart [{:name "file" :content file :filename "virus.txt" :content-type "image/png"}]})
         key (:key (json/parse-string (:body upload-resp) true))
