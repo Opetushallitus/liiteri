@@ -73,6 +73,7 @@
                                    (audit-log/new-file-changes resp))
                       (response/ok resp)))
                 (catch IllegalArgumentException e
+                  (log/warn (format "File failed upload validation: %s", (.getMessage e)))
                   (response/bad-request! (get-in (ex-data e) [:response :body])))
                 (finally
                   (io/delete-file (:tempfile file) true))))
