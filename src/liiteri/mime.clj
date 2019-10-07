@@ -4,8 +4,8 @@
             [pantomime.mime :as mime]
             [me.raynes.fs :as fs]))
 
-(defn detect-mime-type [file]
-  (mime/mime-type-of file))
+(defn detect-mime-type [file-or-stream-or-buffer]
+  (mime/mime-type-of file-or-stream-or-buffer))
 
 (defn validate-file-content-type! [config file filename real-content-type provided-content-type]
   (let [allowed-mime-types (-> config :file-store :attachment-mime-types)]
