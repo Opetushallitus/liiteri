@@ -1,7 +1,7 @@
 sudo: required
 language: generic
 jdk:
-  - openjdk8
+  - openjdk11
 services:
   - docker
 env:
