@@ -62,20 +62,16 @@
               :middleware [upload/wrap-multipart-params]
               :return schema/File
               (try
-                (let [{:keys [filename tempfile content-type]} file]
+                (let [{:keys [filename tempfile content-type size]} file]
                   (fail-if-file-extension-blacklisted! filename)
-                  (let [detected-content-type (mime/validate-file-content-type! config tempfile filename content-type)
-                        updated-filename (mime/fix-extension filename detected-content-type)
-                        sanitized-file (assoc file
-                                              :content-type detected-content-type
-                                              :filename updated-filename)
-                        resp (file-store/create-file-and-metadata sanitized-file storage-engine {:connection db})]
+                  (let [resp (-> (mime/file->validated-file-spec! config filename tempfile size content-type)
+                                 (file-store/create-file-and-metadata storage-engine {:connection db}))]
                     (audit-log/log audit-logger
                                    (audit-log/unknown-user x-real-ip user-agent)
                                    audit-log/operation-new
                                    (audit-log/file-target (:key resp))
                                    (audit-log/new-file-changes resp))
-                    (response/ok resp)))
+                      (response/ok resp)))
                 (catch IllegalArgumentException e
                   (response/bad-request! (get-in (ex-data e) [:response :body])))
                 (finally

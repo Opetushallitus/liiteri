@@ -9,7 +9,8 @@
 
 (deftest mime-type-detected
   (let [png-file (io/file (io/resource "test-files/sample.png"))]
-    (mime/validate-file-content-type! config png-file "sample.png" "application/png")))
+    (mime/validate-file-content-type! config png-file "sample.png" "image/png" "image/png")
+    ))
 
 (deftest extensions-fixed
   )

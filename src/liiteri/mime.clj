@@ -4,9 +4,11 @@
             [pantomime.mime :as mime]
             [me.raynes.fs :as fs]))
 
-(defn validate-file-content-type! [config file filename provided-content-type]
-  (let [allowed-mime-types (-> config :file-store :attachment-mime-types)
-        real-content-type (mime/mime-type-of file)]
+(defn detect-mime-type [file]
+  (mime/mime-type-of file))
+
+(defn validate-file-content-type! [config file filename real-content-type provided-content-type]
+  (let [allowed-mime-types (-> config :file-store :attachment-mime-types)]
     (if (not-any? (partial = real-content-type) allowed-mime-types)
       (do
         (log/warn (str "Request with illegal content-type '" real-content-type "' of file '" filename "' (provided '" provided-content-type "' ). Allowed: " allowed-mime-types)
@@ -19,3 +21,12 @@
   (let [extension-from-mimetype (mime/extension-for-name real-content-type)
         [fname ext] (fs/split-ext filename)]
     (format "%s%s" fname extension-from-mimetype)))
+
+(defn file->validated-file-spec! [config filename tempfile size provided-content-type]
+  (let [detected-content-type (detect-mime-type tempfile)
+        updated-filename (fix-extension filename detected-content-type)]
+    (validate-file-content-type! config tempfile updated-filename detected-content-type provided-content-type)
+    {:content-type detected-content-type
+     :filename updated-filename
+     :size size
+     :tempfile tempfile}))
