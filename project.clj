@@ -41,6 +41,7 @@
                  [ring.middleware.conditional "0.2.0"]
                  [environ "1.1.0"]
                  [com.novemberain/pantomime "2.11.0"]
+                 [org.apache.commons/commons-compress "1.19"]
                  [jarohen/chime "0.2.2"]
                  [clj-http "3.10.0"]
                  [aleph "0.4.6"]
