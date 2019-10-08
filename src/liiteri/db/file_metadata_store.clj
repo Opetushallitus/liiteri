@@ -1,11 +1,8 @@
 (ns liiteri.db.file-metadata-store
   (:require [clj-time.core :as t]
             [liiteri.db.db-utils :as db-utils]
-            [liiteri.schema :as schema]
-            [schema-tools.core :as st]
             [yesql.core :as sql])
-  (:import [org.joda.time DateTime]
-           [java.text Normalizer Normalizer$Form]))
+  (:import [java.text Normalizer Normalizer$Form]))
 
 (sql/defqueries "sql/files.sql")
 
