@@ -7,7 +7,7 @@
 (defn detect-mime-type [file-or-stream-or-buffer]
   (mime/mime-type-of file-or-stream-or-buffer))
 
-(defn validate-file-content-type! [config file filename real-content-type provided-content-type]
+(defn validate-file-content-type! [config filename real-content-type provided-content-type]
   (let [allowed-mime-types (-> config :file-store :attachment-mime-types)]
     (if (not-any? (partial = real-content-type) allowed-mime-types)
       (do
@@ -25,7 +25,7 @@
 (defn file->validated-file-spec! [config filename tempfile size provided-content-type]
   (let [detected-content-type (detect-mime-type tempfile)
         updated-filename (fix-extension filename detected-content-type)]
-    (validate-file-content-type! config tempfile updated-filename detected-content-type provided-content-type)
+    (validate-file-content-type! config updated-filename detected-content-type provided-content-type)
     {:content-type detected-content-type
      :filename updated-filename
      :size size
