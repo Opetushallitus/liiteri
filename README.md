@@ -20,13 +20,13 @@ JVM system properties on startup.
 
 ## Testing
 
-Tests require own separate database. Open your terminal and run following command to start it:
+Tests require own separate database. You can start it with Docker by hand
 
 ```bash
-$ docker run --name liiteri-test-db -e POSTGRES_PASSWORD=oph -e POSTGRES_USER=oph -e POSTGRES_DB=liiteri -p 5435:5432 -d postgres:9.5
+$ docker run --name liiteri-test-db -e POSTGRES_PASSWORD=oph -e POSTGRES_USER=oph -e POSTGRES_DB=liiteri -p 5435:5432 -d postgres:11
 ```
 
-Run tests once by invoking
+and then run tests once by invoking
 
 ```bash
 $ lein test-local
@@ -38,9 +38,19 @@ Run tests automatically on file changes by invoking
 $ lein test-local-auto
 ```
 
+You can also just run
+
+```make test```
+
+and it will take care of both Docker and running the tests.
+
 Tests use the [dev-resources/test-config.edn](dev-resources/local-test-config.edn) configuration.
 
 ## Running The Service Locally
+
+Quick start:
+
+```make start```
 
 To get temporary AWS credentials for accessing S3 locally, run [bin/create-aws-temp-creds.sh](bin/create-aws-temp-creds.sh) .
 
