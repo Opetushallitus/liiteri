@@ -42,13 +42,12 @@ Tests use the [dev-resources/test-config.edn](dev-resources/local-test-config.ed
 
 ## Running The Service Locally
 
-Open your terminal and run following commands. Creating the PostgreSQL Docker image needs to be done only once. If you
-are running the service with filesystem based storage engine, the `JVM_OPTS` part of the startup command below can be
-omitted.
+To get temporary AWS credentials for accessing S3 locally, run [bin/create-aws-temp-creds.sh](bin/create-aws-temp-creds.sh) .
+
+Use its output to add the neccessary JVM_OPTS for running the service, e.g. by
 
 ```bash
-$ docker run --name liiteri-dev-db -e POSTGRES_PASSWORD=oph -e POSTGRES_USER=oph -e POSTGRES_DB=liiteri -p 5434:5432 -d postgres:9.5
-$ JVM_OPTS="-Daws.accessKeyId=access-key -Daws.secretKey=secret-key" lein repl
+$ JVM_OPTS="-Daws.accessKeyId=access-key -Daws.secretKey=secret-key -Daws.sessionToken=session-token"  lein repl
 ```
 
 When the REPL prompt opens, you can start the service by invoking
