@@ -3,7 +3,7 @@
 
 (defn load-test-file [filename content-type]
   (let [file-object (io/file (io/resource (format "test-files/%s" filename)))]
-    [filename file-object content-type]))
+    [filename file-object content-type (.length file-object)]))
 
 (def file-types
   {:exe "application/octet-stream"
