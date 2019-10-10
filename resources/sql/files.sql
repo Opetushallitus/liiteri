@@ -34,8 +34,8 @@ UPDATE files SET virus_scan_status = :virus_scan_status::virus_scan_status WHERE
 -- name: sql-finalize-files!
 UPDATE files SET final = TRUE WHERE key IN (:keys);
 
--- name: sql-set-content-type!
-UPDATE files SET content_type = :content_type WHERE key = :file_key;
+-- name: sql-set-content-type-and-filename!
+UPDATE files SET content_type = :content_type, filename = :filename WHERE key = :file_key;
 
 -- name: sql-get-draft-file
 SELECT key, filename, content_type, size, uploaded, deleted, virus_scan_status, final

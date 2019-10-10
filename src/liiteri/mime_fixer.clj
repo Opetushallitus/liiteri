@@ -25,13 +25,16 @@
       (log/info (str "Fixing mime type of '" filename "' with key '" file-key "', uploaded on " uploaded " ..."))
       (let [file (.get-file storage-engine file-key)
             detected-content-type (mime/detect-mime-type file)
+            fixed-filename (mime/fix-extension filename detected-content-type)
             elapsed-time (- (System/currentTimeMillis) start-time)]
-        (metadata-store/set-content-type! file-key detected-content-type conn)
+        (metadata-store/set-content-type-and-filename! file-key fixed-filename detected-content-type conn)
         (log-mime-type-fix-result file-key filename detected-content-type :successful elapsed-time))
       (catch Exception e
         (log/error e (str "Failed to fix mime type of file '" filename "' with key '" file-key "', uploaded on " uploaded))
-        (metadata-store/set-content-type! file-key mime-type-for-failed-cases conn)
-        (log-mime-type-fix-result file-key filename mime-type-for-failed-cases :failed (- (System/currentTimeMillis) start-time))))))
+        (metadata-store/set-content-type-and-filename! file-key mime-type-for-failed-cases conn)
+        (log-mime-type-fix-result file-key (mime/fix-extension filename mime-type-for-failed-cases)
+                                  mime-type-for-failed-cases
+                                  :failed (- (System/currentTimeMillis) start-time))))))
 
 (defn- fix-mime-type-of-next-file [db storage-engine]
   (try

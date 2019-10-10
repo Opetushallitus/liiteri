@@ -81,10 +81,11 @@
 (defn finalize-files [keys conn]
   (sql-finalize-files! {:keys keys} conn))
 
-(defn set-content-type! [file-key content-type conn]
-  (sql-set-content-type! {:file_key     file-key
-                          :content_type content-type}
-                         conn))
+(defn set-content-type-and-filename! [file-key filename content-type conn]
+  (sql-set-content-type-and-filename! {:file_key     file-key
+                                       :filename     filename
+                                       :content_type content-type}
+                                      conn))
 
 (defn get-queue-length
   [conn]
