@@ -67,6 +67,12 @@
        (map db-utils/unwrap-data)
        (first)))
 
+(defn get-file-without-mime-type [conn]
+  (->> (sql-get-file-without-mime-type {} conn)
+       (eduction (map db-utils/unwrap-data)
+                 (map #(update % :filename sanitize)))
+       (first)))
+
 (defn set-virus-scan-status! [file-key status conn]
   (sql-set-virus-scan-status! {:file_key          file-key
                                :virus_scan_status (name status)}
@@ -74,6 +80,11 @@
 
 (defn finalize-files [keys conn]
   (sql-finalize-files! {:keys keys} conn))
+
+(defn set-content-type! [file-key content-type conn]
+  (sql-set-content-type! {:file_key     file-key
+                          :content_type content-type}
+                         conn))
 
 (defn get-queue-length
   [conn]

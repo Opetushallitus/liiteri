@@ -20,11 +20,22 @@ SELECT key, filename, content_type
   AND deleted IS NULL
   LIMIT 1 FOR UPDATE SKIP LOCKED;
 
+-- name: sql-get-file-without-mime-type
+SELECT key, filename, content_type, uploaded
+  FROM files
+  WHERE content_type IS NULL
+  AND deleted IS NULL
+  ORDER BY uploaded DESC
+  LIMIT 1 FOR UPDATE SKIP LOCKED;
+
 -- name: sql-set-virus-scan-status!
 UPDATE files SET virus_scan_status = :virus_scan_status::virus_scan_status WHERE key = :file_key;
 
 -- name: sql-finalize-files!
 UPDATE files SET final = TRUE WHERE key IN (:keys);
+
+-- name: sql-set-content-type!
+UPDATE files SET content_type = :content_type WHERE key = :file_key;
 
 -- name: sql-get-draft-file
 SELECT key, filename, content_type, size, uploaded, deleted, virus_scan_status, final

@@ -10,6 +10,7 @@
             [liiteri.server :as server]
             [liiteri.virus-scan :as virus-scan]
             [liiteri.file-cleaner :as file-cleaner]
+            [liiteri.mime-fixer :as mime-fixer]
             [schema.core :as s]
             [taoensso.timbre :as log])
   (:import [java.util TimeZone])
@@ -44,6 +45,10 @@
 
                           :file-cleaner   (component/using
                                            (file-cleaner/new-cleaner)
+                                           [:db :storage-engine :config :migrations])
+
+                          :mime-fixer     (component/using
+                                           (mime-fixer/new-mime-fixer)
                                            [:db :storage-engine :config :migrations])
 
                           (case (get-in config [:file-store :engine])
