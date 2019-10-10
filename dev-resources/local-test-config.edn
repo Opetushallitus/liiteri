@@ -25,4 +25,5 @@
  :antivirus {:clamav-url            "http://localhost:8765"
              :mock?                 true
              :poll-interval-seconds 5}
- :file-cleaner {:poll-interval-seconds 100}}
+ :file-cleaner {:poll-interval-seconds 100}
+ :mime-fixer {:poll-interval-seconds 5}}

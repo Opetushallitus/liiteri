@@ -64,11 +64,13 @@
   component/Lifecycle
 
   (start [this]
-    (log/info "Starting MIME type fixing process")
-    (let [poll-interval (get-in config [:antivirus :poll-interval-seconds])
+    (log/info "Starting MIME type fixing process...")
+    (let [poll-interval (get-in config [:mime-fixer :poll-interval-seconds])
           scheduler (Executors/newScheduledThreadPool 1)
           fixer #(fix-mime-types-of-files db storage-engine)
-          fixer-future (.scheduleAtFixedRate scheduler fixer 0 poll-interval TimeUnit/SECONDS)]
+          time-unit TimeUnit/SECONDS
+          fixer-future (.scheduleAtFixedRate scheduler fixer 0 poll-interval time-unit)]
+      (log/info (str "Started MIME type fixing process, restarting at " poll-interval " " time-unit " intervals."))
       (assoc this :fixer-future fixer-future)))
 
   (stop [this]
