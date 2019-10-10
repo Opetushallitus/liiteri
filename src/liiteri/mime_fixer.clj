@@ -28,7 +28,8 @@
                                   fixed-filename
                                   (str fixed-filename " (originally '" filename "')"))]
         (metadata-store/set-content-type-and-filename! file-key fixed-filename detected-content-type conn)
-        (log-mime-type-fix-result file-key names-for-logging detected-content-type :successful (- (System/currentTimeMillis) start-time)))
+        (log-mime-type-fix-result file-key names-for-logging detected-content-type :successful (- (System/currentTimeMillis) start-time))
+        true)
       (catch Exception e
         (log/error e (str "Failed to fix mime type of file '" filename "' with key '" file-key "', uploaded on " uploaded))
         (let [fixed-filename (mime/fix-extension filename mime-type-for-failed-cases)]
@@ -37,16 +38,19 @@
                                     fixed-filename
                                     mime-type-for-failed-cases
                                     :failed
-                                    (- (System/currentTimeMillis) start-time)))))))
+                                    (- (System/currentTimeMillis) start-time)))
+        false))))
 
 (defn- fix-mime-type-of-next-file [db storage-engine]
   (try
     (jdbc/with-db-transaction [tx db]
                               (let [conn {:connection tx}]
-                                (when-let [file (metadata-store/get-file-without-mime-type conn)]
-                                  (fix-mime-type-of-file conn storage-engine file))))
+                                (if-let [file (metadata-store/get-file-without-mime-type conn)]
+                                  (fix-mime-type-of-file conn storage-engine file)
+                                  false)))
     (catch Exception e
-      (log/error e "Failed to fix mime type of the next file"))))
+      (log/error e "Failed to fix mime type of the next file")
+      false)))
 
 (defn- fix-mime-types-of-files [db storage-engine]
   (loop []
