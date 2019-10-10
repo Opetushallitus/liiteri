@@ -26,9 +26,12 @@
       (log/info (str "Fixing mime type of '" filename "' with key '" file-key "', uploaded on " uploaded " ..."))
       (let [file (file-store/get-file storage-engine file-key)
             detected-content-type (mime/detect-mime-type file)
-            fixed-filename (mime/fix-extension filename detected-content-type)]
+            fixed-filename (mime/fix-extension filename detected-content-type)
+            names-for-logging (if (= filename fixed-filename)
+                                  fixed-filename
+                                  (str fixed-filename " (originally '" filename "')"))]
         (metadata-store/set-content-type-and-filename! file-key fixed-filename detected-content-type conn)
-        (log-mime-type-fix-result file-key fixed-filename detected-content-type :successful (- (System/currentTimeMillis) start-time)))
+        (log-mime-type-fix-result file-key names-for-logging detected-content-type :successful (- (System/currentTimeMillis) start-time)))
       (catch Exception e
         (log/error e (str "Failed to fix mime type of file '" filename "' with key '" file-key "', uploaded on " uploaded))
         (let [fixed-filename (mime/fix-extension filename mime-type-for-failed-cases)]
