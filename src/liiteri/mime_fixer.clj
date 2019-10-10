@@ -1,14 +1,11 @@
 (ns liiteri.mime-fixer
   (:require [liiteri.db.file-metadata-store :as metadata-store]
-            [chime :as c]
-            [clojure.core.async :as a]
             [clojure.java.jdbc :as jdbc]
-            [clj-time.core :as t]
-            [clj-time.periodic :as p]
             [com.stuartsierra.component :as component]
             [liiteri.mime :as mime]
             [taoensso.timbre :as log]
-            [liiteri.files.file-store :as file-store]))
+            [liiteri.files.file-store :as file-store])
+  (:import (java.util.concurrent Executors TimeUnit ScheduledFuture)))
 
 (def mime-type-for-failed-cases "application/octet-stream")
 
@@ -63,21 +60,18 @@
   component/Lifecycle
 
   (start [this]
+    (log/info "Starting MIME type fixing process")
     (let [poll-interval (get-in config [:antivirus :poll-interval-seconds])
-          times (c/chime-ch (p/periodic-seq (t/now) (t/seconds poll-interval))
-                            {:ch (a/chan (a/sliding-buffer 1))})]
-      (log/info "Starting MIME type fixing process")
-      (a/go-loop []
-        (when-let [_ (a/<! times)]
-          (fix-mime-types-of-files db storage-engine)
-          (recur)))
-      (assoc this :chan times)))
+          scheduler (Executors/newScheduledThreadPool 1)
+          fixer #(fix-mime-types-of-files db storage-engine)
+          fixer-future (.scheduleAtFixedRate scheduler fixer 0 poll-interval TimeUnit/SECONDS)]
+      (assoc this :fixer-future fixer-future)))
 
   (stop [this]
-    (when-let [chan (:chan this)]
-      (a/close! chan))
+    (when-let [^ScheduledFuture fixer-future (:fixer-future this)]
+      (.cancel fixer-future true))
     (log/info "Stopped MIME type fixing process")
-    (assoc this :chan nil))
+    (assoc this :fixer-future nil))
 
   Fixer
 
