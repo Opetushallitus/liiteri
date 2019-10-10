@@ -7,7 +7,8 @@
             [clj-time.periodic :as p]
             [com.stuartsierra.component :as component]
             [liiteri.mime :as mime]
-            [taoensso.timbre :as log]))
+            [taoensso.timbre :as log]
+            [liiteri.files.file-store :as file-store]))
 
 (def mime-type-for-failed-cases "application/octet-stream")
 
@@ -23,7 +24,7 @@
   (let [start-time (System/currentTimeMillis)]
     (try
       (log/info (str "Fixing mime type of '" filename "' with key '" file-key "', uploaded on " uploaded " ..."))
-      (let [file (.get-file storage-engine file-key)
+      (let [file (file-store/get-file storage-engine file-key)
             detected-content-type (mime/detect-mime-type file)
             fixed-filename (mime/fix-extension filename detected-content-type)]
         (metadata-store/set-content-type-and-filename! file-key fixed-filename detected-content-type conn)

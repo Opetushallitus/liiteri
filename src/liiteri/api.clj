@@ -134,7 +134,7 @@
               :path-params [key :- (api/describe s/Str "Key of the file")]
               (let [[metadata] (file-metadata-store/get-metadata [key] {:connection db})]
                 (if (= "done" (:virus-scan-status metadata))
-                  (if-let [file-response (file-store/get-file key storage-engine {:connection db})]
+                  (if-let [file-response (file-store/get-file-and-metadata key storage-engine {:connection db})]
                     (do (audit-log/log audit-logger
                                        (audit-log/unknown-user x-real-ip user-agent)
                                        audit-log/operation-file-query
