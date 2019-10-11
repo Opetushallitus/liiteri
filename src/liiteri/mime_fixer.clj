@@ -15,11 +15,11 @@
   (let [status-str (if (= status :successful) "OK" "FAILED")]
     (log/info (str "Mime type fix took " elapsed-time " ms, status " status-str " for file " filename " with key " file-key " (" content-type ")"))))
 
-(defn- fix-mime-type-of-file [conn
-                              storage-engine
-                              {file-key :key
-                               filename :filename
-                               uploaded :uploaded}]
+(defn fix-mime-type-of-file [conn
+                             storage-engine
+                             {file-key :key
+                              filename :filename
+                              uploaded :uploaded}]
   (let [start-time (System/currentTimeMillis)]
     (try
       (log/info (str "Fixing mime type of '" filename "' with key '" file-key "', uploaded on " uploaded " ..."))
