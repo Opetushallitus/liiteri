@@ -43,10 +43,16 @@
 (defn delete-file [key conn]
   (sql-delete-file! {:key key} conn))
 
+(defn- fix-null-content-type [metadata]
+  (if (= nil (:content-type metadata))
+    (assoc metadata :content-type "application/octet-stream")
+    metadata))
+
 (defn get-metadata [key-list conn]
   (->> (sql-get-metadata {:keys key-list} conn)
        (eduction (map db-utils/unwrap-data)
-                 (map #(update % :filename sanitize)))
+                 (map #(update % :filename sanitize))
+                 (map fix-null-content-type))
        (reduce (fn pick-latest-metadata [result {:keys [key uploaded] :as metadata}]
                  (cond-> result
                    (or (not (contains? result key))
