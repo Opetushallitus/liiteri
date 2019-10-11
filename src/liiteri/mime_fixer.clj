@@ -23,15 +23,16 @@
   (let [start-time (System/currentTimeMillis)]
     (try
       (log/info (str "Fixing mime type of '" filename "' with key '" file-key "', uploaded on " uploaded " ..."))
-      (let [^InputStream file (file-store/get-file storage-engine file-key)
-            detected-content-type (mime/detect-mime-type (TikaInputStream/get file))
-            fixed-filename (mime/fix-extension filename detected-content-type)
-            names-for-logging (if (= filename fixed-filename)
+      (with-open [^InputStream file (file-store/get-file storage-engine file-key)]
+        (let [detected-content-type (mime/detect-mime-type (TikaInputStream/get file))
+              fixed-filename (mime/fix-extension filename detected-content-type)
+              names-for-logging (if (= filename fixed-filename)
                                   fixed-filename
                                   (str fixed-filename " (originally '" filename "')"))]
-        (metadata-store/set-content-type-and-filename! file-key fixed-filename detected-content-type conn)
-        (log-mime-type-fix-result file-key names-for-logging detected-content-type :successful (- (System/currentTimeMillis) start-time))
-        true)
+          (.readAllBytes file)
+          (metadata-store/set-content-type-and-filename! file-key fixed-filename detected-content-type conn)
+          (log-mime-type-fix-result file-key names-for-logging detected-content-type :successful (- (System/currentTimeMillis) start-time))
+          true))
       (catch Exception e
         (log/error e (str "Failed to fix mime type of file '" filename "' with key '" file-key "', uploaded on " uploaded))
         (let [fixed-filename (mime/fix-extension filename mime-type-for-failed-cases)]
