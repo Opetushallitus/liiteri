@@ -34,7 +34,7 @@
           (log-mime-type-fix-result file-key names-for-logging detected-content-type :successful (- (System/currentTimeMillis) start-time))
           true))
       (catch Exception e
-        (log/error e (str "Failed to fix mime type of file '" filename "' with key '" file-key "', uploaded on " uploaded))
+        (log/error e (str "Failed to fix mime type of file '" filename "' with key '" file-key "', uploaded on " uploaded " : " (.getMessage e)))
         (let [fixed-filename (mime/fix-extension filename mime-type-for-failed-cases)]
           (metadata-store/set-content-type-and-filename! file-key fixed-filename mime-type-for-failed-cases conn)
           (log-mime-type-fix-result file-key
