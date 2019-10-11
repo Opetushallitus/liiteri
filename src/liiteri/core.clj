@@ -11,14 +11,22 @@
             [liiteri.virus-scan :as virus-scan]
             [liiteri.file-cleaner :as file-cleaner]
             [liiteri.mime-fixer :as mime-fixer]
-            [schema.core :as s]
-            [taoensso.timbre :as log])
+            [taoensso.timbre :as log]
+            [taoensso.timbre.appenders.core :as appenders])
   (:import [java.util TimeZone])
   (:gen-class))
 
 (defn new-system [& [config-overrides]]
   (log/merge-config! {:timestamp-opts {:pattern  "yyyy-MM-dd HH:mm:ss ZZ"
-                                       :timezone (TimeZone/getTimeZone "Europe/Helsinki")}})
+                                       :timezone (TimeZone/getTimeZone "Europe/Helsinki")}
+                      :appenders
+                                      {:println
+                                       {:min-level    :info
+                                        :ns-blacklist ["com.zaxxer.hikari.HikariConfig"]}
+                                       :debug-level-println
+                                       (assoc (appenders/println-appender)
+                                         :min-level :debug
+                                         :ns-whitelist ["com.zaxxer.hikari.HikariConfig"])}})
   (let [config (config/new-config config-overrides)]
     (apply component/system-map
                           :config         config
