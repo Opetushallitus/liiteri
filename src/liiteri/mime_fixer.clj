@@ -5,7 +5,9 @@
             [liiteri.mime :as mime]
             [taoensso.timbre :as log]
             [liiteri.files.file-store :as file-store])
-  (:import (java.util.concurrent Executors TimeUnit ScheduledFuture)))
+  (:import (java.util.concurrent Executors TimeUnit ScheduledFuture)
+           (org.apache.tika.io TikaInputStream)
+           (java.io InputStream)))
 
 (def mime-type-for-failed-cases "application/octet-stream")
 
@@ -21,8 +23,8 @@
   (let [start-time (System/currentTimeMillis)]
     (try
       (log/info (str "Fixing mime type of '" filename "' with key '" file-key "', uploaded on " uploaded " ..."))
-      (let [file (file-store/get-file storage-engine file-key)
-            detected-content-type (mime/detect-mime-type file)
+      (let [^InputStream file (file-store/get-file storage-engine file-key)
+            detected-content-type (mime/detect-mime-type (TikaInputStream/get file))
             fixed-filename (mime/fix-extension filename detected-content-type)
             names-for-logging (if (= filename fixed-filename)
                                   fixed-filename
