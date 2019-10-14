@@ -20,4 +20,7 @@
       (is (thrown? clojure.lang.ExceptionInfo (mime/validate-file-content-type! config name content-type content-type))))))
 
 (deftest extensions-fixed
-  )
+  (is (= "foobar.png" (mime/fix-extension "foobar" "image/png")))
+  (is (= "foobar.png" (mime/fix-extension "foobar." "image/png")))
+  (is (= "foobar.png" (mime/fix-extension "foobar.jpg" "image/png")))
+  (is (= "foobar" (mime/fix-extension "foobar" nil))))
