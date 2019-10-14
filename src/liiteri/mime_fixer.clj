@@ -64,7 +64,9 @@
                               (let [conn {:connection tx}]
                                 (if-let [file (metadata-store/get-file-without-mime-type conn)]
                                   (fix-mime-type-of-file conn storage-engine file)
-                                  false)))
+                                  (do
+                                    (log/info "MIME type fixing seems to be finished (or errored).")
+                                    false))))
     (catch Exception e
       (log/error e "Failed to fix mime type of the next file")
       false)))
