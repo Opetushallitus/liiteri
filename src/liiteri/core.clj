@@ -26,7 +26,8 @@
                                        :debug-level-println
                                        (assoc (appenders/println-appender)
                                          :min-level :debug
-                                         :ns-whitelist ["com.zaxxer.hikari.HikariConfig"])}})
+                                         :ns-whitelist ["com.zaxxer.hikari.HikariConfig"])}
+                      :output-fn      (partial log/default-output-fn {:stacktrace-fonts {}})})
   (let [config (config/new-config config-overrides)]
     (apply component/system-map
                           :config         config
