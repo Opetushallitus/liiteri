@@ -4,10 +4,12 @@
             [clojure.test :refer :all]
             [liiteri.config :as config]
             [liiteri.core :as system]
+            [liiteri.fixtures :refer :all]
             [liiteri.db.test-metadata-store :as metadata]
             [liiteri.test-utils :as u]
             [org.httpkit.client :as http]
             [cheshire.core :as json]
+            [taoensso.timbre :as log]
             [clojure.java.jdbc :as jdbc]))
 
 (def system (atom nil))
@@ -27,44 +29,78 @@
     (.exists file)))
 
 (deftest file-upload
-  (let [file (io/file (io/resource "parrot.png"))
-        path (str "http://localhost:" (get-in config [:server :port]) "/liiteri/api/files")
-        resp @(http/post path {:multipart [{:name "file" :content file :filename "parrot.png" :content-type "image/png"}]})
-        body (json/parse-string (:body resp) true)]
-    (is (= (:status resp) 200))
-    (is (file-stored? (:key body)))
-    (is (= (:filename body) "parrot.png"))
-    (is (= (:content-type body) "image/png"))
-    (is (= (:size body) 7777))
-    (is (= (:deleted body) nil))
-    (is (= (:final body) false))
-    (is (some? (:uploaded body)))
-    (let [saved-metadata (metadata/get-metadata-for-tests [(:key body)] {:connection (:db @system)})]
-      (is (= (:filename saved-metadata) "parrot.png"))
-      (is (= (:size saved-metadata) 7777))
-      (is (nil? (:deleted saved-metadata)))
-      (is (= "not_started" (:virus-scan-status saved-metadata))))
-    (let [_              @(http/post (str path "/finalize")
-                                     {:headers {"Content-Type" "application/json"}
-                                      :body    (json/generate-string {:keys [(:key body)]})})
-          saved-metadata (metadata/get-metadata-for-tests [(:key body)] {:connection (:db @system)})]
-      (is (= (:final saved-metadata) true)))
-    (let [delete-resp @(http/delete (str path "/" (:key body)))]
-      (is (= (:status delete-resp) 200))
-      (is (= (json/parse-string (:body delete-resp) true) {:key (:key body)})))))
+  (doseq [[filename file content-type size] ok-files]
+    (log/info (format "Testing normal file upload for filename %s with content-type %s, size %d (should pass)" filename content-type size))
+    (let [path (str "http://localhost:" (get-in config [:server :port]) "/liiteri/api/files")
+          resp @(http/post path {:multipart [{:name "file" :content file :filename filename :content-type content-type}]})
+          body (json/parse-string (:body resp) true)]
+      (is (= (:status resp) 200))
+      (is (file-stored? (:key body)))
+      (is (= (:filename body) filename))
+      (is (= (:content-type body) content-type))
+      (is (= (:size body) size))
+      (is (= (:deleted body) nil))
+      (is (= (:final body) false))
+      (is (some? (:uploaded body)))
+      (let [saved-metadata (metadata/get-metadata-for-tests [(:key body)] {:connection (:db @system)})]
+        (is (= (:filename saved-metadata) filename))
+        (is (= (:size saved-metadata) size))
+        (is (nil? (:deleted saved-metadata)))
+        (is (= "not_started" (:virus-scan-status saved-metadata))))
+      (let [_              @(http/post (str path "/finalize")
+                                       {:headers {"Content-Type" "application/json"}
+                                        :body    (json/generate-string {:keys [(:key body)]})})
+            saved-metadata (metadata/get-metadata-for-tests [(:key body)] {:connection (:db @system)})]
+        (is (= (:final saved-metadata) true)))
+      (let [delete-resp @(http/delete (str path "/" (:key body)))]
+        (is (= (:status delete-resp) 200))
+        (is (= (json/parse-string (:body delete-resp) true) {:key (:key body)}))))))
 
-(deftest exe-extension-refused
-  (let [file (io/file (io/resource "parrot.png"))
-        path (str "http://localhost:" (get-in config [:server :port]) "/liiteri/api/files")
-        resp @(http/post path {:multipart [{:name "file" :content file :filename "parrot.exe" :content-type "image/png"}]})
-        body (json/parse-string (:body resp) true)]
-    (is (= (:status resp) 400))
-    (is (nil? body))
-    (let [saved-metadata (metadata/get-metadata-for-tests [(:key body)] {:connection (:db @system)})]
-      (is (nil? saved-metadata)))))
+(deftest mangled-extensions
+  (doseq [[mangled-filename filename file content-type size] mangled-extension-files]
+    (log/info (format "Testing extension repairing for filename %s -> %s with content-type %s, size %d (should pass)"
+                      mangled-filename
+                      filename
+                      content-type
+                      size))
+    (let [path (str "http://localhost:" (get-in config [:server :port]) "/liiteri/api/files")
+          resp @(http/post path {:multipart [{:name "file" :content file :filename mangled-filename :content-type content-type}]})
+          body (json/parse-string (:body resp) true)]
+      (is (= (:status resp) 200))
+      (is (file-stored? (:key body)))
+      (is (= (:filename body) filename))
+      (is (= (:content-type body) content-type))
+      (is (= (:size body) size))
+      (is (= (:deleted body) nil))
+      (is (= (:final body) false))
+      (is (some? (:uploaded body)))
+      (let [saved-metadata (metadata/get-metadata-for-tests [(:key body)] {:connection (:db @system)})]
+        (is (= (:filename saved-metadata) filename))
+        (is (= (:size saved-metadata) size))
+        (is (nil? (:deleted saved-metadata)))
+        (is (= "not_started" (:virus-scan-status saved-metadata))))
+      (let [_              @(http/post (str path "/finalize")
+                                       {:headers {"Content-Type" "application/json"}
+                                        :body    (json/generate-string {:keys [(:key body)]})})
+            saved-metadata (metadata/get-metadata-for-tests [(:key body)] {:connection (:db @system)})]
+        (is (= (:final saved-metadata) true)))
+      (let [delete-resp @(http/delete (str path "/" (:key body)))]
+        (is (= (:status delete-resp) 200))
+        (is (= (json/parse-string (:body delete-resp) true) {:key (:key body)}))))))
+
+(deftest forbidden-files-refused
+  (doseq [[filename file content-type size] forbidden-files]
+    (log/info (format "Testing %s with content-type %s, size %d (should fail)" filename content-type size))
+    (let [path (str "http://localhost:" (get-in config [:server :port]) "/liiteri/api/files")
+          resp @(http/post path {:multipart [{:name "file" :content file :filename filename :content-type content-type}]})
+          body (json/parse-string (:body resp) true)]
+      (is (= (:status resp) 400))
+      (is (nil? body))
+      (let [saved-metadata (metadata/get-metadata-for-tests [(:key body)] {:connection (:db @system)})]
+        (is (nil? saved-metadata))))))
 
 (deftest virus-download
-  (let [file (io/file (io/resource "virus.txt"))
+  (let [file (io/file (io/resource "test-files/virus.txt"))
         path (str "http://localhost:" (get-in config [:server :port]) "/liiteri/api/files")
         upload-resp @(http/post path {:multipart [{:name "file" :content file :filename "virus.txt" :content-type "image/png"}]})
         key (:key (json/parse-string (:body upload-resp) true))

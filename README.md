@@ -20,13 +20,13 @@ JVM system properties on startup.
 
 ## Testing
 
-Tests require own separate database. Open your terminal and run following command to start it:
+Tests require own separate database. You can start it with Docker by hand
 
 ```bash
-$ docker run --name liiteri-test-db -e POSTGRES_PASSWORD=oph -e POSTGRES_USER=oph -e POSTGRES_DB=liiteri -p 5435:5432 -d postgres:9.5
+$ docker run --name liiteri-test-db -e POSTGRES_PASSWORD=oph -e POSTGRES_USER=oph -e POSTGRES_DB=liiteri -p 5435:5432 -d postgres:11
 ```
 
-Run tests once by invoking
+and then run tests once by invoking
 
 ```bash
 $ lein test-local
@@ -38,17 +38,26 @@ Run tests automatically on file changes by invoking
 $ lein test-local-auto
 ```
 
+You can also just run
+
+```make test```
+
+and it will take care of both Docker and running the tests.
+
 Tests use the [dev-resources/test-config.edn](dev-resources/local-test-config.edn) configuration.
 
 ## Running The Service Locally
 
-Open your terminal and run following commands. Creating the PostgreSQL Docker image needs to be done only once. If you
-are running the service with filesystem based storage engine, the `JVM_OPTS` part of the startup command below can be
-omitted.
+Quick start:
+
+```make start```
+
+To get temporary AWS credentials for accessing S3 locally, run [bin/create-aws-temp-creds.sh](bin/create-aws-temp-creds.sh) .
+
+Use its output to add the neccessary JVM_OPTS for running the service, e.g. by
 
 ```bash
-$ docker run --name liiteri-dev-db -e POSTGRES_PASSWORD=oph -e POSTGRES_USER=oph -e POSTGRES_DB=liiteri -p 5434:5432 -d postgres:9.5
-$ JVM_OPTS="-Daws.accessKeyId=access-key -Daws.secretKey=secret-key" lein repl
+$ JVM_OPTS="-Daws.accessKeyId=access-key -Daws.secretKey=secret-key -Daws.sessionToken=session-token"  lein repl
 ```
 
 When the REPL prompt opens, you can start the service by invoking

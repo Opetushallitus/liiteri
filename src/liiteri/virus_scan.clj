@@ -40,34 +40,34 @@
                   {file-key :key
                    filename :filename
                    content-type :content-type}]
-  (try
-    (log/info (str "Virus scan for " filename " with key " file-key))
-    (let [file         (.get-file storage-engine file-key)
-          clamav-url   (str (get-in config [:antivirus :clamav-url]) "/scan")
-          start-time   (System/currentTimeMillis)
-          scan-result  (if (mock-enabled? config)
-                         (mock-scan-file filename)
-                         (http-client/post clamav-url {:multipart        [{:name "file" :content file :filename filename}
-                                                                          {:name "name" :content filename}]
-                                                       :throw-exceptions false
-                                                       :socket-timeout   (.toMillis TimeUnit/MINUTES 22)
-                                                       :conn-timeout     (.toMillis TimeUnit/SECONDS 2)}))
-          elapsed-time (- (System/currentTimeMillis) start-time)]
-      (cond (= (:status scan-result) 200)
-            (if (= (:body scan-result) "Everything ok : true\n")
-              (do
-                (log-virus-scan-result file-key filename content-type config :successful elapsed-time)
-                (metadata-store/set-virus-scan-status! file-key :done conn))
-              (do
-                (log-virus-scan-result file-key filename content-type config :failed elapsed-time)
-                (file-store/delete-file-and-metadata file-key storage-engine conn)
-                (metadata-store/set-virus-scan-status! file-key :failed conn)))
-            (= (:status scan-result) 503)
-            (log/warn "Failed to scan file" filename "with key" file-key ": Service Unavailable")
-            :else
-            (log/error (str "Failed to scan file " filename " with key " file-key ": " scan-result))))
-    (catch Exception e
-      (log/error e (str "Failed to scan file " filename " with key " file-key " (" content-type ")")))))
+  (let [clamav-url (str (get-in config [:antivirus :clamav-url]) "/scan")]
+    (try
+      (log/info (str "Virus scan for " filename " with key " file-key))
+      (let [file (.get-file storage-engine file-key)
+            start-time (System/currentTimeMillis)
+            scan-result (if (mock-enabled? config)
+                          (mock-scan-file filename)
+                          (http-client/post clamav-url {:multipart        [{:name "file" :content file :filename filename}
+                                                                           {:name "name" :content filename}]
+                                                        :throw-exceptions false
+                                                        :socket-timeout   (.toMillis TimeUnit/MINUTES 22)
+                                                        :conn-timeout     (.toMillis TimeUnit/SECONDS 2)}))
+            elapsed-time (- (System/currentTimeMillis) start-time)]
+        (cond (= (:status scan-result) 200)
+              (if (= (:body scan-result) "Everything ok : true\n")
+                (do
+                  (log-virus-scan-result file-key filename content-type config :successful elapsed-time)
+                  (metadata-store/set-virus-scan-status! file-key :done conn))
+                (do
+                  (log-virus-scan-result file-key filename content-type config :failed elapsed-time)
+                  (file-store/delete-file-and-metadata file-key storage-engine conn)
+                  (metadata-store/set-virus-scan-status! file-key :failed conn)))
+              (= (:status scan-result) 503)
+              (log/warn "Failed to scan file" filename "with key" file-key ": Service Unavailable")
+              :else
+              (log/error (str "Failed to scan file " filename " with key " file-key ": " scan-result))))
+      (catch Exception e
+        (log/error e (str "Failed to scan file " filename " with key " file-key " (" content-type ") using Clamav at " clamav-url))))))
 
 (defn- scan-next-file [db storage-engine config]
   (try

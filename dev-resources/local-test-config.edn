@@ -3,7 +3,7 @@
       :username          "oph"
       :password          "oph"
       :server-name       "localhost"
-      :port-number       5435
+      :port-number       16433
       :minimum-idle      20
       :maximum-pool-size 20}
  :file-store {:engine :filesystem
@@ -25,4 +25,5 @@
  :antivirus {:clamav-url            "http://localhost:8765"
              :mock?                 true
              :poll-interval-seconds 5}
- :file-cleaner {:poll-interval-seconds 100}}
+ :file-cleaner {:poll-interval-seconds 100}
+ :mime-fixer {:poll-interval-seconds 5}}

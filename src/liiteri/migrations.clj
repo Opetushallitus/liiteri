@@ -6,12 +6,14 @@
   component/Lifecycle
 
   (start [{:keys [db] :as this}]
-    (let [flyway (doto (Flyway.)
-                   (.setSchemas (into-array String ["public"]))
-                   (.setDataSource (:datasource db))
-                   (.setLocations (into-array String ["migrations"])))]
-      (.migrate flyway)
-      this))
+    (let [config (doto (Flyway/configure)
+                         (.dataSource (:datasource db))
+                         (.table "schema_version")
+                         (.schemas (into-array String ["public"]))
+                         (.locations (into-array String ["migrations"])))
+          flyway (.load config)]
+      (.migrate flyway))
+      this)
 
   (stop [this]
     this))

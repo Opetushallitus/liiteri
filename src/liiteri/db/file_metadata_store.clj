@@ -1,11 +1,8 @@
 (ns liiteri.db.file-metadata-store
   (:require [clj-time.core :as t]
             [liiteri.db.db-utils :as db-utils]
-            [liiteri.schema :as schema]
-            [schema-tools.core :as st]
             [yesql.core :as sql])
-  (:import [org.joda.time DateTime]
-           [java.text Normalizer Normalizer$Form]))
+  (:import [java.text Normalizer Normalizer$Form]))
 
 (sql/defqueries "sql/files.sql")
 
@@ -46,10 +43,16 @@
 (defn delete-file [key conn]
   (sql-delete-file! {:key key} conn))
 
+(defn- fix-null-content-type [metadata]
+  (if (= nil (:content-type metadata))
+    (assoc metadata :content-type "application/octet-stream")
+    metadata))
+
 (defn get-metadata [key-list conn]
   (->> (sql-get-metadata {:keys key-list} conn)
        (eduction (map db-utils/unwrap-data)
-                 (map #(update % :filename sanitize)))
+                 (map #(update % :filename sanitize))
+                 (map fix-null-content-type))
        (reduce (fn pick-latest-metadata [result {:keys [key uploaded] :as metadata}]
                  (cond-> result
                    (or (not (contains? result key))
@@ -70,6 +73,12 @@
        (map db-utils/unwrap-data)
        (first)))
 
+(defn get-file-without-mime-type [conn]
+  (->> (sql-get-file-without-mime-type {} conn)
+       (eduction (map db-utils/unwrap-data)
+                 (map #(update % :filename sanitize)))
+       (first)))
+
 (defn set-virus-scan-status! [file-key status conn]
   (sql-set-virus-scan-status! {:file_key          file-key
                                :virus_scan_status (name status)}
@@ -77,6 +86,12 @@
 
 (defn finalize-files [keys conn]
   (sql-finalize-files! {:keys keys} conn))
+
+(defn set-content-type-and-filename! [file-key filename content-type conn]
+  (sql-set-content-type-and-filename! {:file_key     file-key
+                                       :filename     filename
+                                       :content_type content-type}
+                                      conn))
 
 (defn get-queue-length
   [conn]

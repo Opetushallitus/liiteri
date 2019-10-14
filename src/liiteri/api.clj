@@ -62,17 +62,18 @@
               :middleware [upload/wrap-multipart-params]
               :return schema/File
               (try
-                (let [{:keys [filename tempfile content-type]} file]
+                (let [{:keys [filename tempfile content-type size]} file]
                   (fail-if-file-extension-blacklisted! filename)
-                  (let [real-file-type (mime/validate-file-content-type! config tempfile filename content-type)
-                        resp (file-store/create-file-and-metadata file storage-engine {:connection db})]
+                  (let [resp (-> (mime/file->validated-file-spec! config filename tempfile size content-type)
+                                 (file-store/create-file-and-metadata storage-engine {:connection db}))]
                     (audit-log/log audit-logger
                                    (audit-log/unknown-user x-real-ip user-agent)
                                    audit-log/operation-new
                                    (audit-log/file-target (:key resp))
                                    (audit-log/new-file-changes resp))
-                    (response/ok resp)))
+                      (response/ok resp)))
                 (catch IllegalArgumentException e
+                  (log/warn (format "File failed upload validation: %s", (.getMessage e)))
                   (response/bad-request! (get-in (ex-data e) [:response :body])))
                 (finally
                   (io/delete-file (:tempfile file) true))))
@@ -133,7 +134,7 @@
               :path-params [key :- (api/describe s/Str "Key of the file")]
               (let [[metadata] (file-metadata-store/get-metadata [key] {:connection db})]
                 (if (= "done" (:virus-scan-status metadata))
-                  (if-let [file-response (file-store/get-file key storage-engine {:connection db})]
+                  (if-let [file-response (file-store/get-file-and-metadata key storage-engine {:connection db})]
                     (do (audit-log/log audit-logger
                                        (audit-log/unknown-user x-real-ip user-agent)
                                        audit-log/operation-file-query
