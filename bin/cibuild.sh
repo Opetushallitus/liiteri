@@ -1,8 +1,6 @@
 #!/bin/bash
 set -e
 
-# Please note that Circle CI uses circle.yml instead of cibuild.sh
-
 OLD_CWD=$(pwd)
 
 export JAVA_HOME=/data00/oph/java/jdk1.8.0_60
