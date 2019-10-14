@@ -4,16 +4,29 @@
             [com.stuartsierra.component :as component]
             [liiteri.mime :as mime]
             [taoensso.timbre :as log]
-            [liiteri.files.file-store :as file-store])
+            [liiteri.files.file-store :as file-store]
+            [clojure.java.io :as io])
   (:import (java.util.concurrent Executors TimeUnit ScheduledFuture)
            (org.apache.tika.io TikaInputStream)
-           (java.io InputStream)))
+           (java.io InputStream)
+           (org.apache.pdfbox.pdmodel PDDocument)))
 
 (def mime-type-for-failed-cases "application/octet-stream")
 
 (defn- log-mime-type-fix-result [file-key filename content-type status elapsed-time]
   (let [status-str (if (= status :successful) "OK" "FAILED")]
     (log/info (str "Mime type fix took " elapsed-time " ms, status " status-str " for file " filename " with key " file-key " (" content-type ")"))))
+
+(defn- inputstream->bytes [inputstream]
+  (with-open [xin inputstream
+              xout (java.io.ByteArrayOutputStream.)]
+    (io/copy xin xout)
+    (.toByteArray xout)))
+
+(defn- log-pdf-pages [storage-engine file-key filename]
+  (with-open [^InputStream file (file-store/get-file storage-engine file-key)
+              pd-document (PDDocument/load (inputstream->bytes file))]
+    (log/info (str "PDF file " file-key " ('" filename "') has " (.getNumberOfPages pd-document) " pages."))))
 
 (defn fix-mime-type-of-file [conn
                              storage-engine
@@ -30,6 +43,8 @@
                                   fixed-filename
                                   (str fixed-filename " (originally '" filename "')"))]
           (.readAllBytes file)
+          (when (= "application/pdf" detected-content-type)
+            (log-pdf-pages storage-engine file-key fixed-filename))
           (metadata-store/set-content-type-and-filename! file-key fixed-filename detected-content-type conn)
           (log-mime-type-fix-result file-key names-for-logging detected-content-type :successful (- (System/currentTimeMillis) start-time))
           true))
