@@ -28,6 +28,10 @@
               pd-document (PDDocument/load (inputstream->bytes file))]
     (log/info (str "PDF file " file-key " ('" filename "') has " (.getNumberOfPages pd-document) " pages."))))
 
+(defn- drain-stream [stream]
+  (let [buffer (byte-array 65536)]
+    (while (> (.read stream buffer) 0))))
+
 (defn fix-mime-type-of-file [conn
                              storage-engine
                              {file-key :key
@@ -42,7 +46,7 @@
               names-for-logging (if (= filename fixed-filename)
                                   fixed-filename
                                   (str fixed-filename " (originally '" filename "')"))]
-          (.readAllBytes file)
+          (drain-stream file)
           (when (= "application/pdf" detected-content-type)
             (log-pdf-pages storage-engine file-key fixed-filename))
           (metadata-store/set-content-type-and-filename! file-key fixed-filename detected-content-type conn)
