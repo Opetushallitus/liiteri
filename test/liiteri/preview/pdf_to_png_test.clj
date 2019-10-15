@@ -1,8 +1,8 @@
-(ns liiteri.pdf-to-png-test
+(ns liiteri.preview.pdf-to-png-test
   (:require [clojure.test :refer :all]
             [clojure.java.io :as io]
             [pantomime.mime :as mime]
-            [liiteri.pdf-to-png :as pdf-to-png]))
+            [liiteri.preview.pdf-to-png :as pdf-to-png]))
 
 (defn file->bytes [file]
   (with-open [xin (io/input-stream file)

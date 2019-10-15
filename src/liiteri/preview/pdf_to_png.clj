@@ -1,4 +1,4 @@
-(ns liiteri.pdf-to-png
+(ns liiteri.preview.pdf-to-png
   (:import (org.apache.pdfbox.pdmodel PDDocument)
            (org.apache.pdfbox.rendering PDFRenderer ImageType)
            (java.io ByteArrayOutputStream)
