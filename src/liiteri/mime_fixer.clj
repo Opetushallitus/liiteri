@@ -72,9 +72,12 @@
       false)))
 
 (defn- fix-mime-types-of-files [db storage-engine]
-  (loop []
-    (when (fix-mime-type-of-next-file db storage-engine)
-      (recur))))
+  (try (loop []
+         (when (fix-mime-type-of-next-file db storage-engine)
+           (recur)))
+       (catch Throwable t
+         (println "Unexpected throwable!")
+         (.printStackTrace t))))
 
 (defprotocol Fixer
   (fix-mime-types-of-files! [this]))
