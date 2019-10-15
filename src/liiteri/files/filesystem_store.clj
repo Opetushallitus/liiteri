@@ -20,7 +20,7 @@
   (get-file [this file-key]
     (let [base-path (get-in config [:file-store :filesystem :base-path])
           path     (str base-path "/" file-key)]
-      (io/file path))))
+      (io/input-stream (io/file path)))))
 
 (defn new-store []
   (map->FilesystemStore {}))
