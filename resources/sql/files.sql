@@ -1,17 +1,29 @@
 -- name: sql-create-file<!
 INSERT INTO files (key, filename, content_type, size) VALUES (:key, :filename, :content_type, :size);
 
+-- name: sql-set-file-page-count<!
+update files SET page_count = :page_count;
+
 -- name: sql-delete-file!
 UPDATE files SET deleted = NOW() WHERE key = :key AND deleted IS NULL;
 
 -- name: sql-get-metadata
-SELECT key, filename, content_type, size, uploaded, deleted, virus_scan_status, final
+SELECT key, filename, content_type, size, uploaded, deleted, virus_scan_status, final, preview_status, page_count
 FROM files
 WHERE key IN (:keys)
   AND (
     deleted IS NULL
     OR deleted > NOW()
     OR virus_scan_status = 'failed');
+
+-- name: sql-create-preview<!
+INSERT INTO previews (file_id, page_number, key, content_type, size) VALUES (:file_id, :page_number, :key, :filename, :content_type, :size);
+
+-- name: sql-get-previews
+SELECT key,  content_type, size, uploaded, deleted
+FROM previews
+WHERE file_id = :file_id
+ORDER BY page_number ASC;
 
 -- name: sql-get-unscanned-file
 SELECT key, filename, content_type

@@ -48,11 +48,17 @@
     (assoc metadata :content-type "application/octet-stream")
     metadata))
 
+(defn- add-previews [file conn]
+  (->> (sql-get-previews {:file_id (:id file)} conn)
+       (map db-utils/unwrap-data)
+       (assoc file :previews)))
+
 (defn get-metadata [key-list conn]
   (->> (sql-get-metadata {:keys key-list} conn)
        (eduction (map db-utils/unwrap-data)
                  (map #(update % :filename sanitize))
-                 (map fix-null-content-type))
+                 (map fix-null-content-type)
+                 (map #(add-previews % conn)))
        (reduce (fn pick-latest-metadata [result {:keys [key uploaded] :as metadata}]
                  (cond-> result
                    (or (not (contains? result key))
