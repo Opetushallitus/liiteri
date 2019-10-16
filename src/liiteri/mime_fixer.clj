@@ -40,8 +40,9 @@
   (let [start-time (System/currentTimeMillis)]
     (try
       (log/info (str "Fixing mime type of '" filename "' with key '" file-key "', uploaded on " uploaded " ..."))
-      (with-open [^InputStream file (file-store/get-file storage-engine file-key)]
-        (let [detected-content-type (mime/detect-mime-type (TikaInputStream/get file))
+      (with-open [^InputStream file (file-store/get-file storage-engine file-key)
+                  ^TikaInputStream tika-input-stream (TikaInputStream/get file)]
+        (let [detected-content-type (mime/detect-mime-type tika-input-stream)
               fixed-filename (mime/fix-extension filename detected-content-type)
               names-for-logging (if (= filename fixed-filename)
                                   fixed-filename
