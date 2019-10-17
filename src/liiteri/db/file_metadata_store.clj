@@ -85,6 +85,12 @@
                  (map #(update % :filename sanitize)))
        (first)))
 
+(defn get-file-without-preview [conn mime-types]
+  (->> (sql-get-file-without-preview {:content_types mime-types} conn)
+       (eduction (map db-utils/unwrap-data)
+                 (map #(update % :filename sanitize)))
+       (first)))
+
 (defn set-virus-scan-status! [file-key status conn]
   (sql-set-virus-scan-status! {:file_key          file-key
                                :virus_scan_status (name status)}

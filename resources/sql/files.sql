@@ -40,6 +40,15 @@ SELECT key, filename, content_type, uploaded
   ORDER BY uploaded DESC
   LIMIT 1 FOR UPDATE SKIP LOCKED;
 
+-- name: sql-get-file-without-preview
+SELECT key, filename, content_type, uploaded
+FROM files
+WHERE content_type IN (:content_types)
+AND deleted IS NULL
+AND (preview_status = 'not_generated' OR preview_status = 'not_supported') -- Here we allow introducing new preview generators by including also the 'not_supported' rows
+ORDER BY uploaded DESC
+LIMIT 1 FOR UPDATE SKIP LOCKED;
+
 -- name: sql-set-virus-scan-status!
 UPDATE files SET virus_scan_status = :virus_scan_status::virus_scan_status WHERE key = :file_key;
 

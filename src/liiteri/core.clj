@@ -11,6 +11,7 @@
             [liiteri.virus-scan :as virus-scan]
             [liiteri.file-cleaner :as file-cleaner]
             [liiteri.mime-fixer :as mime-fixer]
+            [liiteri.preview.preview-generator :as preview-generator]
             [taoensso.timbre :as log]
             [taoensso.timbre.appenders.core :as appenders])
   (:import [java.util TimeZone])
@@ -59,6 +60,10 @@
                           :mime-fixer     (component/using
                                            (mime-fixer/new-mime-fixer)
                                            [:db :storage-engine :config :migrations])
+
+                          :preview-generator (component/using
+                                              (preview-generator/new-preview-generator)
+                                              [:db :storage-engine :config :migrations])
 
                           (case (get-in config [:file-store :engine])
                             :filesystem [:storage-engine (component/using
