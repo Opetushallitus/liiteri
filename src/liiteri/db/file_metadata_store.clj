@@ -49,7 +49,7 @@
     metadata))
 
 (defn- add-previews [file conn]
-  (->> (sql-get-previews {:file_id (:id file)} conn)
+  (->> (sql-get-previews {:file_key (:key file)} conn)
        (map db-utils/unwrap-data)
        (assoc file :previews)))
 

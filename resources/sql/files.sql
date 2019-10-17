@@ -24,9 +24,10 @@ FROM files
 WHERE key = :file_key;
 
 -- name: sql-get-previews
-SELECT key,  content_type, size, uploaded, deleted
-FROM previews
-WHERE file_id = :file_id
+SELECT p.key,  p.content_type, p.size, p.uploaded, p.deleted
+FROM previews p
+JOIN files f on p.file_id = f.id
+WHERE f.key = :file_key
 ORDER BY page_number ASC;
 
 -- name: sql-get-unscanned-file
