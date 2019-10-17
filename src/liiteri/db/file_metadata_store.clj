@@ -117,3 +117,18 @@
   (->> conn
       (sql-get-oldest-unscanned-file {})
       (first)))
+
+(defn save-preview! [file-key png-key page-number page-filename png conn]
+  (sql-create-preview<! {:file_key     file-key
+                         :page_number  page-number
+                         :filename     page-filename
+                         :key          png-key
+                         :content_type "image/png"
+                         :size         (count png)}
+                        conn))
+
+(defn set-file-page-count-and-preview-status! [key page-count preview-status conn]
+  (sql-set-file-page-count-and-preview-status<! {:key            key
+                                                 :page_count     page-count
+                                                 :preview_status preview-status}
+                                                conn))

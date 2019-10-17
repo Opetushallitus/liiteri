@@ -5,7 +5,7 @@
             [liiteri.mime :as mime]
             [taoensso.timbre :as log]
             [liiteri.files.file-store :as file-store]
-            [clojure.java.io :as io])
+            [liiteri.preview.pdf-to-png :as pdf-to-png])
   (:import (java.util.concurrent Executors TimeUnit ScheduledFuture)
            (org.apache.tika.io TikaInputStream)
            (java.io InputStream)
@@ -17,15 +17,9 @@
   (let [status-str (if (= status :successful) "OK" "FAILED")]
     (log/info (str "Mime type fix took " elapsed-time " ms, status " status-str " for file " filename " with key " file-key " (" content-type ")"))))
 
-(defn- inputstream->bytes [inputstream]
-  (with-open [xin inputstream
-              xout (java.io.ByteArrayOutputStream.)]
-    (io/copy xin xout)
-    (.toByteArray xout)))
-
 (defn- log-pdf-pages [storage-engine file-key filename]
   (with-open [^InputStream file (file-store/get-file storage-engine file-key)
-              pd-document (PDDocument/load (inputstream->bytes file))]
+              pd-document (PDDocument/load (pdf-to-png/inputstream->bytes file))]
     (log/info (str "PDF file " file-key " ('" filename "') has " (.getNumberOfPages pd-document) " pages."))))
 
 (defn- drain-stream [stream]

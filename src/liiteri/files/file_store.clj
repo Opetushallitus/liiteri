@@ -1,12 +1,12 @@
 (ns liiteri.files.file-store
   (:require [clj-time.core :as t]
-            [clojure.java.jdbc :as jdbc]
-            [com.stuartsierra.component :as component]
             [liiteri.db.file-metadata-store :as metadata-store])
   (:import [java.util UUID]))
 
 (defprotocol StorageEngine
   (create-file [this file file-key])
+
+  (create-file-from-bytearray [this file-bytes file-key])
 
   (delete-file [this file-key])
 

@@ -1,8 +1,8 @@
 -- name: sql-create-file<!
 INSERT INTO files (key, filename, content_type, size) VALUES (:key, :filename, :content_type, :size);
 
--- name: sql-set-file-page-count<!
-update files SET page_count = :page_count;
+-- name: sql-set-file-page-count-and-preview-status<!
+update files SET page_count = :page_count, preview_status = :preview_status::preview_generation_status WHERE key = :key;
 
 -- name: sql-delete-file!
 UPDATE files SET deleted = NOW() WHERE key = :key AND deleted IS NULL;
@@ -17,7 +17,11 @@ WHERE key IN (:keys)
     OR virus_scan_status = 'failed');
 
 -- name: sql-create-preview<!
-INSERT INTO previews (file_id, page_number, key, content_type, size) VALUES (:file_id, :page_number, :key, :filename, :content_type, :size);
+INSERT INTO previews (file_id, page_number, key, content_type, size)
+-- SELECT id, :page_number, :key, :filename, :content_type, :size  TODO: Should filename be added here?
+SELECT id, :page_number, :key, :content_type, :size
+FROM files
+WHERE key = :file_key;
 
 -- name: sql-get-previews
 SELECT key,  content_type, size, uploaded, deleted
