@@ -14,7 +14,14 @@ WHERE key IN (:keys)
   AND (
     deleted IS NULL
     OR deleted > NOW()
-    OR virus_scan_status = 'failed');
+    OR virus_scan_status = 'failed')
+UNION
+SELECT key, 'preview-' || page_number || '.png', content_type, size, uploaded, deleted, 'done'::virus_scan_status, true, 'not_supported'::preview_generation_status, 1
+FROM previews
+WHERE key IN (:keys)
+  AND (
+    deleted IS NULL
+    OR deleted > NOW());
 
 -- name: sql-create-preview<!
 INSERT INTO previews (file_id, page_number, key, content_type, size)
