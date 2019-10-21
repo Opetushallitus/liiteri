@@ -1,14 +1,7 @@
-(ns liiteri.preview.pdf-to-png-test
+(ns liiteri.preview.preview-generator-test
   (:require [clojure.test :refer :all]
             [clojure.java.io :as io]
-            [pantomime.mime :as mime]
-            [liiteri.preview.pdf-to-png :as pdf-to-png]))
-
-(defn file->bytes [file]
-  (with-open [xin (io/input-stream file)
-              xout (java.io.ByteArrayOutputStream.)]
-    (io/copy xin xout)
-    (.toByteArray xout)))
+            [liiteri.preview.preview-generator :as preview-generator]))
 
 (deftest pdf-is-converted
   (let [pdf-file (io/file (io/resource "three_page_pdf_for_testing.pdf"))

@@ -91,6 +91,11 @@
                  (map #(update % :filename sanitize)))
        (first)))
 
+(defn set-preview-status! [file-key status conn]
+  (sql-set-virus-scan-status! {:file_key          file-key
+                               :preview_status    status}
+                              conn))
+
 (defn set-virus-scan-status! [file-key status conn]
   (sql-set-virus-scan-status! {:file_key          file-key
                                :virus_scan_status (name status)}
@@ -118,17 +123,20 @@
       (sql-get-oldest-unscanned-file {})
       (first)))
 
-(defn save-preview! [file-key png-key page-number page-filename png conn]
+(defn save-preview! [file-key preview-key page-number preview-filename content-type size conn]
   (sql-create-preview<! {:file_key     file-key
                          :page_number  page-number
-                         :filename     page-filename
-                         :key          png-key
-                         :content_type "image/png"
-                         :size         (count png)}
+                         :filename     preview-filename
+                         :key          preview-key
+                         :content_type content-type
+                         :size         size}
                         conn))
 
 (defn set-file-page-count-and-preview-status! [key page-count preview-status conn]
-  (sql-set-file-page-count-and-preview-status<! {:key            key
-                                                 :page_count     page-count
-                                                 :preview_status preview-status}
+  (sql-set-file-page-count-and-preview-status! {:key            key
+                                                :page_count     page-count
+                                                :preview_status preview-status}
                                                 conn))
+
+(defn mark-previews-final! [file-key conn]
+  (sql-mark-previews-final! {:file_key file-key} conn))

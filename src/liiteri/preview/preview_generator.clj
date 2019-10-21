@@ -4,57 +4,89 @@
             [com.stuartsierra.component :as component]
             [taoensso.timbre :as log]
             [liiteri.files.file-store :as file-store]
-            [liiteri.preview.pdf-to-png :as pdf-to-png])
+            [liiteri.preview.interface :as interface]
+            [liiteri.preview.pdf :as pdf]
+            [clojure.java.io :as io])
   (:import (java.util.concurrent Executors TimeUnit ScheduledFuture)
            (java.io InputStream)
-           (org.apache.tika.io TikaInputStream)
            (java.util UUID)))
 
-(def mime-types ["application/pdf"])
+(def content-types-to-process ["application/pdf"])
 
-(defn generate-file-previews [conn
-                              storage-engine
-                              {file-key :key
-                               filename :filename
-                               uploaded :uploaded}]
-  (let [start-time (System/currentTimeMillis)]
+(defn save-bytearray-as-preview [conn storage-engine file-key page-number preview-key preview-filename content-type data-as-byte-array]
+  (file-store/create-file-from-bytearray storage-engine
+                                         data-as-byte-array
+                                         preview-key)
+  (metadata-store/save-preview! file-key
+                                preview-key
+                                page-number
+                                preview-filename
+                                content-type
+                                (count data-as-byte-array)
+                                conn))
+
+(defn generate-file-previews [config conn storage-engine file]
+  (let [start-time (System/currentTimeMillis)
+        {file-key :key
+         filename :filename
+         content-type :content-type
+         uploaded :uploaded} file]
     (try
-      (log/info (str "Generating previews for '" filename "' with key '" file-key "', uploaded on " uploaded " ..."))
-      (with-open [^InputStream file                  (file-store/get-file storage-engine file-key)
-                  ^TikaInputStream tika-input-stream (TikaInputStream/get file)]
-        (let [pngs       (pdf-to-png/inputstream->pngs tika-input-stream)
-              page-count (count pngs)]
-          (doseq [[index png] (map-indexed vector pngs)]
-            (let [ ;png-key (str file-key "-" index) TODO: previews.key field is not long enough for this
-                  png-key (str (UUID/randomUUID))
-                  page-filename (str "page_" index "_of_" filename)]
-              (file-store/create-file-from-bytearray storage-engine png png-key)
-              (metadata-store/save-preview! file-key png-key index page-filename png conn)))
-          (metadata-store/set-file-page-count-and-preview-status! file-key page-count "finished" conn)
-          (log/info (str "Generated " page-count " preview pages for '" filename "' with key '" file-key
-                         "', uploaded on " uploaded " , took " (- (System/currentTimeMillis) start-time) " ms"))
+      (log/info (format "Generating previews for '%s' with key '%s', uploaded on %s ..." filename file-key uploaded))
+      (with-open [input-stream (file-store/get-file storage-engine file-key)]
+        (let [max-page-count (get-in config [:preview-generator :preview-page-count])
+              [page-count previews] (interface/generate-previews-for-file conn
+                                                                          storage-engine
+                                                                          file
+                                                                          input-stream
+                                                                          max-page-count)]
+          (doseq [[page-index preview-as-byte-array] (map-indexed vector previews)]
+            (let [preview-key (str file-key "." page-index)
+                  preview-filename preview-key]
+              (save-bytearray-as-preview conn
+                                         storage-engine
+                                         file-key
+                                         page-index
+                                         preview-key
+                                         preview-filename
+                                         "image/png"
+                                         preview-as-byte-array)))
+
+          (if (not (nil? page-count))
+            (do
+              (metadata-store/set-file-page-count-and-preview-status! file-key page-count "finished" conn)
+              (metadata-store/mark-previews-final! file-key conn)
+              (log/info (format "Generated %d preview pages for '%s' with key '%s', uploaded on %s, took %d ms"
+                                (count previews)
+                                filename
+                                file-key
+                                uploaded
+                                (- (System/currentTimeMillis) start-time))))
+            (do
+              (log/info (format "Generated no preview pages for '%s' with key '%s'" filename file-key))
+              (metadata-store/set-file-page-count-and-preview-status! file-key nil "not_supported" conn)))
           true))
       (catch Exception e
         (log/error e (str " Failed to generate previews for '" filename "' with key '" file-key "', uploaded on " uploaded " . "))
-        ; TODO : Mark unsuccessful generation to db, to avoid congestion
+        (metadata-store/set-file-page-count-and-preview-status! file-key nil "error" conn)
         false))))
 
-(defn- generate-next-preview [db storage-engine]
+(defn- generate-next-preview [config db storage-engine]
   (try
     (jdbc/with-db-transaction [tx db]
-                              (let [conn {:connection tx}]
-                                (if-let [file (metadata-store/get-file-without-preview conn mime-types)]
-                                  (generate-file-previews conn storage-engine file)
-                                  (do
-                                    (log/info "Preview generation seems to be finished (or errored).")
-                                    false))))
+      (let [conn {:connection tx}]
+        (if-let [file (metadata-store/get-file-without-preview conn content-types-to-process)]
+          (generate-file-previews config conn storage-engine file)
+          (do
+            (log/info "Preview generation seems to be finished (or errored).")
+            false))))
     (catch Exception e
       (log/error e "Failed to generate preview for the next file")
       false)))
 
-(defn- generate-previews [db storage-engine]
+(defn- generate-previews [config db storage-engine]
   (try (loop []
-         (when (generate-next-preview db storage-engine)
+         (when (generate-next-preview config db storage-engine)
            (recur)))
        (catch Throwable t
          (println "Unexpected throwable!")
@@ -70,7 +102,7 @@
     (log/info "Starting document preview generation process...")
     (let [poll-interval (get-in config [:preview-generator :poll-interval-seconds])
           scheduler (Executors/newScheduledThreadPool 1)
-          preview-generator #(generate-previews db storage-engine)
+          preview-generator #(generate-previews config db storage-engine)
           time-unit TimeUnit/SECONDS
           preview-generator-future (.scheduleAtFixedRate scheduler preview-generator 0 poll-interval time-unit)]
       (log/info (str "Started document preview generation process, restarting at " poll-interval " " time-unit " intervals."))
@@ -79,8 +111,8 @@
   (stop [this]
     (when-let [^ScheduledFuture preview-generator-future (:preview-generator-future this)]
       (.cancel preview-generator-future true))
-    (log/info "Stopped MIME type fixing process")
-    (assoc this :fixer-future nil))
+    (log/info "Stopped preview generation process")
+    (assoc this :preview-generator-future nil))
 
   Generator
 

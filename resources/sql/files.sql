@@ -1,7 +1,7 @@
 -- name: sql-create-file<!
 INSERT INTO files (key, filename, content_type, size) VALUES (:key, :filename, :content_type, :size);
 
--- name: sql-set-file-page-count-and-preview-status<!
+-- name: sql-set-file-page-count-and-preview-status!
 update files SET page_count = :page_count, preview_status = :preview_status::preview_generation_status WHERE key = :key;
 
 -- name: sql-delete-file!
@@ -16,7 +16,7 @@ WHERE key IN (:keys)
     OR deleted > NOW()
     OR virus_scan_status = 'failed')
 UNION
-SELECT key, 'preview-' || page_number || '.png', content_type, size, uploaded, deleted, 'done'::virus_scan_status, true, 'not_supported'::preview_generation_status, 1
+SELECT key, filename, content_type, size, uploaded, deleted, 'done'::virus_scan_status, true, 'not_supported'::preview_generation_status, 1
 FROM previews
 WHERE key IN (:keys)
   AND (
@@ -24,9 +24,8 @@ WHERE key IN (:keys)
     OR deleted > NOW());
 
 -- name: sql-create-preview<!
-INSERT INTO previews (file_id, page_number, key, content_type, size)
--- SELECT id, :page_number, :key, :filename, :content_type, :size  TODO: Should filename be added here?
-SELECT id, :page_number, :key, :content_type, :size
+INSERT INTO previews (file_id, page_number, key, filename, content_type, size)
+SELECT id, :page_number, :key, :filename, :content_type, :size
 FROM files
 WHERE key = :file_key;
 
@@ -57,9 +56,15 @@ SELECT key, filename, content_type, uploaded
 FROM files
 WHERE content_type IN (:content_types)
 AND deleted IS NULL
-AND (preview_status = 'not_generated' OR preview_status = 'not_supported') -- Here we allow introducing new preview generators by including also the 'not_supported' rows
+AND preview_status = 'not_generated'
 ORDER BY uploaded DESC
 LIMIT 1 FOR UPDATE SKIP LOCKED;
+
+-- name: sql-set-preview-status!
+UPDATE files SET preview_status = :preview_status where key = :file_key;
+
+-- name: sql-mark-previews-final!
+UPDATE previews SET final = true where file_id = (select id from files where key = :file_key);
 
 -- name: sql-set-virus-scan-status!
 UPDATE files SET virus_scan_status = :virus_scan_status::virus_scan_status WHERE key = :file_key;
