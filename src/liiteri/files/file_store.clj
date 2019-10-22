@@ -27,10 +27,10 @@
 (defn delete-file-and-metadata [key storage-engine conn]
   (let [deleted (metadata-store/delete-file key conn)]
     (when (> deleted 0)
-      (.delete-file storage-engine key))
-    (when-let [previews (metadata-store/get-previews key conn)]
-      (doseq [preview previews]
-        (delete-preview-and-metadata (:key preview) storage-engine conn)))
+      (.delete-file storage-engine key)
+      (when-let [previews (metadata-store/get-previews key conn)]
+        (doseq [preview previews]
+          (delete-preview-and-metadata (:key preview) storage-engine conn))))
     deleted))
 
 (defn get-file-and-metadata [key storage-engine conn]
