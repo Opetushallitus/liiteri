@@ -60,6 +60,7 @@ FROM files
 WHERE content_type IN (:content_types)
 AND deleted IS NULL
 AND preview_status = 'not_generated'
+AND virus_scan_status = 'done'
 ORDER BY uploaded DESC
 LIMIT 1 FOR UPDATE SKIP LOCKED;
 
