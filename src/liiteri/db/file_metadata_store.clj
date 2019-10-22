@@ -43,6 +43,9 @@
 (defn delete-file [key conn]
   (sql-delete-file! {:key key} conn))
 
+(defn delete-preview [key conn]
+  (sql-delete-preview! {:key key} conn))
+
 (defn- fix-null-content-type [metadata]
   (if (= nil (:content-type metadata))
     (assoc metadata :content-type "application/octet-stream")
@@ -76,6 +79,11 @@
 
 (defn get-old-draft-file [conn]
   (->> (sql-get-draft-file {} conn)
+       (map db-utils/unwrap-data)
+       (first)))
+
+(defn get-old-draft-preview [conn]
+  (->> (sql-get-draft-preview {} conn)
        (map db-utils/unwrap-data)
        (first)))
 

@@ -24,6 +24,12 @@
       (.delete-file storage-engine key))
     deleted))
 
+(defn delete-preview-and-metadata [key storage-engine conn]
+  (let [deleted (metadata-store/delete-preview key conn)]
+    (when (> deleted 0)
+      (.delete-file storage-engine key))
+    deleted))
+
 (defn get-file-and-metadata [key storage-engine conn]
   (let [metadata (metadata-store/get-metadata [key] conn)]
     (when (> (count metadata) 0)
