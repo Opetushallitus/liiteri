@@ -5,11 +5,8 @@
             [taoensso.timbre :as log]
             [liiteri.files.file-store :as file-store]
             [liiteri.preview.interface :as interface]
-            [liiteri.preview.pdf :as pdf]
-            [clojure.java.io :as io])
-  (:import (java.util.concurrent Executors TimeUnit ScheduledFuture)
-           (java.io InputStream)
-           (java.util UUID)))
+            [liiteri.preview.pdf :as pdf])
+  (:import (java.util.concurrent Executors TimeUnit ScheduledFuture)))
 
 (def content-types-to-process ["application/pdf"])
 
@@ -29,7 +26,6 @@
   (let [start-time (System/currentTimeMillis)
         {file-key :key
          filename :filename
-         content-type :content-type
          uploaded :uploaded} file]
     (try
       (log/info (format "Generating previews for '%s' with key '%s', uploaded on %s ..." filename file-key uploaded))
