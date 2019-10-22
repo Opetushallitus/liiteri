@@ -59,7 +59,6 @@
 (defn get-metadata [key-list conn]
   (->> (sql-get-metadata {:keys key-list} conn)
        (eduction (map db-utils/unwrap-data)
-                 (map #(update % :filename sanitize))
                  (map fix-null-content-type)
                  (map #(add-previews % conn)))
        (reduce (fn pick-latest-metadata [result {:keys [key uploaded] :as metadata}]
@@ -71,10 +70,13 @@
        ((fn [metadata]
           (keep #(get metadata %) key-list)))))
 
+(defn get-previews [file-key conn]
+  (->> (sql-get-previews {:file_key file-key} conn)
+       (eduction (map db-utils/unwrap-data))))
+
 (defn get-unscanned-file [conn]
   (->> (sql-get-unscanned-file {} conn)
-       (eduction (map db-utils/unwrap-data)
-                 (map #(update % :filename sanitize)))
+       (eduction (map db-utils/unwrap-data))
        (first)))
 
 (defn get-old-draft-file [conn]
@@ -89,14 +91,12 @@
 
 (defn get-file-without-mime-type [conn]
   (->> (sql-get-file-without-mime-type {} conn)
-       (eduction (map db-utils/unwrap-data)
-                 (map #(update % :filename sanitize)))
+       (eduction (map db-utils/unwrap-data))
        (first)))
 
 (defn get-file-without-preview [conn mime-types]
   (->> (sql-get-file-without-preview {:content_types mime-types} conn)
-       (eduction (map db-utils/unwrap-data)
-                 (map #(update % :filename sanitize)))
+       (eduction (map db-utils/unwrap-data))
        (first)))
 
 (defn set-preview-status! [file-key status conn]

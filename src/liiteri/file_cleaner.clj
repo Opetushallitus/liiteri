@@ -29,10 +29,10 @@
       (let [conn {:connection tx}
             old-draft-file (metadata-store/get-old-draft-file conn)
             old-draft-preview (metadata-store/get-old-draft-preview conn)]
-        (or (and old-draft-file
-                 (clean-file conn storage-engine old-draft-file))
-            (and old-draft-preview
-                 (clean-preview conn storage-engine old-draft-preview)))))
+        (and old-draft-file
+             (clean-file conn storage-engine old-draft-file)
+             old-draft-preview
+             (clean-preview conn storage-engine old-draft-preview))))
     (catch Exception e
       (log/error e "Failed to clean the next file"))))
 
