@@ -99,11 +99,6 @@
        (eduction (map db-utils/unwrap-data))
        (first)))
 
-(defn set-preview-status! [file-key status conn]
-  (sql-set-virus-scan-status! {:file_key          file-key
-                               :preview_status    status}
-                              conn))
-
 (defn set-virus-scan-status! [file-key status conn]
   (sql-set-virus-scan-status! {:file_key          file-key
                                :virus_scan_status (name status)}

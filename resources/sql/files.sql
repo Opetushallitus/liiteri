@@ -64,9 +64,6 @@ AND virus_scan_status = 'done'
 ORDER BY uploaded DESC
 LIMIT 1 FOR UPDATE SKIP LOCKED;
 
--- name: sql-set-preview-status!
-UPDATE files SET preview_status = :preview_status where key = :file_key;
-
 -- name: sql-mark-previews-final!
 UPDATE previews SET final = true where file_id = (select id from files where key = :file_key);
 
