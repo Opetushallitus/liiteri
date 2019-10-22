@@ -7,8 +7,7 @@
             [liiteri.files.file-store :as file-store])
   (:import (java.util.concurrent Executors TimeUnit ScheduledFuture)
            (org.apache.tika.io TikaInputStream)
-           (java.io InputStream)
-           (org.apache.pdfbox.pdmodel PDDocument)))
+           (java.io InputStream)))
 
 (def mime-type-for-failed-cases "application/octet-stream")
 
