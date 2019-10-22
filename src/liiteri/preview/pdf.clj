@@ -23,3 +23,5 @@
         pdfs (pdf->pngs pdf-document 0 max-page-count page-count dpi)]
     (.close pdf-document)
     [page-count pdfs]))
+
+(def content-types ["application/pdf"])

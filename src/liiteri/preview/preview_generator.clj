@@ -8,7 +8,7 @@
             [liiteri.preview.pdf :as pdf])
   (:import (java.util.concurrent Executors TimeUnit ScheduledFuture)))
 
-(def content-types-to-process ["application/pdf"])
+(def content-types-to-process (concat pdf/content-types))
 
 (def were-unprocessed-files-found-on-last-run (atom true))
 
