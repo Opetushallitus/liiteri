@@ -32,8 +32,7 @@
     (try
       (log/info (format "Generating previews for '%s' with key '%s', uploaded on %s ..." filename file-key uploaded))
       (with-open [input-stream (file-store/get-file storage-engine file-key)]
-        (let [[page-count previews] (interface/generate-previews-for-file conn
-                                                                          storage-engine
+        (let [[page-count previews] (interface/generate-previews-for-file storage-engine
                                                                           file
                                                                           input-stream
                                                                           config)]
