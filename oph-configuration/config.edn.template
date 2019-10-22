@@ -55,4 +55,5 @@
  :file-cleaner {:poll-interval-seconds {{liiteri_file_cleaner_poll_interval_seconds}}}
  :mime-fixer {:poll-interval-seconds {{liiteri_mime_fixer_poll_interval_seconds | default('5') }}}
  :preview-generator {:poll-interval-seconds {{liiteri_preview_generator_poll_interval_seconds | default('5') }}
-                     :preview-page-count {{liiteri_attachment_preview_pages_to_display}}}}
+                     :preview-page-count {{liiteri_attachment_preview_pages_to_display}}
+                     :pdf {:dpi {{liiteri_preview_generator_pdf_dpi | default('150')}} }}}

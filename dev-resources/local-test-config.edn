@@ -27,4 +27,6 @@
              :poll-interval-seconds 5}
  :file-cleaner {:poll-interval-seconds 100}
  :mime-fixer {:poll-interval-seconds 5}
- :preview-generator {:poll-interval-seconds 5}}
+ :preview-generator {:poll-interval-seconds 5
+                     :preview-page-count 19
+                     :pdf {:dpi 150}}}

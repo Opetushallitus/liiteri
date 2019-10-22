@@ -34,12 +34,11 @@
     (try
       (log/info (format "Generating previews for '%s' with key '%s', uploaded on %s ..." filename file-key uploaded))
       (with-open [input-stream (file-store/get-file storage-engine file-key)]
-        (let [max-page-count (get-in config [:preview-generator :preview-page-count])
-              [page-count previews] (interface/generate-previews-for-file conn
+        (let [[page-count previews] (interface/generate-previews-for-file conn
                                                                           storage-engine
                                                                           file
                                                                           input-stream
-                                                                          max-page-count)]
+                                                                          config)]
           (doseq [[page-index preview-as-byte-array] (map-indexed vector previews)]
             (let [preview-key (str file-key "." page-index)
                   preview-filename preview-key]
