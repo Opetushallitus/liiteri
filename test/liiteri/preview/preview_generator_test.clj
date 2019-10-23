@@ -13,15 +13,15 @@
 
 (def system (atom (system/new-system {})))
 
-(use-fixtures :once
-              (fn [tests]
-                (u/start-system system)
-                (u/create-temp-dir system)
-                (component/stop (:preview-generator @system))
-                (tests)
-                (u/clear-database! system)
-                (u/stop-system system)
-                (u/remove-temp-dir system)))
+(use-fixtures :each
+  (fn [tests]
+    (u/start-system system)
+    (u/create-temp-dir system)
+    (component/stop (:preview-generator @system))
+    (tests)
+    (u/clear-database! system)
+    (u/stop-system system)
+    (u/remove-temp-dir system)))
 
 (defn- assert-has-single-png-preview-page [file-metadata previews]
   (is (= 1 (:page-count file-metadata)))
@@ -63,3 +63,28 @@
           (if (= "application/pdf" content-type)
             (assert-has-single-png-preview-page file-metadata-after-preview generated-previews)
             (assert-has-no-previews file-metadata-after-preview generated-previews)))))))
+
+(deftest previews-are-deleted-when-file-is-deleted
+  (let [store (u/new-in-memory-store)
+        conn  {:connection (:db @system)}]
+    (doseq [[filename file content-type size] (take 2 fixtures/ok-files)]
+      (let [uploaded  (-> (t/now)
+                          (.getMillis)
+                          (Timestamp.))
+            file-spec {:key          filename
+                       :filename     filename
+                       :content-type content-type
+                       :size         size
+                       :uploaded     uploaded}]
+        (test-metadata-store/create-file file-spec conn)
+        (file-store/create-file store file filename)
+        (metadata-store/set-virus-scan-status! filename "done" conn)
+        (metadata-store/finalize-files [filename] conn)
+        (preview-generator/generate-file-previews (:config @system) conn store file-spec)
+
+        (file-store/delete-file-and-metadata (:key file-spec) store conn)
+
+        (let [file-metadata-after-preview (first (metadata-store/get-metadata [filename] conn))
+              generated-previews          (vec (metadata-store/get-previews filename conn))]
+          (is (= 0 (count generated-previews)))
+          (is (= nil file-metadata-after-preview)))))))
