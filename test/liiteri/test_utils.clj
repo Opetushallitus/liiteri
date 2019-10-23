@@ -41,6 +41,9 @@
   (create-file [this file file-key]
     (swap! files-atom assoc file-key file))
 
+  (create-file-from-bytearray [this file-bytes file-key]
+    (swap! files-atom assoc file-key file-bytes))
+
   (delete-file [this file-key]
     (swap! files-atom dissoc file-key))
 
