@@ -38,6 +38,7 @@
       (sql-create-file<! conn)
       (db-utils/unwrap-data)
       (update :filename sanitize)
+      (assoc :previews [])
       (dissoc :id)))
 
 (defn delete-file [key conn]
