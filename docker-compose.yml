@@ -8,19 +8,6 @@ services:
       - POSTGRES_USER=oph
     ports:
       - "16432:5432"
-  liiteri-s3:
-    image: localstack/localstack:latest
-    container_name: localstack_demo
-    ports:
-      - '4563-4599:4563-4599'
-      - '8055:8080'
-    environment:
-      - SERVICES=s3
-      - DEBUG=1
-      - DATA_DIR=/tmp/localstack/data
-    volumes:
-      - './.localstack:/tmp/localstack'
-      - '/var/run/docker.sock:/var/run/docker.sock'
   liiteri-test-db:
     image: postgres:11
     environment:

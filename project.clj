@@ -41,10 +41,14 @@
                  [ring.middleware.conditional "0.2.0"]
                  [environ "1.1.0"]
                  [com.novemberain/pantomime "2.11.0"]
+                 [org.apache.commons/commons-compress "1.19"]
                  [jarohen/chime "0.2.2"]
                  [clj-http "3.10.0"]
                  [aleph "0.4.6"]
-                 [me.raynes/fs "1.4.6"]]
+                 [me.raynes/fs "1.4.6"]
+                 [com.github.jai-imageio/jai-imageio-core "1.3.1"]
+                 [com.github.jai-imageio/jai-imageio-jpeg2000 "1.3.0"]
+                 [com.levigo.jbig2/levigo-jbig2-imageio "2.0"]]
 
   :repositories [["snapshots" {:url "https://artifactory.opintopolku.fi/artifactory/oph-sade-snapshot-local"}]]
 

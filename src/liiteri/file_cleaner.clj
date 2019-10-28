@@ -16,12 +16,23 @@
     (catch Exception e
       (log/error e (str "Failed to clean file " (:key file))))))
 
+(defn- clean-preview [conn storage-engine preview]
+  (log/info (str "Cleaning preview: " (:key preview)))
+  (try
+    (file-store/delete-preview-and-metadata (:key preview) storage-engine conn)
+    (catch Exception e
+      (log/error e (str "Failed to clean preview " (:key preview))))))
+
 (defn- clean-next-file [db storage-engine]
   (try
     (jdbc/with-db-transaction [tx db]
-      (let [conn {:connection tx}]
-        (when-let [file (metadata-store/get-old-draft-file conn)]
-          (clean-file conn storage-engine file))))
+      (let [conn {:connection tx}
+            old-draft-file (metadata-store/get-old-draft-file conn)
+            old-draft-preview (metadata-store/get-old-draft-preview conn)]
+        (and old-draft-file
+             (clean-file conn storage-engine old-draft-file)
+             old-draft-preview
+             (clean-preview conn storage-engine old-draft-preview))))
     (catch Exception e
       (log/error e "Failed to clean the next file"))))
 

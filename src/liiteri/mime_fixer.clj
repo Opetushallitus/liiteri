@@ -4,29 +4,18 @@
             [com.stuartsierra.component :as component]
             [liiteri.mime :as mime]
             [taoensso.timbre :as log]
-            [liiteri.files.file-store :as file-store]
-            [clojure.java.io :as io])
+            [liiteri.files.file-store :as file-store])
   (:import (java.util.concurrent Executors TimeUnit ScheduledFuture)
            (org.apache.tika.io TikaInputStream)
-           (java.io InputStream)
-           (org.apache.pdfbox.pdmodel PDDocument)))
+           (java.io InputStream)))
 
 (def mime-type-for-failed-cases "application/octet-stream")
+
+(def were-unprocessed-files-found-on-last-run (atom true))
 
 (defn- log-mime-type-fix-result [file-key filename content-type status elapsed-time]
   (let [status-str (if (= status :successful) "OK" "FAILED")]
     (log/info (str "Mime type fix took " elapsed-time " ms, status " status-str " for file " filename " with key " file-key " (" content-type ")"))))
-
-(defn- inputstream->bytes [inputstream]
-  (with-open [xin inputstream
-              xout (java.io.ByteArrayOutputStream.)]
-    (io/copy xin xout)
-    (.toByteArray xout)))
-
-(defn- log-pdf-pages [storage-engine file-key filename]
-  (with-open [^InputStream file (file-store/get-file storage-engine file-key)
-              pd-document (PDDocument/load (inputstream->bytes file))]
-    (log/info (str "PDF file " file-key " ('" filename "') has " (.getNumberOfPages pd-document) " pages."))))
 
 (defn- drain-stream [stream]
   (let [buffer (byte-array 65536)]
@@ -48,8 +37,6 @@
                                   fixed-filename
                                   (str fixed-filename " (originally '" filename "')"))]
           (drain-stream file)
-          (when (= "application/pdf" detected-content-type)
-            (log-pdf-pages storage-engine file-key fixed-filename))
           (metadata-store/set-content-type-and-filename! file-key fixed-filename detected-content-type conn)
           (log-mime-type-fix-result file-key names-for-logging detected-content-type :successful (- (System/currentTimeMillis) start-time))
           true))
@@ -68,9 +55,13 @@
     (jdbc/with-db-transaction [tx db]
                               (let [conn {:connection tx}]
                                 (if-let [file (metadata-store/get-file-without-mime-type conn)]
-                                  (fix-mime-type-of-file conn storage-engine file)
                                   (do
-                                    (log/info "MIME type fixing seems to be finished (or errored).")
+                                    (reset! were-unprocessed-files-found-on-last-run true)
+                                    (fix-mime-type-of-file conn storage-engine file))
+                                  (do
+                                    (when @were-unprocessed-files-found-on-last-run
+                                      (log/info "MIME type fixing seems to be finished (or errored)."))
+                                    (reset! were-unprocessed-files-found-on-last-run false)
                                     false))))
     (catch Exception e
       (log/error e "Failed to fix mime type of the next file")

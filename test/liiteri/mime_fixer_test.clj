@@ -7,12 +7,10 @@
             [liiteri.test-utils :as u]
             [com.stuartsierra.component :as component]
             [clj-time.core :as t]
-            [clojure.java.io :as io]
             [clojure.test :refer :all])
   (:import [java.sql Timestamp]))
 
 (def system (atom (system/new-system {})))
-(def files-atom (atom {}))
 
 (use-fixtures :once
   (fn [tests]
@@ -24,23 +22,8 @@
     (u/stop-system system)
     (u/remove-temp-dir system)))
 
-(defrecord InMemoryS3Store [config]
-  file-store/StorageEngine
-
-  (create-file [this file file-key]
-    (swap! files-atom assoc file-key file))
-
-  (delete-file [this file-key]
-    (swap! files-atom dissoc file-key))
-
-  (get-file [this file-key]
-    (io/input-stream (get @files-atom file-key))))
-
-(defn new-store []
-  (map->InMemoryS3Store {}))
-
 (deftest mime-fixer-ok-files
-  (let [store (new-store)
+  (let [store (u/new-in-memory-store)
         conn {:connection (:db @system)}]
     (doseq [[mangled-filename filename file content-type size] mangled-extension-files]
       (let [uploaded (-> (t/now)
