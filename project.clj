@@ -13,7 +13,8 @@
                          [com.fasterxml.jackson.core/jackson-databind "2.10.0"]
                          [com.fasterxml.jackson.core/jackson-annotations "2.10.0"]
                          [riddley/riddley "0.2.0"]
-                         [org.clojure/tools.reader "1.3.2"]]
+                         [org.clojure/tools.reader "1.3.2"]
+                         [org.apache.pdfbox/pdfbox "2.0.17"]]
 
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [com.amazonaws/aws-java-sdk-s3 "1.11.641"]
@@ -46,6 +47,7 @@
                  [clj-http "3.10.0"]
                  [aleph "0.4.6"]
                  [me.raynes/fs "1.4.6"]
+                 [org.apache.pdfbox/pdfbox "2.0.17"]
                  [com.github.jai-imageio/jai-imageio-core "1.3.1"]
                  [com.github.jai-imageio/jai-imageio-jpeg2000 "1.3.0"]
                  [com.levigo.jbig2/levigo-jbig2-imageio "2.0"]]
