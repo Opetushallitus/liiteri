@@ -62,7 +62,7 @@
               (log/info (format "Generated no preview pages for '%s' with key '%s'" filename file-key))
               (metadata-store/set-file-page-count-and-preview-status! file-key nil "not_supported" conn)))
           true))
-      (catch Exception e
+      (catch Throwable e
         (log/error e (str " Failed to generate previews for '" filename "' with key '" file-key "', uploaded on " uploaded ": " e))
         (metadata-store/set-file-page-count-and-preview-status! file-key nil "error" conn)
         false))))
