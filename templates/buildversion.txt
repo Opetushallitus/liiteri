@@ -1,4 +1,4 @@
-artifactId=ataru-editori
+artifactId=liiteri
 version={{version}}
 buildTime={{buildTime}}
 githash={{githash}}

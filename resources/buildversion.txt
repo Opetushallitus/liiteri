@@ -1,4 +1,4 @@
-artifactId=ataru-editori
+artifactId=liiteri
 version=0.1.0-SNAPSHOT
 buildTime=20170331-0937
 githash=
