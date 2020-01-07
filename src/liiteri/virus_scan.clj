@@ -65,7 +65,9 @@
               (= (:status scan-result) 503)
               (log/warn "Failed to scan file" filename "with key" file-key ": Service Unavailable")
               :else
-              (log/error (str "Failed to scan file " filename " with key " file-key ": " scan-result))))
+              (do
+                (log/error (str "Failed to scan file " filename " with key " file-key ": " scan-result)
+                (metadata-store/set-virus-scan-status! file-key :failed conn)))))
       (catch Exception e
         (log/error e (str "Failed to scan file " filename " with key " file-key " (" content-type ") using Clamav at " clamav-url))))))
 
