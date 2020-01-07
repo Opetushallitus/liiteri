@@ -67,8 +67,9 @@
               :else
               (do
                 (log/error (str "Failed to scan file " filename " with key " file-key ": " scan-result)
-                (metadata-store/set-virus-scan-status! file-key :failed conn)))))
+                (metadata-store/mark-virus-scan-for-retry-or-fail! file-key conn)))))
       (catch Exception e
+        (metadata-store/mark-virus-scan-for-retry-or-fail! file-key conn)
         (log/error e (str "Failed to scan file " filename " with key " file-key " (" content-type ") using Clamav at " clamav-url))))))
 
 (defn- scan-next-file [db storage-engine config]
