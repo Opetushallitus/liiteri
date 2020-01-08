@@ -40,7 +40,9 @@
                   {file-key :key
                    filename :filename
                    content-type :content-type}]
-  (let [clamav-url (str (get-in config [:antivirus :clamav-url]) "/scan")]
+  (let [clamav-url (str (get-in config [:antivirus :clamav-url]) "/scan")
+        max-retry-count (get-in config [:antivirus :max-retry-count])
+        retry-wait-minutes (get-in config [:antivirus :retry-wait-minutes])]
     (try
       (log/info (str "Virus scan for " filename " with key " file-key))
       (let [file (.get-file storage-engine file-key)
@@ -66,11 +68,11 @@
               (log/warn "Failed to scan file" filename "with key" file-key ": Service Unavailable")
               :else
               (do
-                (when (= (metadata-store/mark-virus-scan-for-retry-or-fail file-key conn) "failed")
+                (when (= (metadata-store/mark-virus-scan-for-retry-or-fail file-key max-retry-count retry-wait-minutes conn) "failed")
                   (log/error "FINAL: Scan of file " filename " with key " file-key " (" content-type ") will not be retried"))
                 (log/error (str "Failed to scan file " filename " with key " file-key ": " scan-result)))))
       (catch Exception e
-        (when (= (metadata-store/mark-virus-scan-for-retry-or-fail file-key conn) "failed")
+        (when (= (metadata-store/mark-virus-scan-for-retry-or-fail file-key max-retry-count retry-wait-minutes conn) "failed")
           (log/error "FINAL: Scan of file " filename " with key " file-key " (" content-type ") will not be retried"))
         (log/error e (str "Failed to scan file " filename " with key " file-key " (" content-type ") using Clamav at " clamav-url ", will retry"))))))
 

@@ -24,7 +24,9 @@
  :audit-log {:path "/tmp/auditlog_liiteri.log"}
  :antivirus {:clamav-url            "http://localhost:8765"
              :mock?                 true
-             :poll-interval-seconds 5}
+             :poll-interval-seconds 5
+             :max-retry-count 5
+             :retry-wait-minutes 5}
  :file-cleaner {:poll-interval-seconds 100}
  :mime-fixer {:poll-interval-seconds 5}
  :preview-generator {:poll-interval-seconds 5
