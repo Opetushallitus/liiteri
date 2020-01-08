@@ -73,12 +73,13 @@ UPDATE previews SET final = true where file_id = (select id from files where key
 -- name: sql-set-virus-scan-status!
 UPDATE files SET virus_scan_status = :virus_scan_status::virus_scan_status WHERE key = :file_key;
 
--- name: sql-mark-virus-scan-for-retry-or-fail!
+-- name: sql-mark-virus-scan-for-retry-or-fail
 UPDATE files
 SET virus_scan_retry_count = virus_scan_retry_count + 1,
-    virus_scan_status = CASE WHEN (virus_scan_retry_count < :retry_max_count) THEN 'needs_retry'::virus_scan_status ELSE 'failed'::virus_scan_status END,
+    virus_scan_status = CASE WHEN (virus_scan_retry_count < :retry_max_count - 1) THEN 'needs_retry'::virus_scan_status ELSE 'failed'::virus_scan_status END,
     virus_scan_retry_after = now () + (virus_scan_retry_count + 1) * :retry_wait_minutes * interval '1 minutes'
-WHERE key = :file_key;
+WHERE key = :file_key
+RETURNING virus_scan_status;
 
 -- name: sql-finalize-files!
 UPDATE files SET final = TRUE WHERE key IN (:keys);

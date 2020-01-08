@@ -66,11 +66,14 @@
               (log/warn "Failed to scan file" filename "with key" file-key ": Service Unavailable")
               :else
               (do
-                (log/error (str "Failed to scan file " filename " with key " file-key ": " scan-result)
-                (metadata-store/mark-virus-scan-for-retry-or-fail! file-key conn)))))
+                (when (= (metadata-store/mark-virus-scan-for-retry-or-fail file-key conn) "failed")
+                  (log/error "FINAL: Scan of file " filename " with key " file-key " (" content-type ") will not be retried"))
+                (log/error (str "Failed to scan file " filename " with key " file-key ": " scan-result)))))
       (catch Exception e
-        (metadata-store/mark-virus-scan-for-retry-or-fail! file-key conn)
-        (log/error e (str "Failed to scan file " filename " with key " file-key " (" content-type ") using Clamav at " clamav-url))))))
+        (when (= (metadata-store/mark-virus-scan-for-retry-or-fail file-key conn) "failed")
+          (log/error "FINAL: Scan of file " filename " with key " file-key " (" content-type ") will not be retried"))
+        (log/error e (str "Failed to scan file " filename " with key " file-key " (" content-type ") using Clamav at " clamav-url ", will retry"))))))
+
 
 (defn- scan-next-file [db storage-engine config]
   (try

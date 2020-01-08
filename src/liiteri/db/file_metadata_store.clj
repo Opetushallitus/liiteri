@@ -107,11 +107,13 @@
                                :virus_scan_status (name status)}
                               conn))
 
-(defn mark-virus-scan-for-retry-or-fail! [file-key conn]
-  (sql-mark-virus-scan-for-retry-or-fail! {:file_key file-key
-                                           :retry_max_count 5
-                                           :retry_wait_minutes 5}
-                                          conn))
+(defn mark-virus-scan-for-retry-or-fail [file-key conn]
+  (->> (sql-mark-virus-scan-for-retry-or-fail {:file_key file-key
+                                               :retry_max_count 5
+                                               :retry_wait_minutes 5}
+                                              conn)
+       first
+       :virus_scan_status))
 
 (defn finalize-files [keys conn]
   (sql-finalize-files! {:keys keys} conn))
