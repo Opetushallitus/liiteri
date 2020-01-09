@@ -70,6 +70,8 @@
               (do
                 (log/error (str "Failed to scan file " filename " with key " file-key ": " scan-result))
                 (when (= (metadata-store/mark-virus-scan-for-retry-or-fail file-key max-retry-count retry-wait-minutes conn) "failed")
+                  ;; We need to mark failed file as final, otherwise it gets deleted
+                  (metadata-store/finalize-files [file-key] conn)
                   (log/error "FINAL: Scan of file " filename " with key " file-key " (" content-type ") will not be retried")))))
       (catch Exception e
         (log/error e (str "Failed to scan file " filename " with key " file-key " (" content-type ") using Clamav at " clamav-url))

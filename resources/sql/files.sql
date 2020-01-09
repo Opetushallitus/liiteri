@@ -42,9 +42,11 @@ ORDER BY page_number ASC;
 -- name: sql-get-unscanned-file
 SELECT key, filename, content_type
   FROM files
-  WHERE virus_scan_status = 'not_started'
-    OR (virus_scan_status = 'needs_retry' AND
-        virus_scan_retry_after < now())
+  WHERE (
+      virus_scan_status = 'not_started'
+      OR (virus_scan_status = 'needs_retry' AND
+          virus_scan_retry_after < now())
+  )
   AND deleted IS NULL
   ORDER BY uploaded DESC
   LIMIT 1 FOR UPDATE SKIP LOCKED;
