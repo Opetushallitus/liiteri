@@ -34,6 +34,12 @@
     (log/info (str "Virus scan took " elapsed-time " ms, status " status-str " for file " filename " with key " file-key " (" content-type ")"
                    (when (mock-enabled? config) ", virus scan process in mock mode")))))
 
+(defn- mark-failure [file-key filename content-type max-retry-count retry-wait-minutes conn]
+  (when (= (metadata-store/mark-virus-scan-for-retry-or-fail file-key max-retry-count retry-wait-minutes conn) "failed")
+    ;; We need to mark failed file as final, otherwise it gets deleted
+    (metadata-store/finalize-files [file-key] conn)
+    (log/error "FINAL: Scan of file " filename " with key " file-key " (" content-type ") will not be retried")))
+
 (defn- scan-file [conn
                   storage-engine
                   config
@@ -68,16 +74,11 @@
               (log/warn "Failed to scan file" filename "with key" file-key ": Service Unavailable")
               :else
               (do
-                (log/error (str "Failed to scan file " filename " with key " file-key ": " scan-result))
-                (when (= (metadata-store/mark-virus-scan-for-retry-or-fail file-key max-retry-count retry-wait-minutes conn) "failed")
-                  ;; We need to mark failed file as final, otherwise it gets deleted
-                  (metadata-store/finalize-files [file-key] conn)
-                  (log/error "FINAL: Scan of file " filename " with key " file-key " (" content-type ") will not be retried")))))
+                (log/warn (str "Failed to scan file " filename " with key " file-key ": " scan-result))
+                (mark-failure file-key filename content-type max-retry-count retry-wait-minutes conn))))
       (catch Exception e
-        (log/error e (str "Failed to scan file " filename " with key " file-key " (" content-type ") using Clamav at " clamav-url))
-        (when (= (metadata-store/mark-virus-scan-for-retry-or-fail file-key max-retry-count retry-wait-minutes conn) "failed")
-          (log/error "FINAL: Scan of file " filename " with key " file-key " (" content-type ") will not be retried"))))))
-
+        (log/warn e (str "Failed to scan file " filename " with key " file-key " (" content-type ") using Clamav at " clamav-url))
+        (mark-failure file-key filename content-type max-retry-count retry-wait-minutes conn)))))
 
 (defn- scan-next-file [db storage-engine config]
   (try
