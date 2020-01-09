@@ -81,7 +81,7 @@ SET virus_scan_retry_count = virus_scan_retry_count + 1,
     virus_scan_status = CASE WHEN (virus_scan_retry_count < :retry_max_count - 1) THEN 'needs_retry'::virus_scan_status ELSE 'failed'::virus_scan_status END,
     virus_scan_retry_after = now () + (virus_scan_retry_count + 1) * :retry_wait_minutes * interval '1 minutes'
 WHERE key = :file_key
-RETURNING virus_scan_status;
+RETURNING virus_scan_status, virus_scan_retry_count;
 
 -- name: sql-finalize-files!
 UPDATE files SET final = TRUE WHERE key IN (:keys);

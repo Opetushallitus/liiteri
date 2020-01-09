@@ -113,7 +113,7 @@
                                                :retry_wait_minutes retry-wait-minutes}
                                               conn)
        first
-       :virus_scan_status))
+       db-utils/unwrap-data))
 
 (defn finalize-files [keys conn]
   (sql-finalize-files! {:keys keys} conn))
