@@ -90,5 +90,4 @@
       (#'virus-scan/scan-files db storage-engine config)
       (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] {:connection db})]
         (is (= (:virus-scan-retry-count metadata) 5))
-        (is (= (:virus-scan-status metadata) "failed"))
-        (is (= (:final metadata) true))))))
+        (is (= (:virus-scan-status metadata) "failed"))))))
