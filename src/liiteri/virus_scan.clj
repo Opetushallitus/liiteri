@@ -38,8 +38,6 @@
   (let [status (metadata-store/mark-virus-scan-for-retry-or-fail file-key max-retry-count retry-wait-minutes conn)]
     (log/warn (str "Failed to scan file " filename " with key " file-key ": " (:virus-scan-status status) ", retry " (:virus-scan-retry-count status) " of " max-retry-count))
     (when (= (:virus-scan-status status) "failed")
-      ;; We need to mark failed file as final, otherwise it gets deleted
-      (metadata-store/finalize-files [file-key] conn)
       (log/error "FINAL: Scan of file " filename " with key " file-key " (" content-type ") will not be retried"))))
 
 (defn- scan-file [conn
