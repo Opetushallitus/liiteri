@@ -13,7 +13,10 @@
   (:import [java.io File]
            [java.util UUID]))
 
-(def system (atom (system/new-system {:antivirus {:mock? false :poll-interval-seconds 5}})))
+(def system (atom (system/new-system {:antivirus {:mock? false
+                                                  :poll-interval-seconds 5
+                                                  :max-retry-count 5
+                                                  :retry-wait-minutes 0}})))
 (def metadata (atom nil))
 (def file (atom nil))
 
@@ -77,6 +80,14 @@
         storage-engine (:storage-engine @system)
         config         (:config @system)]
     (with-redefs [http-client/post (fn [& _] (throw (Exception. "failed to scan file")))]
-      (#'virus-scan/scan-files db storage-engine config))
-    (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] {:connection db})]
-      (is (= (:virus-scan-status metadata) "not_started")))))
+      (#'virus-scan/scan-files db storage-engine config)
+      (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] {:connection db})]
+        (is (= (:virus-scan-retry-count metadata) 1))
+        (is (= (:virus-scan-status metadata) "needs_retry")))
+      (#'virus-scan/scan-files db storage-engine config)
+      (#'virus-scan/scan-files db storage-engine config)
+      (#'virus-scan/scan-files db storage-engine config)
+      (#'virus-scan/scan-files db storage-engine config)
+      (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] {:connection db})]
+        (is (= (:virus-scan-retry-count metadata) 5))
+        (is (= (:virus-scan-status metadata) "failed"))))))

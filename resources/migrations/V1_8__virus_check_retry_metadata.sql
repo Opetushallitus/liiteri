@@ -1,0 +1,2 @@
+ALTER TABLE files ADD COLUMN virus_scan_retry_after TIMESTAMP WITH TIME ZONE;
+ALTER TABLE files ADD COLUMN virus_scan_retry_count INTEGER NOT NULL DEFAULT 0;
