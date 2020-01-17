@@ -26,6 +26,7 @@
                                       "audio/aac"
                                       "audio/ogg"
                                       "audio/wav"
+                                      "audio/x-wav"
                                       "audio/webm"
                                       "audio/3gpp"
                                       "audio/3gpp2"
