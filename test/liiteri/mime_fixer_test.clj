@@ -13,22 +13,22 @@
 (def system (atom (system/new-system {})))
 
 (use-fixtures :once
-  (fn [tests]
-    (u/start-system system)
-    (u/create-temp-dir system)
-    (component/stop (:mime-fixer @system))
-    (tests)
-    (u/clear-database! system)
-    (u/stop-system system)
-    (u/remove-temp-dir system)))
+              (fn [tests]
+                (u/start-system system)
+                (u/create-temp-dir system)
+                (component/stop (:mime-fixer @system))
+                (tests)
+                (u/clear-database! system)
+                (u/stop-system system)
+                (u/remove-temp-dir system)))
 
 (deftest mime-fixer-ok-files
   (let [store (u/new-in-memory-store)
-        conn {:connection (:db @system)}]
+        conn  {:connection (:db @system)}]
     (doseq [[mangled-filename filename file content-type size] mangled-extension-files]
-      (let [uploaded (-> (t/now)
-                         (.getMillis)
-                         (Timestamp.))
+      (let [uploaded  (-> (t/now)
+                          (.getMillis)
+                          (Timestamp.))
             file-spec {:key          filename
                        :filename     mangled-filename
                        :content-type nil
@@ -36,7 +36,7 @@
                        :uploaded     uploaded}]
         (metadata-store/create-file file-spec conn)
         (file-store/create-file store file filename)
-        (mime-fixer/fix-mime-type-of-file conn store {:key filename
+        (mime-fixer/fix-mime-type-of-file conn store {:key      filename
                                                       :filename mangled-filename
                                                       :uploaded uploaded})
         (let [fixed-metadata (metadata-store/get-metadata-for-tests [filename] conn)]

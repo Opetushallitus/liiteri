@@ -16,13 +16,13 @@
 (def config (config/new-config))
 
 (use-fixtures :once
-  (fn [tests]
-    (u/start-system system)
-    (u/create-temp-dir system)
-    (tests)
-    (u/clear-database! system)
-    (u/stop-system system)
-    (u/remove-temp-dir system)))
+              (fn [tests]
+                (u/start-system system)
+                (u/create-temp-dir system)
+                (tests)
+                (u/clear-database! system)
+                (u/stop-system system)
+                (u/remove-temp-dir system)))
 
 (defn- file-stored? [file-key]
   (let [file (io/file (str (get-in config [:file-store :filesystem :base-path]) "/" file-key))]
@@ -100,12 +100,12 @@
         (is (nil? saved-metadata))))))
 
 (deftest virus-download
-  (let [file (io/file (io/resource "test-files/virus.txt"))
-        path (str "http://localhost:" (get-in config [:server :port]) "/liiteri/api/files")
-        upload-resp @(http/post path {:multipart [{:name "file" :content file :filename "virus.txt" :content-type "image/png"}]})
-        key (:key (json/parse-string (:body upload-resp) true))
-        _ (.scan-files! (:virus-scan @system))
+  (let [file           (io/file (io/resource "test-files/virus.txt"))
+        path           (str "http://localhost:" (get-in config [:server :port]) "/liiteri/api/files")
+        upload-resp    @(http/post path {:multipart [{:name "file" :content file :filename "virus.txt" :content-type "image/png"}]})
+        key            (:key (json/parse-string (:body upload-resp) true))
+        _              (.scan-files! (:virus-scan @system))
         saved-metadata (metadata/get-metadata-for-tests [key] {:connection (:db @system)})
-        download-resp @(http/get (str path "/" key))]
+        download-resp  @(http/get (str path "/" key))]
     (is (= "failed" (:virus-scan-status saved-metadata)))
     (is (= (:status download-resp) 404))))

@@ -17,13 +17,13 @@
 (def file (atom nil))
 
 (use-fixtures :once
-  (fn [tests]
-    (u/start-system system)
-    (u/create-temp-dir system)
-    (tests)
-    (u/clear-database! system)
-    (u/stop-system system)
-    (u/remove-temp-dir system)))
+              (fn [tests]
+                (u/start-system system)
+                (u/create-temp-dir system)
+                (tests)
+                (u/clear-database! system)
+                (u/stop-system system)
+                (u/remove-temp-dir system)))
 
 (defn- init-test-file [uploaded]
   (let [filename "test-file.txt"
@@ -45,9 +45,9 @@
   (io/delete-file @file true))
 
 (use-fixtures :each
-  (fn [tests]
-    (tests)
-    (remove-test-file)))
+              (fn [tests]
+                (tests)
+                (remove-test-file)))
 
 (deftest file-cleaner-removes-file
   (let [db             (:db @system)

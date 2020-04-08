@@ -14,14 +14,14 @@
 (def system (atom (system/new-system {})))
 
 (use-fixtures :each
-  (fn [tests]
-    (u/start-system system)
-    (u/create-temp-dir system)
-    (component/stop (:preview-generator @system))
-    (tests)
-    (u/clear-database! system)
-    (u/stop-system system)
-    (u/remove-temp-dir system)))
+              (fn [tests]
+                (u/start-system system)
+                (u/create-temp-dir system)
+                (component/stop (:preview-generator @system))
+                (tests)
+                (u/clear-database! system)
+                (u/stop-system system)
+                (u/remove-temp-dir system)))
 
 (defn- assert-has-single-png-preview-page [file-metadata previews]
   (is (= 1 (:page-count file-metadata)))

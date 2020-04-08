@@ -13,10 +13,10 @@
   (:import [java.io File]
            [java.util UUID]))
 
-(def system (atom (system/new-system {:antivirus {:mock? false
+(def system (atom (system/new-system {:antivirus {:mock?                 false
                                                   :poll-interval-seconds 5
-                                                  :max-retry-count 5
-                                                  :retry-wait-minutes 0}})))
+                                                  :max-retry-count       5
+                                                  :retry-wait-minutes    0}})))
 (def metadata (atom nil))
 (def file (atom nil))
 
@@ -39,19 +39,19 @@
   (io/delete-file @file true))
 
 (use-fixtures :once
-  (fn [tests]
-    (u/start-system system)
-    (u/create-temp-dir system)
-    (tests)
-    (u/clear-database! system)
-    (u/stop-system system)
-    (u/remove-temp-dir system)))
+              (fn [tests]
+                (u/start-system system)
+                (u/create-temp-dir system)
+                (tests)
+                (u/clear-database! system)
+                (u/stop-system system)
+                (u/remove-temp-dir system)))
 
 (use-fixtures :each
-  (fn [tests]
-    (init-test-file)
-    (tests)
-    (remove-test-file)))
+              (fn [tests]
+                (init-test-file)
+                (tests)
+                (remove-test-file)))
 
 (deftest virus-scan-for-clean-file
   (let [db             (:db @system)

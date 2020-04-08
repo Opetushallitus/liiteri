@@ -9,18 +9,18 @@
   (concat [mangled-filename] (load-test-file filename content-type)))
 
 (def file-types
-  {:exe "application/octet-stream"
-   :txt "text/plain"
-   :jpg "image/jpeg"
-   :png "image/png"
-   :gif "image/gif"
-   :rtf "application/rtf"
-   :pdf "application/pdf"
-   :odt "application/vnd.oasis.opendocument.text"
-   :doc "application/msword"
+  {:exe  "application/octet-stream"
+   :txt  "text/plain"
+   :jpg  "image/jpeg"
+   :png  "image/png"
+   :gif  "image/gif"
+   :rtf  "application/rtf"
+   :pdf  "application/pdf"
+   :odt  "application/vnd.oasis.opendocument.text"
+   :doc  "application/msword"
    :docx "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-   :ods "application/vnd.oasis.opendocument.spreadsheet"
-   :xls "application/vnd.ms-excel"
+   :ods  "application/vnd.oasis.opendocument.spreadsheet"
+   :xls  "application/vnd.ms-excel"
    :xlsx "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})
 
 (def forbidden-files [(load-test-file "sample.exe" (:exe file-types))])
