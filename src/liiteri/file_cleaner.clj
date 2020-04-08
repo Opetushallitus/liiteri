@@ -26,13 +26,13 @@
 (defn- clean-next-file [db storage-engine]
   (try
     (jdbc/with-db-transaction [tx db]
-      (let [conn {:connection tx}
-            old-draft-file (metadata-store/get-old-draft-file conn)
-            old-draft-preview (metadata-store/get-old-draft-preview conn)]
-        (and old-draft-file
-             (clean-file conn storage-engine old-draft-file)
-             old-draft-preview
-             (clean-preview conn storage-engine old-draft-preview))))
+                              (let [conn              {:connection tx}
+                                    old-draft-file    (metadata-store/get-old-draft-file conn)
+                                    old-draft-preview (metadata-store/get-old-draft-preview conn)]
+                                (and old-draft-file
+                                     (clean-file conn storage-engine old-draft-file)
+                                     old-draft-preview
+                                     (clean-preview conn storage-engine old-draft-preview))))
     (catch Exception e
       (log/error e "Failed to clean the next file"))))
 

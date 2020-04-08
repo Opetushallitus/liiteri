@@ -13,7 +13,7 @@
       (do
         (log/warn (str "Request with illegal content-type '" real-content-type "' of file '" filename "' (provided '" provided-content-type "' ). Allowed: " allowed-mime-types)
                   (http-response/bad-request! {:provided-content-type provided-content-type
-                                               :illegal-content-type real-content-type
+                                               :illegal-content-type  real-content-type
                                                :allowed-content-types allowed-mime-types})))
       real-content-type)))
 
@@ -24,9 +24,9 @@
 
 (defn file->validated-file-spec! [config filename tempfile size provided-content-type]
   (let [detected-content-type (detect-mime-type tempfile)
-        updated-filename (fix-extension filename detected-content-type)]
+        updated-filename      (fix-extension filename detected-content-type)]
     (validate-file-content-type! config updated-filename detected-content-type provided-content-type)
     {:content-type detected-content-type
-     :filename updated-filename
-     :size size
-     :tempfile tempfile}))
+     :filename     updated-filename
+     :size         size
+     :tempfile     tempfile}))

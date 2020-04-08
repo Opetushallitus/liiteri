@@ -7,13 +7,13 @@
 
   (start [{:keys [db] :as this}]
     (let [config (doto (Flyway/configure)
-                         (.dataSource (:datasource db))
-                         (.table "schema_version")
-                         (.schemas (into-array String ["public"]))
-                         (.locations (into-array String ["migrations"])))
+                   (.dataSource (:datasource db))
+                   (.table "schema_version")
+                   (.schemas (into-array String ["public"]))
+                   (.locations (into-array String ["migrations"])))
           flyway (.load config)]
       (.migrate flyway))
-      this)
+    this)
 
   (stop [this]
     this))

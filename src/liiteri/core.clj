@@ -31,50 +31,50 @@
                       :output-fn      (partial log/default-output-fn {:stacktrace-fonts {}})})
   (let [config (config/new-config config-overrides)]
     (apply component/system-map
-                          :config         config
+           :config config
 
-                          :audit-logger   (component/using
-                                           (audit-log/new-logger)
-                                           [:config])
+           :audit-logger (component/using
+                           (audit-log/new-logger)
+                           [:config])
 
-                          :db             (component/using
-                                           (db/new-pool)
-                                           [:config])
+           :db (component/using
+                 (db/new-pool)
+                 [:config])
 
-                          :server         (component/using
-                                           (server/new-server)
-                                           [:storage-engine :db :config :audit-logger])
+           :server (component/using
+                     (server/new-server)
+                     [:storage-engine :db :config :audit-logger])
 
-                          :migrations     (component/using
-                                           (migrations/new-migration)
-                                           [:db])
+           :migrations (component/using
+                         (migrations/new-migration)
+                         [:db])
 
-                          :virus-scan     (component/using
-                                           (virus-scan/new-scanner)
-                                           [:db :storage-engine :config :migrations])
+           :virus-scan (component/using
+                         (virus-scan/new-scanner)
+                         [:db :storage-engine :config :migrations])
 
-                          :file-cleaner   (component/using
-                                           (file-cleaner/new-cleaner)
-                                           [:db :storage-engine :config :migrations])
+           :file-cleaner (component/using
+                           (file-cleaner/new-cleaner)
+                           [:db :storage-engine :config :migrations])
 
-                          :mime-fixer     (component/using
-                                           (mime-fixer/new-mime-fixer)
-                                           [:db :storage-engine :config :migrations])
+           :mime-fixer (component/using
+                         (mime-fixer/new-mime-fixer)
+                         [:db :storage-engine :config :migrations])
 
-                          :preview-generator (component/using
-                                              (preview-generator/new-preview-generator)
-                                              [:db :storage-engine :config :migrations])
+           :preview-generator (component/using
+                                (preview-generator/new-preview-generator)
+                                [:db :storage-engine :config :migrations])
 
-                          (case (get-in config [:file-store :engine])
-                            :filesystem [:storage-engine (component/using
-                                                          (filesystem-store/new-store)
-                                                          [:config])]
-                            :s3         [:s3-client      (component/using
-                                                          (s3-client/new-client)
-                                                          [:config])
-                                         :storage-engine (component/using
-                                                          (s3-store/new-store)
-                                                          [:s3-client :config])]))))
+           (case (get-in config [:file-store :engine])
+             :filesystem [:storage-engine (component/using
+                                            (filesystem-store/new-store)
+                                            [:config])]
+             :s3 [:s3-client (component/using
+                               (s3-client/new-client)
+                               [:config])
+                  :storage-engine (component/using
+                                    (s3-store/new-store)
+                                    [:s3-client :config])]))))
 
 (defn -main [& _]
   (let [_ (component/start-system (new-system))]

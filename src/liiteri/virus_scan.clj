@@ -43,23 +43,23 @@
 (defn- scan-file [conn
                   storage-engine
                   config
-                  {file-key :key
-                   filename :filename
+                  {file-key     :key
+                   filename     :filename
                    content-type :content-type}]
-  (let [clamav-url (str (get-in config [:antivirus :clamav-url]) "/scan")
-        max-retry-count (get-in config [:antivirus :max-retry-count])
+  (let [clamav-url         (str (get-in config [:antivirus :clamav-url]) "/scan")
+        max-retry-count    (get-in config [:antivirus :max-retry-count])
         retry-wait-minutes (get-in config [:antivirus :retry-wait-minutes])]
     (try
       (log/info (str "Virus scan for " filename " with key " file-key))
-      (let [file (.get-file storage-engine file-key)
-            start-time (System/currentTimeMillis)
-            scan-result (if (mock-enabled? config)
-                          (mock-scan-file filename)
-                          (http-client/post clamav-url {:multipart        [{:name "file" :content file :filename filename}
-                                                                           {:name "name" :content filename}]
-                                                        :throw-exceptions false
-                                                        :socket-timeout   (.toMillis TimeUnit/MINUTES 22)
-                                                        :conn-timeout     (.toMillis TimeUnit/SECONDS 2)}))
+      (let [file         (.get-file storage-engine file-key)
+            start-time   (System/currentTimeMillis)
+            scan-result  (if (mock-enabled? config)
+                           (mock-scan-file filename)
+                           (http-client/post clamav-url {:multipart        [{:name "file" :content file :filename filename}
+                                                                            {:name "name" :content filename}]
+                                                         :throw-exceptions false
+                                                         :socket-timeout   (.toMillis TimeUnit/MINUTES 22)
+                                                         :conn-timeout     (.toMillis TimeUnit/SECONDS 2)}))
             elapsed-time (- (System/currentTimeMillis) start-time)]
         (cond (= (:status scan-result) 200)
               (if (= (:body scan-result) "Everything ok : true\n")
@@ -82,9 +82,9 @@
 (defn- scan-next-file [db storage-engine config]
   (try
     (jdbc/with-db-transaction [tx db]
-      (let [conn {:connection tx}]
-        (when-let [file (metadata-store/get-unscanned-file conn)]
-          (scan-file conn storage-engine config file))))
+                              (let [conn {:connection tx}]
+                                (when-let [file (metadata-store/get-unscanned-file conn)]
+                                  (scan-file conn storage-engine config file))))
     (catch Exception e
       (log/error e "Failed to scan the next file"))))
 

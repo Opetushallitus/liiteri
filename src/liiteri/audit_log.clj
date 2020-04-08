@@ -56,10 +56,10 @@
 
 (defn- audit-log-config [log-path]
   (assoc timbre/example-config
-         :appenders {:file-appender
-                     (assoc (rolling-appender {:path log-path
-                                               :pattern :daily})
-                            :output-fn (fn [{:keys [msg_]}] (force msg_)))}))
+    :appenders {:file-appender
+                (assoc (rolling-appender {:path    log-path
+                                          :pattern :daily})
+             :output-fn (fn [{:keys [msg_]}] (force msg_)))}))
 
 (defprotocol AuditLog
   (log [this user operation target changes]))

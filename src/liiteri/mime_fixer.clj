@@ -29,13 +29,13 @@
   (let [start-time (System/currentTimeMillis)]
     (try
       (log/info (str "Fixing mime type of '" filename "' with key '" file-key "', uploaded on " uploaded " ..."))
-      (with-open [^InputStream file (file-store/get-file storage-engine file-key)
+      (with-open [^InputStream file                  (file-store/get-file storage-engine file-key)
                   ^TikaInputStream tika-input-stream (TikaInputStream/get file)]
         (let [detected-content-type (mime/detect-mime-type tika-input-stream)
-              fixed-filename (mime/fix-extension filename detected-content-type)
-              names-for-logging (if (= filename fixed-filename)
-                                  fixed-filename
-                                  (str fixed-filename " (originally '" filename "')"))]
+              fixed-filename        (mime/fix-extension filename detected-content-type)
+              names-for-logging     (if (= filename fixed-filename)
+                                      fixed-filename
+                                      (str fixed-filename " (originally '" filename "')"))]
           (drain-stream file)
           (metadata-store/set-content-type-and-filename! file-key fixed-filename detected-content-type conn)
           (log-mime-type-fix-result file-key names-for-logging detected-content-type :successful (- (System/currentTimeMillis) start-time))
@@ -84,10 +84,10 @@
   (start [this]
     (log/info "Starting MIME type fixing process...")
     (let [poll-interval (get-in config [:mime-fixer :poll-interval-seconds])
-          scheduler (Executors/newScheduledThreadPool 1)
-          fixer #(fix-mime-types-of-files db storage-engine)
-          time-unit TimeUnit/SECONDS
-          fixer-future (.scheduleAtFixedRate scheduler fixer 0 poll-interval time-unit)]
+          scheduler     (Executors/newScheduledThreadPool 1)
+          fixer         #(fix-mime-types-of-files db storage-engine)
+          time-unit     TimeUnit/SECONDS
+          fixer-future  (.scheduleAtFixedRate scheduler fixer 0 poll-interval time-unit)]
       (log/info (str "Started MIME type fixing process, restarting at " poll-interval " " time-unit " intervals."))
       (assoc this :fixer-future fixer-future)))
 

@@ -14,14 +14,14 @@
 
 (defn- sql-date->joda-time [x]
   (cond-> x
-    (instance? Timestamp x)
-    (c/from-sql-date)))
+          (instance? Timestamp x)
+          (c/from-sql-date)))
 
 (defn- transform-values [data t]
   (clojure.walk/prewalk (fn [x]
                           (cond->> x
-                            (map? x)
-                            (into {} (map (fn [[k v]] [k (t v)])))))
+                                   (map? x)
+                                   (into {} (map (fn [[k v]] [k (t v)])))))
                         data))
 
 (defn unwrap-data [data]

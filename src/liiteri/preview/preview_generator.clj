@@ -37,7 +37,7 @@
                                                                           input-stream
                                                                           config)]
           (doseq [[page-index preview-as-byte-array] (map-indexed vector previews)]
-            (let [preview-key (str file-key "." page-index)
+            (let [preview-key      (str file-key "." page-index)
                   preview-filename preview-key]
               (save-bytearray-as-preview conn
                                          storage-engine
@@ -70,16 +70,16 @@
 (defn- generate-next-preview [config db storage-engine]
   (try
     (jdbc/with-db-transaction [tx db]
-      (let [conn {:connection tx}]
-        (if-let [file (metadata-store/get-file-without-preview conn content-types-to-process)]
-          (do
-            (reset! were-unprocessed-files-found-on-last-run true)
-            (generate-file-previews config conn storage-engine file))
-          (do
-            (when @were-unprocessed-files-found-on-last-run
-              (log/info "Preview generation seems to be finished (or errored)."))
-            (reset! were-unprocessed-files-found-on-last-run false)
-            false))))
+                              (let [conn {:connection tx}]
+                                (if-let [file (metadata-store/get-file-without-preview conn content-types-to-process)]
+                                  (do
+                                    (reset! were-unprocessed-files-found-on-last-run true)
+                                    (generate-file-previews config conn storage-engine file))
+                                  (do
+                                    (when @were-unprocessed-files-found-on-last-run
+                                      (log/info "Preview generation seems to be finished (or errored)."))
+                                    (reset! were-unprocessed-files-found-on-last-run false)
+                                    false))))
     (catch Exception e
       (log/error e "Failed to generate preview for the next file")
       false)))
@@ -100,10 +100,10 @@
 
   (start [this]
     (log/info "Starting document preview generation process...")
-    (let [poll-interval (get-in config [:preview-generator :poll-interval-seconds])
-          scheduler (Executors/newScheduledThreadPool 1)
-          preview-generator #(generate-previews config db storage-engine)
-          time-unit TimeUnit/SECONDS
+    (let [poll-interval            (get-in config [:preview-generator :poll-interval-seconds])
+          scheduler                (Executors/newScheduledThreadPool 1)
+          preview-generator        #(generate-previews config db storage-engine)
+          time-unit                TimeUnit/SECONDS
           preview-generator-future (.scheduleAtFixedRate scheduler preview-generator 0 poll-interval time-unit)]
       (log/info (str "Started document preview generation process, restarting at " poll-interval " " time-unit " intervals."))
       (assoc this :preview-generator-future preview-generator-future)))

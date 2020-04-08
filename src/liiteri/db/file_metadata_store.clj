@@ -66,9 +66,9 @@
                  (map #(add-previews % conn)))
        (reduce (fn pick-latest-metadata [result {:keys [key uploaded] :as metadata}]
                  (cond-> result
-                   (or (not (contains? result key))
-                       (t/before? (get-in result [key :uploaded]) uploaded))
-                   (assoc key metadata)))
+                         (or (not (contains? result key))
+                             (t/before? (get-in result [key :uploaded]) uploaded))
+                         (assoc key metadata)))
                {})
        ((fn [metadata]
           (keep #(get metadata %) key-list)))))
@@ -108,8 +108,8 @@
                               conn))
 
 (defn mark-virus-scan-for-retry-or-fail [file-key max-retry-count retry-wait-minutes conn]
-  (->> (sql-mark-virus-scan-for-retry-or-fail {:file_key file-key
-                                               :retry_max_count max-retry-count
+  (->> (sql-mark-virus-scan-for-retry-or-fail {:file_key           file-key
+                                               :retry_max_count    max-retry-count
                                                :retry_wait_minutes retry-wait-minutes}
                                               conn)
        first
@@ -127,15 +127,15 @@
 (defn get-queue-length
   [conn]
   (->> conn
-      (sql-get-queue-length {})
-      (first)
-      :count))
+       (sql-get-queue-length {})
+       (first)
+       :count))
 
 (defn get-oldest-unscanned-file
   [conn]
   (->> conn
-      (sql-get-oldest-unscanned-file {})
-      (first)))
+       (sql-get-oldest-unscanned-file {})
+       (first)))
 
 (defn save-preview! [file-key preview-key page-number preview-filename content-type size conn]
   (sql-create-preview<! {:file_key     file-key
@@ -150,7 +150,7 @@
   (sql-set-file-page-count-and-preview-status! {:key            key
                                                 :page_count     page-count
                                                 :preview_status preview-status}
-                                                conn))
+                                               conn))
 
 (defn mark-previews-final! [file-key conn]
   (sql-mark-previews-final! {:file_key file-key} conn))

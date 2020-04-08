@@ -10,7 +10,7 @@
     (.toByteArray output-stream)))
 
 (defn inputstream->bytes [inputstream]
-  (with-open [xin inputstream
+  (with-open [xin  inputstream
               xout (java.io.ByteArrayOutputStream.)]
     (io/copy xin xout)
     (.toByteArray xout)))

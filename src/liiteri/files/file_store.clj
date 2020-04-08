@@ -36,5 +36,5 @@
 (defn get-file-and-metadata [key storage-engine conn]
   (let [metadata (metadata-store/get-metadata [key] conn)]
     (when (> (count metadata) 0)
-      {:body (.get-file storage-engine key)
+      {:body     (.get-file storage-engine key)
        :filename (:filename (first metadata))})))
