@@ -1,12 +1,15 @@
 (ns liiteri.fixtures
   (:require [clojure.java.io :as io]))
 
-(defn load-test-file [filename content-type]
+(defn load-test-file [{:keys [filename content-type]}]
   (let [file-object (io/file (io/resource (format "test-files/%s" filename)))]
-    [filename file-object content-type (.length file-object)]))
+    {:filename     filename
+     :file-object  file-object
+     :content-type content-type
+     :size         (.length file-object)}))
 
-(defn load-mangled-extension-test-file [mangled-filename filename content-type]
-  (concat [mangled-filename] (load-test-file filename content-type)))
+(defn load-mangled-extension-test-file [{:keys [mangled-filename filename content-type]}]
+  (assoc (load-test-file {:filename filename :content-type content-type}) :mangled-filename mangled-filename))
 
 (def file-types
   {:exe  "application/octet-stream"
@@ -23,26 +26,26 @@
    :xls  "application/vnd.ms-excel"
    :xlsx "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})
 
-(def forbidden-files [(load-test-file "sample.exe" (:exe file-types))])
+(def forbidden-files [(load-test-file {:filename "sample.exe" :content-type (:exe file-types)})])
 
-(def ok-files [(load-test-file "sample.doc" (:doc file-types))
-               (load-test-file "sample.docx" (:docx file-types))
-               (load-test-file "sample.jpg" (:jpg file-types))
-               (load-test-file "sample.ods" (:ods file-types))
-               (load-test-file "sample.odt" (:odt file-types))
-               (load-test-file "sample.pdf" (:pdf file-types))
-               (load-test-file "sample.png" (:png file-types))
-               (load-test-file "sample.txt" (:txt file-types))
-               (load-test-file "sample.xls" (:xls file-types))
-               (load-test-file "sample.xlsx" (:xlsx file-types))])
+(def ok-files [(load-test-file {:filename "sample.doc" :content-type (:doc file-types)})
+               (load-test-file {:filename "sample.docx" :content-type (:docx file-types)})
+               (load-test-file {:filename "sample.jpg" :content-type (:jpg file-types)})
+               (load-test-file {:filename "sample.ods" :content-type (:ods file-types)})
+               (load-test-file {:filename "sample.odt" :content-type (:odt file-types)})
+               (load-test-file {:filename "sample.pdf" :content-type (:pdf file-types)})
+               (load-test-file {:filename "sample.png" :content-type (:png file-types)})
+               (load-test-file {:filename "sample.txt" :content-type (:txt file-types)})
+               (load-test-file {:filename "sample.xls" :content-type (:xls file-types)})
+               (load-test-file {:filename "sample.xlsx" :content-type (:xlsx file-types)})])
 
-(def mangled-extension-files [(load-mangled-extension-test-file "sample.docx" "sample.doc" (:doc file-types))
-                              (load-mangled-extension-test-file "sample.doc" "sample.docx" (:docx file-types))
-                              (load-mangled-extension-test-file "sample.png" "sample.jpg" (:jpg file-types))
-                              (load-mangled-extension-test-file "sample.xls" "sample.ods" (:ods file-types))
-                              (load-mangled-extension-test-file "sample.doc" "sample.odt" (:odt file-types))
-                              (load-mangled-extension-test-file "sample.doc" "sample.pdf" (:pdf file-types))
-                              (load-mangled-extension-test-file "sample.jpg" "sample.png" (:png file-types))
-                              (load-mangled-extension-test-file "sample.doc" "sample.txt" (:txt file-types))
-                              (load-mangled-extension-test-file "sample.odt" "sample.xls" (:xls file-types))
-                              (load-mangled-extension-test-file "sample.xls" "sample.xlsx" (:xlsx file-types))])
+(def mangled-extension-files [(load-mangled-extension-test-file {:mangled-filename "sample.docx" :filename "sample.doc" :content-type (:doc file-types)})
+                              (load-mangled-extension-test-file {:mangled-filename "sample.doc" :filename "sample.docx" :content-type (:docx file-types)})
+                              (load-mangled-extension-test-file {:mangled-filename "sample.png" :filename "sample.jpg" :content-type (:jpg file-types)})
+                              (load-mangled-extension-test-file {:mangled-filename "sample.xls" :filename "sample.ods" :content-type (:ods file-types)})
+                              (load-mangled-extension-test-file {:mangled-filename "sample.doc" :filename "sample.odt" :content-type (:odt file-types)})
+                              (load-mangled-extension-test-file {:mangled-filename "sample.doc" :filename "sample.pdf" :content-type (:pdf file-types)})
+                              (load-mangled-extension-test-file {:mangled-filename "sample.jpg" :filename "sample.png" :content-type (:png file-types)})
+                              (load-mangled-extension-test-file {:mangled-filename "sample.doc" :filename "sample.txt" :content-type (:txt file-types)})
+                              (load-mangled-extension-test-file {:mangled-filename "sample.odt" :filename "sample.xls" :content-type (:xls file-types)})
+                              (load-mangled-extension-test-file {:mangled-filename "sample.xls" :filename "sample.xlsx" :content-type (:xlsx file-types)})])

@@ -43,7 +43,7 @@
 (deftest previews-are-generated-for-pdf-files
   (let [store (u/new-in-memory-store)
         conn  {:connection (:db @system)}]
-    (doseq [[filename file content-type size] fixtures/ok-files]
+    (doseq [{:keys [filename file-object content-type size]} fixtures/ok-files]
       (let [uploaded  (-> (t/now)
                           (.getMillis)
                           (Timestamp.))
@@ -53,7 +53,7 @@
                        :size         size
                        :uploaded     uploaded}]
         (test-metadata-store/create-file file-spec conn)
-        (file-store/create-file store file filename)
+        (file-store/create-file store file-object filename)
         (metadata-store/set-virus-scan-status! filename "done" conn)
         (metadata-store/finalize-files [filename] conn)
         (preview-generator/generate-file-previews (:config @system) conn store file-spec)
@@ -67,7 +67,7 @@
 (deftest previews-are-deleted-when-file-is-deleted
   (let [store (u/new-in-memory-store)
         conn  {:connection (:db @system)}]
-    (doseq [[filename file content-type size] (take 2 fixtures/ok-files)]
+    (doseq [{:keys [filename file-object content-type size]} (take 2 fixtures/ok-files)]
       (let [uploaded  (-> (t/now)
                           (.getMillis)
                           (Timestamp.))
@@ -77,7 +77,7 @@
                        :size         size
                        :uploaded     uploaded}]
         (test-metadata-store/create-file file-spec conn)
-        (file-store/create-file store file filename)
+        (file-store/create-file store file-object filename)
         (metadata-store/set-virus-scan-status! filename "done" conn)
         (metadata-store/finalize-files [filename] conn)
         (preview-generator/generate-file-previews (:config @system) conn store file-spec)
