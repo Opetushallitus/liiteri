@@ -2,7 +2,11 @@
   (:require [clj-time.core :as t]
             [clojure.string :as string]
             [liiteri.db.db-utils :as db-utils]
-            [yesql.core :as sql])
+            [schema.core :as s]
+            [yesql.core :as sql]
+            [liiteri.schema :as schema]
+            [taoensso.timbre :as log]
+            [string-normalizer.filename-normalizer :as normalizer])
   (:import [java.text Normalizer Normalizer$Form]))
 
 (declare sql-create-file<!)
@@ -24,6 +28,7 @@
 (declare sql-create-preview<!)
 (declare sql-set-file-page-count-and-preview-status!)
 (declare sql-mark-previews-final!)
+(declare sql-update-filename!)
 
 (sql/defqueries "sql/files.sql")
 
@@ -93,6 +98,29 @@
                {})
        ((fn [metadata]
           (keep #(get metadata %) key-list)))))
+
+(s/defn update-filename!
+  [file-key :- s/Str
+   normalized-filename :- s/Str
+   conn :- s/Any]
+  (sql-update-filename! {:file_key file-key
+                         :filename normalized-filename}
+                        conn))
+
+(s/defn get-normalized-metadata! :- [schema/File]
+  [key-list :- [s/Str]
+   conn :- s/Any]
+  (->> (get-metadata key-list conn)
+       (mapv (fn [{file-key     :key
+                   old-filename :filename
+                   :as          metadata}]
+               (let [normalized-filename (normalizer/normalize-filename old-filename)]
+                 (when (and (not= normalized-filename old-filename)
+                            (= (update-filename! file-key normalized-filename conn) 1))
+                   (log/info
+                     (format "Normalized filename, file key: %s, old filename: %s, normalized filename: %s"
+                             file-key old-filename normalized-filename)))
+                 (assoc metadata :filename normalized-filename))))))
 
 (defn get-previews [file-key conn]
   (->> (sql-get-previews {:file_key file-key} conn)

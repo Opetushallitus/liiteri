@@ -58,7 +58,7 @@
         (metadata-store/finalize-files [filename] conn)
         (preview-generator/generate-file-previews (:config @system) conn store file-spec)
 
-        (let [file-metadata-after-preview (first (metadata-store/get-metadata [filename] conn))
+        (let [file-metadata-after-preview (first (metadata-store/get-normalized-metadata! [filename] conn))
               generated-previews          (vec (metadata-store/get-previews filename conn))]
           (if (= "application/pdf" content-type)
             (assert-has-single-png-preview-page file-metadata-after-preview generated-previews)
@@ -84,7 +84,7 @@
 
         (file-store/delete-file-and-metadata (:key file-spec) store conn)
 
-        (let [file-metadata-after-preview (first (metadata-store/get-metadata [filename] conn))
+        (let [file-metadata-after-preview (first (metadata-store/get-normalized-metadata! [filename] conn))
               generated-previews          (vec (metadata-store/get-previews filename conn))]
           (is (= 0 (count generated-previews)))
           (is (= nil file-metadata-after-preview)))))))
