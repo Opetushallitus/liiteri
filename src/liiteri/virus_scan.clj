@@ -82,9 +82,9 @@
 (defn- scan-next-file [db storage-engine config]
   (try
     (jdbc/with-db-transaction [tx db]
-                              (let [conn {:connection tx}]
-                                (when-let [file (metadata-store/get-unscanned-file conn)]
-                                  (scan-file conn storage-engine config file))))
+      (let [conn {:connection tx}]
+        (when-let [file (metadata-store/get-unscanned-file conn)]
+          (scan-file conn storage-engine config file))))
     (catch Exception e
       (log/error e "Failed to scan the next file"))))
 

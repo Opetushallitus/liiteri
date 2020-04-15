@@ -53,16 +53,16 @@
 (defn- fix-mime-type-of-next-file [db storage-engine]
   (try
     (jdbc/with-db-transaction [tx db]
-                              (let [conn {:connection tx}]
-                                (if-let [file (metadata-store/get-file-without-mime-type conn)]
-                                  (do
-                                    (reset! were-unprocessed-files-found-on-last-run true)
-                                    (fix-mime-type-of-file conn storage-engine file))
-                                  (do
-                                    (when @were-unprocessed-files-found-on-last-run
-                                      (log/info "MIME type fixing seems to be finished (or errored)."))
-                                    (reset! were-unprocessed-files-found-on-last-run false)
-                                    false))))
+      (let [conn {:connection tx}]
+        (if-let [file (metadata-store/get-file-without-mime-type conn)]
+          (do
+            (reset! were-unprocessed-files-found-on-last-run true)
+            (fix-mime-type-of-file conn storage-engine file))
+          (do
+            (when @were-unprocessed-files-found-on-last-run
+              (log/info "MIME type fixing seems to be finished (or errored)."))
+            (reset! were-unprocessed-files-found-on-last-run false)
+            false))))
     (catch Exception e
       (log/error e "Failed to fix mime type of the next file")
       false)))
