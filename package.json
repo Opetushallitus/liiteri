@@ -6,6 +6,6 @@
   },
   "license": "EUPL-1.1",
   "devDependencies": {
-    "pm2": "^3.5.1"
+    "pm2": "4.2.3"
   }
 }
