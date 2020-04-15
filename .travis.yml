@@ -11,14 +11,19 @@ env:
     # AWS_SECRET_ACCESS_KEY
     - secure: "Qy8CHuVO+60VhT/MG7omlb0lN9lJphliG9l3nr+3neRZaW8DoMjXnloyC5KcEn6RovR3jKnl8Ylv15GU2gsIrkO82mKW52eQnfnnKyaCbgXH3hsBlkdXpciBl9Gr0ksOEIuaoRc8bmncbNW/ZbBlaUPn9oFfJmcfABo99TkuVsFS4cFc3gO4E16+G8xYd2qh1JI8r6f10nBdVloQ29RUu86C1FliAhfmatqdlq6SnlXy1bd4+KWcvMj62B7mh6xi8EyYuPTlQ20lVPpc+jRYHh7Hpz20q1EAWNam0NURr8sVXL2L1e17AOI6syon2m8eqLWkBXWblr8vKe7JzSwaxz0lkU59jbLyAsnSPLbYMMy0VTi0ORR1541k333NLBEMO86DKdp7U1jT2gugFkH8Up4LSDARkgLbPkUdLlhPj0kWG6JNFSMQ/loQDXeObvlTmtM58o0OsvF9bjXjwKM8G4cd3n0f4LoZTT4Ed28+JeBUChmnSMt49XInzAU/Jft/nBsGT7Yg6YbOgiZEabyAAWlTHYdjSl4PcmBoIY2vtHMnmr2WqdlbLyDzvnNkqBBdJv/c92RdAoXjGN8jopU7WQ1LGtzH55gWZRCBnJKbUKvYJagfGrXINb+M/AlVli45o7JKxyJUqhGpSF6/BnsRs2bk25zcWd0S6Cu1F5sH5nQ="
 cache:
+  npm: true
   directories:
   - $HOME/.m2
+  - node_modules
 install:
   - git clone https://github.com/Opetushallitus/ci-tools.git
   - source ci-tools/common/setup-tools.sh
 before_script:
   - docker run --name liiteri-test-db -e POSTGRES_PASSWORD=oph -e POSTGRES_USER=oph -e POSTGRES_DB=liiteri -p 16433:5432 -d postgres:11
 script: >-
+  nvm install &&
+  nvm use &&
+  npm install &&
   CONFIG=dev-resources/local-test-config.edn ./bin/cibuild.sh run-tests-and-create-uberjar &&
   export BASE_IMAGE="baseimage-fatjar:jdk11" &&
   ./ci-tools/common/pull-image.sh &&
