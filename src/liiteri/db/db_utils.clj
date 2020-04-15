@@ -1,7 +1,8 @@
 (ns liiteri.db.db-utils
   (:require [camel-snake-kebab.core :as t]
             [camel-snake-kebab.extras :as e]
-            [clj-time.coerce :as c])
+            [clj-time.coerce :as c]
+            [clojure.walk])
   (:import [java.sql Timestamp]))
 
 (defn kwd->snake-case [data]

@@ -1,6 +1,5 @@
 (ns liiteri.files.file-store
-  (:require [clj-time.core :as t]
-            [liiteri.db.file-metadata-store :as metadata-store])
+  (:require [liiteri.db.file-metadata-store :as metadata-store])
   (:import [java.util UUID]))
 
 (defprotocol StorageEngine

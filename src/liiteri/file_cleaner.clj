@@ -1,13 +1,13 @@
-(ns liiteri.file-cleaner
-  (:require [chime :as c]
-            [clojure.core.async :as a]
-            [clojure.java.jdbc :as jdbc]
-            [clj-time.core :as t]
-            [clj-time.periodic :as p]
-            [com.stuartsierra.component :as component]
-            [liiteri.db.file-metadata-store :as metadata-store]
-            [liiteri.files.file-store :as file-store]
-            [taoensso.timbre :as log]))
+  (ns liiteri.file-cleaner
+    (:require [chime :as c]
+              [clojure.core.async :as a]
+              [clojure.java.jdbc :as jdbc]
+              [clj-time.core :as t]
+              [clj-time.periodic :as p]
+              [com.stuartsierra.component :as component]
+              [liiteri.db.file-metadata-store :as metadata-store]
+              [liiteri.files.file-store :as file-store]
+              [taoensso.timbre :as log]))
 
 (defn- clean-file [conn storage-engine file]
   (log/info (str "Cleaning file: " (:key file)))
@@ -26,13 +26,13 @@
 (defn- clean-next-file [db storage-engine]
   (try
     (jdbc/with-db-transaction [tx db]
-                              (let [conn              {:connection tx}
-                                    old-draft-file    (metadata-store/get-old-draft-file conn)
-                                    old-draft-preview (metadata-store/get-old-draft-preview conn)]
-                                (and old-draft-file
-                                     (clean-file conn storage-engine old-draft-file)
-                                     old-draft-preview
-                                     (clean-preview conn storage-engine old-draft-preview))))
+      (let [conn              {:connection tx}
+            old-draft-file    (metadata-store/get-old-draft-file conn)
+            old-draft-preview (metadata-store/get-old-draft-preview conn)]
+        (and old-draft-file
+             (clean-file conn storage-engine old-draft-file)
+             old-draft-preview
+             (clean-preview conn storage-engine old-draft-preview))))
     (catch Exception e
       (log/error e "Failed to clean the next file"))))
 

@@ -1,11 +1,10 @@
 (ns liiteri.config
   (:require [clojure.edn :as edn]
-            [clojure.java.io :as io]
-            [com.stuartsierra.component :as component]
+            [clojure.string :as string]
             [environ.core :refer [env]]))
 
 (defn new-config [& [overrides]]
-  {:pre [(not (clojure.string/blank? (env :config)))]}
+  {:pre [(not (string/blank? (env :config)))]}
   (let [path (env :config)]
     (-> path
         slurp

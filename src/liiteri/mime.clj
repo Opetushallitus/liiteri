@@ -10,16 +10,15 @@
 (defn validate-file-content-type! [config filename real-content-type provided-content-type]
   (let [allowed-mime-types (-> config :file-store :attachment-mime-types)]
     (if (not-any? (partial = real-content-type) allowed-mime-types)
-      (do
-        (log/warn (str "Request with illegal content-type '" real-content-type "' of file '" filename "' (provided '" provided-content-type "' ). Allowed: " allowed-mime-types)
-                  (http-response/bad-request! {:provided-content-type provided-content-type
-                                               :illegal-content-type  real-content-type
-                                               :allowed-content-types allowed-mime-types})))
+      (log/warn (str "Request with illegal content-type '" real-content-type "' of file '" filename "' (provided '" provided-content-type "' ). Allowed: " allowed-mime-types)
+                (http-response/bad-request! {:provided-content-type provided-content-type
+                                             :illegal-content-type  real-content-type
+                                             :allowed-content-types allowed-mime-types}))
       real-content-type)))
 
 (defn fix-extension [filename real-content-type]
   (let [extension-from-mimetype (mime/extension-for-name real-content-type)
-        [fname ext] (fs/split-ext filename)]
+        [fname] (fs/split-ext filename)]
     (format "%s%s" fname extension-from-mimetype)))
 
 (defn file->validated-file-spec! [config filename tempfile size provided-content-type]
