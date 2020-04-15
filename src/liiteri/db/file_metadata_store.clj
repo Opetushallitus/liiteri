@@ -1,8 +1,29 @@
 (ns liiteri.db.file-metadata-store
   (:require [clj-time.core :as t]
+            [clojure.string :as string]
             [liiteri.db.db-utils :as db-utils]
             [yesql.core :as sql])
   (:import [java.text Normalizer Normalizer$Form]))
+
+(declare sql-create-file<!)
+(declare sql-delete-file!)
+(declare sql-delete-preview!)
+(declare sql-get-previews)
+(declare sql-get-metadata)
+(declare sql-get-unscanned-file)
+(declare sql-get-draft-file)
+(declare sql-get-draft-preview)
+(declare sql-get-file-without-mime-type)
+(declare sql-get-file-without-preview)
+(declare sql-set-virus-scan-status!)
+(declare sql-mark-virus-scan-for-retry-or-fail)
+(declare sql-finalize-files!)
+(declare sql-set-content-type-and-filename!)
+(declare sql-get-queue-length)
+(declare sql-get-oldest-unscanned-file)
+(declare sql-create-preview<!)
+(declare sql-set-file-page-count-and-preview-status!)
+(declare sql-mark-previews-final!)
 
 (sql/defqueries "sql/files.sql")
 
@@ -11,13 +32,13 @@
 
 (defn- sanitize [string]
   (let [sanitized (-> string
-                      (clojure.string/replace #"ä" "a")
-                      (clojure.string/replace #"Ä" "A")
-                      (clojure.string/replace #"ö" "o")
-                      (clojure.string/replace #"Ö" "O")
-                      (clojure.string/replace #"å" "a")
-                      (clojure.string/replace #"Å" "a")
-                      (clojure.string/replace non-valid-character-pattern ""))
+                      (string/replace #"ä" "a")
+                      (string/replace #"Ä" "A")
+                      (string/replace #"ö" "o")
+                      (string/replace #"Ö" "O")
+                      (string/replace #"å" "a")
+                      (string/replace #"Å" "a")
+                      (string/replace non-valid-character-pattern ""))
         matcher   (re-matcher empty-filename-pattern sanitized)
         extension (second (re-find matcher))]
     (if (empty? extension)

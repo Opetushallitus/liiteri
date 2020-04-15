@@ -73,8 +73,7 @@
               (= (:status scan-result) 503)
               (log/warn "Failed to scan file" filename "with key" file-key ": Service Unavailable")
               :else
-              (do
-                (mark-and-log-failure file-key filename content-type max-retry-count retry-wait-minutes conn))))
+              (mark-and-log-failure file-key filename content-type max-retry-count retry-wait-minutes conn)))
       (catch Exception e
         (log/warn e (str "Got exception when scanning file " filename " with key " file-key " (" content-type ") using Clamav at " clamav-url))
         (mark-and-log-failure file-key filename content-type max-retry-count retry-wait-minutes conn)))))

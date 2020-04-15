@@ -1,5 +1,6 @@
 (ns liiteri.audit-log
-  (:require [com.stuartsierra.component :as component]
+  (:require [clojure.string :as string]
+            [com.stuartsierra.component :as component]
             [taoensso.timbre :as timbre]
             [taoensso.timbre.appenders.3rd-party.rolling :refer [rolling-appender]])
   (:import [fi.vm.sade.auditlog Audit ApplicationType Changes$Builder Logger Operation Target$Builder User]
@@ -69,7 +70,7 @@
 
   (start [this]
     (let [log-path (get-in config [:audit-log :path])]
-      (when (clojure.string/blank? log-path)
+      (when (string/blank? log-path)
         (throw (new RuntimeException "Invalid empty audit log path")))
       (assoc this :logger (Audit. (->LoggerAdapter (audit-log-config log-path))
                                   "liiteri"

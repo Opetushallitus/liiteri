@@ -1,13 +1,13 @@
-(ns liiteri.file-cleaner
-  (:require [chime :as c]
-            [clojure.core.async :as a]
-            [clojure.java.jdbc :as jdbc]
-            [clj-time.core :as t]
-            [clj-time.periodic :as p]
-            [com.stuartsierra.component :as component]
-            [liiteri.db.file-metadata-store :as metadata-store]
-            [liiteri.files.file-store :as file-store]
-            [taoensso.timbre :as log]))
+  (ns liiteri.file-cleaner
+    (:require [chime :as c]
+              [clojure.core.async :as a]
+              [clojure.java.jdbc :as jdbc]
+              [clj-time.core :as t]
+              [clj-time.periodic :as p]
+              [com.stuartsierra.component :as component]
+              [liiteri.db.file-metadata-store :as metadata-store]
+              [liiteri.files.file-store :as file-store]
+              [taoensso.timbre :as log]))
 
 (defn- clean-file [conn storage-engine file]
   (log/info (str "Cleaning file: " (:key file)))

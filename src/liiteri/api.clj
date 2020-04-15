@@ -1,5 +1,6 @@
 (ns liiteri.api
   (:require [clojure.java.io :as io]
+            [clojure.string :as string]
             [compojure.api.exception :as ex]
             [compojure.api.sweet :as api]
             [compojure.api.upload :as upload]
@@ -13,8 +14,7 @@
             [ring.util.http-response :as response]
             [ring.swagger.upload]
             [schema.core :as s]
-            [taoensso.timbre :as log])
-  (:import [ring.swagger.upload Upload]))
+            [taoensso.timbre :as log]))
 
 (defn- internal-server-error [& _]
   (response/internal-server-error))
@@ -29,7 +29,7 @@
 (def ^:private file-extension-blacklist-pattern #"(?i)\.exe$")
 
 (defn- fail-if-file-extension-blacklisted! [filename]
-  {:pre [(not (clojure.string/blank? filename))]}
+  {:pre [(not (string/blank? filename))]}
   (when (re-find file-extension-blacklist-pattern filename)
     (throw (IllegalArgumentException. (str "File " filename " has invalid extension")))))
 
