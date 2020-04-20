@@ -25,7 +25,7 @@
 (deftest mime-fixer-ok-files
   (let [store (u/new-in-memory-store)
         conn  {:connection (:db @system)}]
-    (doseq [[mangled-filename filename file content-type size] mangled-extension-files]
+    (doseq [{:keys [mangled-filename filename file-object content-type size]} mangled-extension-files]
       (let [uploaded  (-> (t/now)
                           (.getMillis)
                           (Timestamp.))
@@ -35,7 +35,7 @@
                        :size         size
                        :uploaded     uploaded}]
         (metadata-store/create-file file-spec conn)
-        (file-store/create-file store file filename)
+        (file-store/create-file store file-object filename)
         (mime-fixer/fix-mime-type-of-file conn store {:key      filename
                                                       :filename mangled-filename
                                                       :uploaded uploaded})

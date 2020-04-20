@@ -29,10 +29,10 @@
     (.exists file)))
 
 (deftest file-upload
-  (doseq [[filename file content-type size] ok-files]
+  (doseq [{:keys [filename file-object content-type size]} ok-files]
     (log/info (format "Testing normal file upload for filename %s with content-type %s, size %d (should pass)" filename content-type size))
     (let [path (str "http://localhost:" (get-in config [:server :port]) "/liiteri/api/files")
-          resp @(http/post path {:multipart [{:name "file" :content file :filename filename :content-type content-type}]})
+          resp @(http/post path {:multipart [{:name "file" :content file-object :filename filename :content-type content-type}]})
           body (json/parse-string (:body resp) true)]
       (is (= (:status resp) 200))
       (is (file-stored? (:key body)))
@@ -57,14 +57,14 @@
         (is (= (json/parse-string (:body delete-resp) true) {:key (:key body)}))))))
 
 (deftest mangled-extensions
-  (doseq [[mangled-filename filename file content-type size] mangled-extension-files]
+  (doseq [{:keys [mangled-filename filename file-object content-type size]} mangled-extension-files]
     (log/info (format "Testing extension repairing for filename %s -> %s with content-type %s, size %d (should pass)"
                       mangled-filename
                       filename
                       content-type
                       size))
     (let [path (str "http://localhost:" (get-in config [:server :port]) "/liiteri/api/files")
-          resp @(http/post path {:multipart [{:name "file" :content file :filename mangled-filename :content-type content-type}]})
+          resp @(http/post path {:multipart [{:name "file" :content file-object :filename mangled-filename :content-type content-type}]})
           body (json/parse-string (:body resp) true)]
       (is (= (:status resp) 200))
       (is (file-stored? (:key body)))
@@ -89,10 +89,10 @@
         (is (= (json/parse-string (:body delete-resp) true) {:key (:key body)}))))))
 
 (deftest forbidden-files-refused
-  (doseq [[filename file content-type size] forbidden-files]
+  (doseq [{:keys [filename file-object content-type size]} forbidden-files]
     (log/info (format "Testing %s with content-type %s, size %d (should fail)" filename content-type size))
     (let [path (str "http://localhost:" (get-in config [:server :port]) "/liiteri/api/files")
-          resp @(http/post path {:multipart [{:name "file" :content file :filename filename :content-type content-type}]})
+          resp @(http/post path {:multipart [{:name "file" :content file-object :filename filename :content-type content-type}]})
           body (json/parse-string (:body resp) true)]
       (is (= (:status resp) 400))
       (is (nil? body))

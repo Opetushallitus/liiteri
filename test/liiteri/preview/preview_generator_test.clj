@@ -43,7 +43,7 @@
 (deftest previews-are-generated-for-pdf-files
   (let [store (u/new-in-memory-store)
         conn  {:connection (:db @system)}]
-    (doseq [[filename file content-type size] fixtures/ok-files]
+    (doseq [{:keys [filename file-object content-type size]} fixtures/ok-files]
       (let [uploaded  (-> (t/now)
                           (.getMillis)
                           (Timestamp.))
@@ -53,12 +53,12 @@
                        :size         size
                        :uploaded     uploaded}]
         (test-metadata-store/create-file file-spec conn)
-        (file-store/create-file store file filename)
+        (file-store/create-file store file-object filename)
         (metadata-store/set-virus-scan-status! filename "done" conn)
         (metadata-store/finalize-files [filename] conn)
         (preview-generator/generate-file-previews (:config @system) conn store file-spec)
 
-        (let [file-metadata-after-preview (first (metadata-store/get-metadata [filename] conn))
+        (let [file-metadata-after-preview (first (metadata-store/get-normalized-metadata! [filename] conn))
               generated-previews          (vec (metadata-store/get-previews filename conn))]
           (if (= "application/pdf" content-type)
             (assert-has-single-png-preview-page file-metadata-after-preview generated-previews)
@@ -67,7 +67,7 @@
 (deftest previews-are-deleted-when-file-is-deleted
   (let [store (u/new-in-memory-store)
         conn  {:connection (:db @system)}]
-    (doseq [[filename file content-type size] (take 2 fixtures/ok-files)]
+    (doseq [{:keys [filename file-object content-type size]} (take 2 fixtures/ok-files)]
       (let [uploaded  (-> (t/now)
                           (.getMillis)
                           (Timestamp.))
@@ -77,14 +77,14 @@
                        :size         size
                        :uploaded     uploaded}]
         (test-metadata-store/create-file file-spec conn)
-        (file-store/create-file store file filename)
+        (file-store/create-file store file-object filename)
         (metadata-store/set-virus-scan-status! filename "done" conn)
         (metadata-store/finalize-files [filename] conn)
         (preview-generator/generate-file-previews (:config @system) conn store file-spec)
 
         (file-store/delete-file-and-metadata (:key file-spec) store conn)
 
-        (let [file-metadata-after-preview (first (metadata-store/get-metadata [filename] conn))
+        (let [file-metadata-after-preview (first (metadata-store/get-normalized-metadata! [filename] conn))
               generated-previews          (vec (metadata-store/get-previews filename conn))]
           (is (= 0 (count generated-previews)))
           (is (= nil file-metadata-after-preview)))))))

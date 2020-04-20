@@ -99,7 +99,7 @@
                      :header-params [{x-real-ip :- s/Str nil}
                                      {user-agent :- s/Str nil}]
                      :return [schema/File]
-                     (let [metadata (file-metadata-store/get-metadata key {:connection db})]
+                     (let [metadata (file-metadata-store/get-normalized-metadata! key {:connection db})]
                        (if (> (count metadata) 0)
                          (do (doseq [{:keys [key]} metadata]
                                (audit-log/log audit-logger
@@ -116,7 +116,7 @@
                      :header-params [{x-real-ip :- s/Str nil}
                                      {user-agent :- s/Str nil}]
                      :return [schema/File]
-                     (let [metadata (file-metadata-store/get-metadata keys {:connection db})]
+                     (let [metadata (file-metadata-store/get-normalized-metadata! keys {:connection db})]
                        (if (= (count metadata) (count keys))
                          (do (doseq [{:keys [key]} metadata]
                                (audit-log/log audit-logger
@@ -132,7 +132,7 @@
                      :header-params [{x-real-ip :- s/Str nil}
                                      {user-agent :- s/Str nil}]
                      :path-params [key :- (api/describe s/Str "Key of the file")]
-                     (let [[metadata] (file-metadata-store/get-metadata [key] {:connection db})]
+                     (let [[metadata] (file-metadata-store/get-normalized-metadata! [key] {:connection db})]
                        (if (= "done" (:virus-scan-status metadata))
                          (if-let [file-response (file-store/get-file-and-metadata key storage-engine {:connection db})]
                            (do (audit-log/log audit-logger

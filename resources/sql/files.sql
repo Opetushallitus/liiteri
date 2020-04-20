@@ -121,3 +121,6 @@ FROM files
 WHERE virus_scan_status = 'not_started' AND deleted IS NULL
 ORDER BY age(uploaded) DESC
 LIMIT 1;
+
+-- name: sql-update-filename!
+UPDATE files SET filename = :filename WHERE key = :file_key;
