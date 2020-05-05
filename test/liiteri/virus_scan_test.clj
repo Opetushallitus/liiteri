@@ -72,7 +72,7 @@
     (with-redefs [http-client/post (fn [& _] (response/ok "Everything ok : false\n"))]
       (#'virus-scan/scan-files db storage-engine config))
     (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] {:connection db})]
-      (is (= (:virus-scan-status metadata) "failed"))
+      (is (= (:virus-scan-status metadata) "virus_found"))
       (is (not (file-stored?))))))
 
 (deftest virus-scan-throws-exception

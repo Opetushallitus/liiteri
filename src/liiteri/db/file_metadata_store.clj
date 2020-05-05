@@ -153,7 +153,7 @@
 
 (defn set-virus-scan-status! [file-key status conn]
   (sql-set-virus-scan-status! {:file_key          file-key
-                               :virus_scan_status (name status)}
+                               :virus_scan_status status}
                               conn))
 
 (defn mark-virus-scan-for-retry-or-fail [file-key max-retry-count retry-wait-minutes conn]

@@ -30,7 +30,7 @@
     (response/ok result)))
 
 (defn- log-virus-scan-result [file-key filename content-type config status elapsed-time]
-  (let [status-str (if (= status :successful) "OK" "FAILED")]
+  (let [status-str (clojure.string/upper-case (name status))]
     (log/info (str "Virus scan took " elapsed-time " ms, status " status-str " for file " filename " with key " file-key " (" content-type ")"
                    (when (mock-enabled? config) ", virus scan process in mock mode")))))
 
@@ -64,12 +64,12 @@
         (cond (= (:status scan-result) 200)
               (if (= (:body scan-result) "Everything ok : true\n")
                 (do
-                  (log-virus-scan-result file-key filename content-type config :successful elapsed-time)
-                  (metadata-store/set-virus-scan-status! file-key :done conn))
+                  (log-virus-scan-result file-key filename content-type config :ok elapsed-time)
+                  (metadata-store/set-virus-scan-status! file-key "done" conn))
                 (do
-                  (log-virus-scan-result file-key filename content-type config :failed elapsed-time)
+                  (log-virus-scan-result file-key filename content-type config :virus-found elapsed-time)
                   (file-store/delete-file-and-metadata file-key storage-engine conn)
-                  (metadata-store/set-virus-scan-status! file-key :failed conn)))
+                  (metadata-store/set-virus-scan-status! file-key "virus_found" conn)))
               (= (:status scan-result) 503)
               (log/warn "Failed to scan file" filename "with key" file-key ": Service Unavailable")
               :else
