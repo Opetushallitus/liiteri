@@ -2,6 +2,7 @@
   (:require [chime :as c]
             [clojure.core.async :as a]
             [clojure.java.jdbc :as jdbc]
+            [clojure.string :as string]
             [clj-time.core :as t]
             [clj-time.periodic :as p]
             [com.stuartsierra.component :as component]
@@ -30,7 +31,7 @@
     (response/ok result)))
 
 (defn- log-virus-scan-result [file-key filename content-type config status elapsed-time]
-  (let [status-str (clojure.string/upper-case (name status))]
+  (let [status-str (string/upper-case (name status))]
     (log/info (str "Virus scan took " elapsed-time " ms, status " status-str " for file " filename " with key " file-key " (" content-type ")"
                    (when (mock-enabled? config) ", virus scan process in mock mode")))))
 
