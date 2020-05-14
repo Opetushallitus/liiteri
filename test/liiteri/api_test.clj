@@ -107,5 +107,5 @@
         _              (.scan-files! (:virus-scan @system))
         saved-metadata (metadata/get-metadata-for-tests [key] {:connection (:db @system)})
         download-resp  @(http/get (str path "/" key))]
-    (is (= "failed" (:virus-scan-status saved-metadata)))
+    (is (= "virus_found" (:virus-scan-status saved-metadata)))
     (is (= (:status download-resp) 404))))
