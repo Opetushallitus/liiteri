@@ -1,16 +1,18 @@
 (ns liiteri.api
-  (:require [clojure.java.io :as io]
+  (:require [clj-access-logging]
+            [clj-stdout-access-logging]
+            [clj-timbre-access-logging]
+            [clojure.java.io :as io]
             [clojure.string :as string]
             [compojure.api.exception :as ex]
             [compojure.api.sweet :as api]
             [compojure.api.upload :as upload]
+            [environ.core :refer [env]]
             [liiteri.audit-log :as audit-log]
             [liiteri.db.file-metadata-store :as file-metadata-store]
             [liiteri.files.file-store :as file-store]
             [liiteri.schema :as schema]
             [liiteri.mime :as mime]
-            [ring.logger.timbre :as logger-mw]
-            [ring.middleware.conditional :as c]
             [ring.util.http-response :as response]
             [ring.swagger.upload]
             [schema.core :as s]
@@ -177,5 +179,8 @@
                                          :oldest-unprocessed-file  {:id  id
                                                                     :key key
                                                                     :age age}}))))))
-
-      (c/if-url-starts-with "/liiteri/api/" logger-mw/wrap-with-logger)))
+      (clj-access-logging/wrap-access-logging)
+      (clj-stdout-access-logging/wrap-stdout-access-logging)
+      (clj-timbre-access-logging/wrap-timbre-access-logging
+       {:path (str (get-in config [:access-log :path])
+                   (when (:hostname env) (str "_" (:hostname env))))})))
