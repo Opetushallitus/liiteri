@@ -25,7 +25,7 @@ script: >-
   nvm use &&
   npm install &&
   CONFIG=dev-resources/local-test-config.edn ./bin/cibuild.sh run-tests-and-create-uberjar &&
-  export BASE_IMAGE="baseimage-fatjar:jdk11" &&
+  export BASE_IMAGE="baseimage-fatjar-openjdk11:master" &&
   ./ci-tools/common/pull-image.sh &&
   cp -v ./target/liiteri.jar $DOCKER_BUILD_DIR/artifact/liiteri.jar &&
   cp -vr ./oph-configuration $DOCKER_BUILD_DIR/config/ &&
