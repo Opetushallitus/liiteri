@@ -17,7 +17,8 @@ WHERE key IN (:keys)
   AND (
     deleted IS NULL
     OR deleted > NOW()
-    OR virus_scan_status = 'failed')
+    OR virus_scan_status = 'failed'
+    OR virus_scan_status = 'virus_found')
 UNION
 SELECT key, filename, content_type, size, uploaded, deleted, 'done'::virus_scan_status, true, 'not_supported'::preview_generation_status, 1
 FROM previews
