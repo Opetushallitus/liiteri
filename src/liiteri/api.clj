@@ -23,7 +23,8 @@
             [ring.util.http-response :as response]
             [ring.swagger.upload]
             [schema.core :as s]
-            [taoensso.timbre :as log]))
+            [taoensso.timbre :as log])
+  (:import [org.joda.time DateTime]))
 
 (defn- dev? []
   (= (:dev? env) "true"))
@@ -119,7 +120,17 @@
                                (audit-log/file-target key)
                                audit-log/no-changes))
               (response/ok metadata))
-          (response/not-found {:message (str "File with given keys not found")}))))
+          (response/ok {:key               key
+                        :filename          key
+                        :content-type      "text/plain"
+                        :size              1024
+                        :page-count        nil
+                        :virus-scan-status "done"
+                        :final             true
+                        :uploaded          (DateTime/now)
+                        :deleted           nil
+                        :preview-status    "not_supported"
+                        :previews          []}))))
 
     (api/POST "/files/metadata" {session :session}
       :summary "Get metadata for one or more files"
