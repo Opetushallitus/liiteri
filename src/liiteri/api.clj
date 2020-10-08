@@ -53,6 +53,19 @@
   (when (re-find file-extension-blacklist-pattern filename)
     (throw (IllegalArgumentException. (str "File " filename " has invalid extension")))))
 
+(defn key->metadata [key]
+  {:key               key
+   :filename          key
+   :content-type      "text/plain"
+   :size              1024
+   :page-count        nil
+   :virus-scan-status "done"
+   :final             true
+   :uploaded          (DateTime/now)
+   :deleted           nil
+   :preview-status    "not_supported"
+   :previews          []})
+
 (defn check-authorization! [session]
   (when-not (or (dev?)
                 (some #(= "liiteri-crud" %) (-> session :identity :rights)))
@@ -120,17 +133,7 @@
                                (audit-log/file-target key)
                                audit-log/no-changes))
               (response/ok metadata))
-          (response/ok {:key               key
-                        :filename          key
-                        :content-type      "text/plain"
-                        :size              1024
-                        :page-count        nil
-                        :virus-scan-status "done"
-                        :final             true
-                        :uploaded          (DateTime/now)
-                        :deleted           nil
-                        :preview-status    "not_supported"
-                        :previews          []}))))
+          (response/ok (key->metadata key)))))
 
     (api/POST "/files/metadata" {session :session}
       :summary "Get metadata for one or more files"
@@ -148,7 +151,7 @@
                                (audit-log/file-target key)
                                audit-log/no-changes))
               (response/ok metadata))
-          (response/not-found {:message (str "Files with given keys not found")}))))
+          (response/ok (doall (map key->metadata keys))))))
 
     (api/GET "/files/:key" {session :session}
       :summary "Download a file"
