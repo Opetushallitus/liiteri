@@ -5,6 +5,15 @@
             [hikari-cp.core :as h])
   (:import [org.postgresql.util PGobject]))
 
+(extend-protocol jdbc/IResultSetReadColumn
+  PGobject
+  (result-set-read-column [pgobj _ _]
+    (let [type  (.getType pgobj)
+          value (.getValue pgobj)]
+      (case type
+        "jsonb" (json/parse-string value true)
+        :else value))))
+
 (defonce datasource (atom nil))
 
 (defn get-datasource [config]
@@ -22,15 +31,6 @@
                                                (:db config))]
                           (h/make-datasource db-config)))))
   @datasource)
-
-(extend-protocol jdbc/IResultSetReadColumn
-  PGobject
-  (result-set-read-column [pgobj _ _]
-    (let [type  (.getType pgobj)
-          value (.getValue pgobj)]
-      (case type
-        "jsonb" (json/parse-string value true)
-        :else value))))
 
 (defrecord DbPool []
   component/Lifecycle

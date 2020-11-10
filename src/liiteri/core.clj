@@ -46,7 +46,7 @@
 
            :server (component/using
                      (server/new-server)
-                     [:storage-engine :db :config :audit-logger])
+                     [:storage-engine :session-store :db :config :audit-logger])
 
            :migrations (component/using
                          (migrations/new-migration)
