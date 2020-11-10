@@ -2,8 +2,21 @@
   (:require [com.stuartsierra.component :as component]
             [cheshire.core :as json]
             [clojure.java.jdbc :as jdbc]
+            [clj-time.coerce :as c]
             [hikari-cp.core :as h])
-  (:import [org.postgresql.util PGobject]))
+  (:import (java.sql PreparedStatement)
+           (java.sql Date)
+           (java.sql Timestamp)
+           (org.joda.time DateTime)
+           (org.postgresql.util PGobject)
+           (org.postgresql.jdbc PgArray)))
+
+(extend-protocol jdbc/ISQLValue
+  clojure.lang.IPersistentCollection
+  (sql-value [value]
+    (doto (PGobject.)
+      (.setType "jsonb")
+      (.setValue (json/generate-string value)))))
 
 (extend-protocol jdbc/IResultSetReadColumn
   PGobject
@@ -11,8 +24,25 @@
     (let [type  (.getType pgobj)
           value (.getValue pgobj)]
       (case type
+        "json" (json/parse-string value true)
         "jsonb" (json/parse-string value true)
         :else value))))
+
+(extend-protocol jdbc/IResultSetReadColumn
+  Date
+  (result-set-read-column [v _ _] (c/from-sql-date v))
+
+  Timestamp
+  (result-set-read-column [v _ _] (c/from-sql-time v))
+
+  PgArray
+  (result-set-read-column [v _ _]
+    (vec (.getArray v))))
+
+(extend-type DateTime
+  jdbc/ISQLParameter
+  (set-parameter [v ^PreparedStatement stmt idx]
+    (.setTimestamp stmt idx (c/to-sql-time v))))
 
 (defonce datasource (atom nil))
 
