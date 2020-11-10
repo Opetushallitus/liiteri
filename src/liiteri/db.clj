@@ -69,8 +69,9 @@
     (assoc this :datasource (get-datasource config)))
 
   (stop [this]
-    (when-let [datasource (:datasource this)]
-      (h/close-datasource datasource))
+    (when-let [db (:datasource this)]
+      (reset! datasource nil)
+      (h/close-datasource db))
     (assoc this :datasource nil)))
 
 (defn new-pool []
