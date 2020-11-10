@@ -6,7 +6,7 @@
 
 (defn- timeout-handler [auth-url]
   (fn [{:keys [uri]}]
-    (if (string/starts-with? uri "/lomake-editori/api")
+    (if (string/starts-with? uri "/liiteri/api")
       (response/unauthorized (json/generate-string {:redirect auth-url}))
       (response/found auth-url))))
 

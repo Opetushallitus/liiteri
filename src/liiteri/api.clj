@@ -195,7 +195,8 @@
                  (api/middleware
                    [(create-wrap-database-backed-session session-store)
                     (when-not (:dev? env)
-                      #(crdsa-auth-middleware/with-authentication % (-> config :cas.login)))]
+                      #(crdsa-auth-middleware/with-authentication %
+                                                                  (str (-> config :virkailija-host) "/cas/login")))]
                    (api/middleware [session-client/wrap-session-client-headers
                                     (session-timeout/wrap-idle-session-timeout config)]
                      (api-routes this)))))
