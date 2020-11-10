@@ -5,6 +5,24 @@
             [hikari-cp.core :as h])
   (:import [org.postgresql.util PGobject]))
 
+(defonce datasource (atom nil))
+
+(defn get-datasource [config]
+  (swap! datasource (fn [db?]
+                      (if db?
+                        db?
+                        (let [db-config (merge {:auto-commit        true
+                                                :read-only          false
+                                                :connection-timeout 30000
+                                                :validation-timeout 5000
+                                                :idle-timeout       600000
+                                                :max-lifetime       1800000
+                                                :register-mbeans    false
+                                                :adapter            "postgresql"}
+                                               (:db config))]
+                          (h/make-datasource db-config)))))
+  @datasource)
+
 (extend-protocol jdbc/IResultSetReadColumn
   PGobject
   (result-set-read-column [pgobj _ _]
@@ -18,17 +36,7 @@
   component/Lifecycle
 
   (start [{:keys [config] :as this}]
-    (let [db-config  (merge {:auto-commit        true
-                             :read-only          false
-                             :connection-timeout 30000
-                             :validation-timeout 5000
-                             :idle-timeout       600000
-                             :max-lifetime       1800000
-                             :register-mbeans    false
-                             :adapter            "postgresql"}
-                            (:db config))
-          datasource (h/make-datasource db-config)]
-      (assoc this :datasource datasource)))
+    (assoc this :datasource (get-datasource config)))
 
   (stop [this]
     (when-let [datasource (:datasource this)]

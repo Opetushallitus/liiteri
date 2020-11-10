@@ -9,6 +9,7 @@
             [liiteri.migrations :as migrations]
             [liiteri.server :as server]
             [liiteri.virus-scan :as virus-scan]
+            [clj-ring-db-session.session.session-store :refer [create-session-store]]
             [liiteri.file-cleaner :as file-cleaner]
             [liiteri.mime-fixer :as mime-fixer]
             [liiteri.preview.preview-generator :as preview-generator]
@@ -40,6 +41,8 @@
            :db (component/using
                  (db/new-pool)
                  [:config])
+
+           :session-store (create-session-store (db/get-datasource config))
 
            :server (component/using
                      (server/new-server)
