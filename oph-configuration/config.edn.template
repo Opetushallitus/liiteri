@@ -53,6 +53,7 @@
                                       "video/quicktime"
                                       "video/x-ms-wmv"
                                       "video/x-ms-vob"]}
+ :virkailija-host "{{host_ilb}}"
  :server {:port {{liiteri_server_port}}}
  :access-log {:path "{{liiteri_accesslog_path}}"}
  :audit-log {:path "{{liiteri_auditlog_path}}"}

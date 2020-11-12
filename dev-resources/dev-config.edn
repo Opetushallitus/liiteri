@@ -47,6 +47,7 @@
                                       "video/quicktime"
                                       "video/x-ms-wmv"
                                       "video/x-ms-vob"]}
+ :virkailija-host "http://localhost"
  :server {:port 16832}
  :access-log {:path "/tmp/access_liiteri"}
  :audit-log {:path "/tmp/auditlog_liiteri.log"}
