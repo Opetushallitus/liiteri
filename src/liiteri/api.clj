@@ -202,7 +202,8 @@
 (defn verify-authorization! [handler]
   [handler]
   (fn [{:keys [session] :as req}]
-    (if-not (-> session :identity :superuser)
+    (if-not (and (not (:dev? env))
+                 (-> session :identity :superuser))
       (response/unauthorized!)
       (handler req))))
 
