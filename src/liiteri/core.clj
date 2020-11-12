@@ -35,7 +35,7 @@
     (apply component/system-map
            :config config
 
-           :login-cas-client (cas/new-cas-client config)
+           :login-cas-client (delay (cas/new-cas-client config))
 
            :audit-logger (component/using
                            (audit-log/new-logger)

@@ -191,7 +191,7 @@
                       (api/GET "/cas" [ticket :as request]
                         (let [redirect-url (or (get-in request [:session :original-url])
                                                (str (get-in config [:virkailija-host]) "/liiteri/buildversion.txt"))
-                              login-provider (cas-login config login-cas-client ticket)]
+                              login-provider (cas-login config @login-cas-client ticket)]
                           (log/error "Got ticket " ticket " with redirect-url " redirect-url)
                           (login login-provider
                                  redirect-url
