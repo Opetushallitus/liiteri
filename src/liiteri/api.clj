@@ -190,7 +190,7 @@
                     (api/undocumented
                       (api/GET "/cas" [ticket :as request]
                         (let [redirect-url (or (get-in request [:session :original-url])
-                                               (str (get-in config [:virkailija-host]) "/liiteri/buildversion.txt"))
+                                               (str (get-in config [:virkailija-host]) "/liiteri/api/checkpermission"))
                               login-provider (cas-login config @login-cas-client ticket)]
                           (log/error "Got ticket " ticket " with redirect-url " redirect-url)
                           (login login-provider
@@ -225,6 +225,8 @@
                       #(crdsa-auth-middleware/with-authentication % (cas-login-url config)))]
                    (api/middleware [session-client/wrap-session-client-headers
                                     (session-timeout/wrap-idle-session-timeout config)]
+                     (api/GET "/checkpermission" {session :session}
+                       (response/ok (:superuser session)))
                      (api-routes this))
                    (auth-routes this))))
       (clj-access-logging/wrap-access-logging)
