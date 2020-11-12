@@ -190,8 +190,9 @@
                     (api/undocumented
                       (api/GET "/cas" [ticket :as request]
                         (let [redirect-url (or (get-in request [:session :original-url])
-                                               (str (get-in config [:virkailija-host]) "/liiteri/auth/cas"))
+                                               (str (get-in config [:virkailija-host]) "/liiteri/buildversion.txt"))
                               login-provider (cas-login config login-cas-client ticket)]
+                          (log/error "Got ticket " ticket " with redirect-url " redirect-url)
                           (login login-provider
                                  redirect-url
                                  config)))
@@ -227,7 +228,6 @@
                      (api-routes this))
                    (auth-routes this))))
       (clj-access-logging/wrap-access-logging)
-      (clj-stdout-access-logging/wrap-stdout-access-logging)
       (clj-timbre-access-logging/wrap-timbre-access-logging
        {:path (str (get-in config [:access-log :path])
                    (when (:hostname env) (str "_" (:hostname env))))})))
