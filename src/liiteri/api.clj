@@ -8,6 +8,7 @@
             [compojure.api.exception :as ex]
             [compojure.api.sweet :as api]
             [compojure.api.upload :as upload]
+            [liiteri.urls :as urls]
             [environ.core :refer [env]]
             [clj-ring-db-session.authentication.login :as crdsa-login]
             [liiteri.auth.session-timeout :as session-timeout]
@@ -175,31 +176,35 @@
                           :oldest-unprocessed-file  {:id  id
                                                      :key key
                                                      :age age}})))))
-(defn- cas-login-url [config]
-  (let [host (-> config :virkailija-host)]
-    (str host "/cas/login?service=" host "/liiteri/auth/cas")))
-(defn- cas-logout-url [config]
-  (let [host (-> config :virkailija-host)]
-    (str host "/cas/logout?service=" host "/liiteri/auth/cas")))
 
 (defn auth-routes [{:keys [login-cas-client
                            session-store
+                           kayttooikeus-cas-client
                            config]}]
   (api/context "/auth" []
     (api/middleware [session-client/wrap-session-client-headers]
                     (api/undocumented
+                      (api/GET "/checkpermission" {session :session}
+                        (response/ok (:superuser session)))
                       (api/GET "/cas" [ticket :as request]
                         (let [redirect-url (or (get-in request [:session :original-url])
-                                               (str (get-in config [:virkailija-host]) "/liiteri/api/checkpermission"))
+                                               (urls/cas-redirect-url config))
                               login-provider (cas-login config @login-cas-client ticket)]
-                          (log/error "Got ticket " ticket " with redirect-url " redirect-url)
                           (login login-provider
                                  redirect-url
+                                 kayttooikeus-cas-client
                                  config)))
                       (api/POST "/cas" [logoutRequest]
                         (cas-initiated-logout logoutRequest session-store))
                       (api/GET "/logout" {session :session}
-                        (crdsa-login/logout session (cas-logout-url config)))))))
+                        (crdsa-login/logout session (urls/cas-logout-url config)))))))
+
+(defn verify-authorization! [handler]
+  [handler]
+  (fn [{:keys [session] :as req}]
+    (if-not (-> session :identity :superuser)
+      (response/unauthorized!)
+      (handler req))))
 
 (defn new-api [{:keys [config session-store] :as this}]
   (-> (api/api {:swagger    {:spec    "/liiteri/swagger.json"
@@ -222,12 +227,11 @@
                  (api/middleware
                    [(create-wrap-database-backed-session session-store)
                     (when-not (:dev? env)
-                      #(crdsa-auth-middleware/with-authentication % (cas-login-url config)))]
+                      #(crdsa-auth-middleware/with-authentication % (urls/cas-login-url config)))]
                    (api/middleware [session-client/wrap-session-client-headers
                                     (session-timeout/wrap-idle-session-timeout config)]
-                     (api/GET "/checkpermission" {session :session}
-                       (response/ok (:superuser session)))
-                     (api-routes this))
+                                   (api/middleware [verify-authorization!]
+                                                   (api-routes this)))
                    (auth-routes this))))
       (clj-access-logging/wrap-access-logging)
       (clj-timbre-access-logging/wrap-timbre-access-logging

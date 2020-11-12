@@ -3,43 +3,63 @@
             [clj-ring-db-session.session.session-store :as crdsa-session-store]
             [ring.util.http-response :refer [ok]]
             [ring.util.response :as resp]
+            [liiteri.urls :as urls]
+            [cheshire.core :as json]
+            [liiteri.auth.cas-client :as cas]
             [taoensso.timbre :as log])
   (:import (fi.vm.sade.utils.cas CasLogout)))
-
-(defn- redirect-to-login-failed-page [config]
-  (resp/redirect (str (-> config :virkailija-host) "/liiteri/virhe")))
 
 (defn cas-login [config cas-client ticket]
   (fn []
     (when ticket
-      [(.run (.validateServiceTicket cas-client (str (-> config :virkailija-host) "/liiteri/auth/cas") ticket))
+      [(.run (.validateServiceTicket cas-client (urls/liiteri-login-url config) ticket))
        ticket])))
 
 (defn- login-failed
   ([config e]
    (log/error e "Error in login ticket handling")
-   (redirect-to-login-failed-page config))
+   (resp/redirect (urls/redirect-to-login-failed-page-url config)))
   ([config]
-   (redirect-to-login-failed-page config)))
+   (resp/redirect (urls/redirect-to-login-failed-page-url config))))
 
-(defn- login-succeeded [response username]
+(def oph-organization "1.2.246.562.10.00000000001")
+
+(defn- login-succeeded [response virkailija username]
   (log/info "user" username "logged in")
-  (update-in
-    response
-    [:session :identity]
-    assoc
-    :superuser true))
+  (log/info virkailija)
+  (let [organization-oids (set (map (fn [{:keys [organisaatioOid]}]
+                                      organisaatioOid) (:organisaatiot virkailija)))]
+    (update-in
+      response
+      [:session :identity]
+      assoc
+      :superuser (contains? organization-oids oph-organization))))
+
+(defn fetch-kayttaja-from-kayttoikeus-service [config kayttooikeus-cas-client username]
+  (let [url (urls/kayttooikeus-service-kayttooikeus-kayttaja-url config username)
+        {:keys [status body]} (cas/cas-authenticated-get @kayttooikeus-cas-client url)]
+    (if (= 200 status)
+      (if-let [virkailija (first (json/parse-string body true))]
+        virkailija
+        (throw (new RuntimeException
+                    (str "No virkailija found by username " username))))
+      (throw (new RuntimeException
+                  (str "Could not get virkailija by username " username
+                       ", status: " status
+                       ", body: " body))))))
 
 (defn login [login-provider
              redirect-url
+             kayttooikeus-cas-client
              config]
   (try
     (if-let [[username ticket] (login-provider)]
-      (let [response   (crdsa-login/login
-                         {:username             username
-                          :ticket               ticket
-                          :success-redirect-url redirect-url})]
-        (login-succeeded response username))
+      (let [virkailija (fetch-kayttaja-from-kayttoikeus-service config kayttooikeus-cas-client username)
+            response (crdsa-login/login
+                       {:username             username
+                        :ticket               ticket
+                        :success-redirect-url redirect-url})]
+        (login-succeeded response virkailija username))
       (login-failed config))
     (catch Exception e
       (login-failed config e))))

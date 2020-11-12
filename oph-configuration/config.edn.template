@@ -54,6 +54,8 @@
                                       "video/x-ms-wmv"
                                       "video/x-ms-vob"]}
  :virkailija-host "{{host_ilb}}"
+ :cas {:username "{{ataru_cas_username}}"
+       :password "{{ataru_cas_password}}"}
  :server {:port {{liiteri_server_port}}}
  :access-log {:path "{{liiteri_accesslog_path}}"}
  :audit-log {:path "{{liiteri_auditlog_path}}"}

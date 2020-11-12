@@ -3,7 +3,7 @@
             [clojure.string :as string]
             [clj-http.client :as http-client]
             [taoensso.timbre :as log])
-  (:import [fi.vm.sade.utils.cas CasClient]
+  (:import [fi.vm.sade.utils.cas CasClient CasParams]
            [org.http4s.client.blaze package$]))
 
 (def csrf-value "liiteri")
@@ -26,6 +26,17 @@
        (-> config :virkailija-host)
        (.defaultClient package$/MODULE$)
        caller-id))
+
+(defn new-client [config service security-uri-suffix session-cookie-name caller-id]
+  {:pre [(some? (:cas config))]}
+  (let [username   (get-in config [:cas :username])
+        password   (get-in config [:cas :password])
+        cas-params (CasParams/apply service security-uri-suffix username password)
+        cas-client (new-cas-client caller-id)]
+    (map->CasClientState {:client              cas-client
+                          :params              cas-params
+                          :session-cookie-name session-cookie-name
+                          :session-id          (atom nil)})))
 
 (defn- request-with-json-body [request body]
   (-> request
@@ -71,15 +82,3 @@
 
 (defn cas-authenticated-get [client url]
   (cas-http client :get url {}))
-
-(defn cas-authenticated-delete [client url]
-  (cas-http client :delete url {}))
-
-(defn cas-authenticated-post [client url body]
-  (cas-http client :post url {} body))
-
-(defn cas-authenticated-multipart-post [client url opts]
-  (cas-http client :post url opts nil))
-
-(defn cas-authenticated-get-as-stream [client url]
-  (cas-http client :get url {:as :stream} nil))

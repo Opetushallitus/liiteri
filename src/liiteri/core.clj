@@ -37,6 +37,10 @@
 
            :login-cas-client (delay (cas/new-cas-client config))
 
+           :kayttooikeus-cas-client (delay (cas/new-client config
+                                                           "/kayttooikeus-service" "j_spring_cas_security_check"
+                                                           "JSESSIONID" (-> config :public-config :virkailija-caller-id)))
+
            :audit-logger (component/using
                            (audit-log/new-logger)
                            [:config])
