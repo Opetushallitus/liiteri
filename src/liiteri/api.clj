@@ -190,7 +190,7 @@
                     (api/undocumented
                       (api/GET "/cas" [ticket :as request]
                         (let [redirect-url (or (get-in request [:session :original-url])
-                                               (get-in config [:service_url]))
+                                               (str (-> config :virkailija-host) "/liiteri/auth/cas"))
                               login-provider (cas-login config login-cas-client ticket)]
                           (login login-provider
                                  redirect-url
