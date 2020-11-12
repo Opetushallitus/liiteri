@@ -2,6 +2,7 @@
   (:require [com.stuartsierra.component :as component]
             [liiteri.audit-log :as audit-log]
             [liiteri.config :as config]
+            [liiteri.auth.cas-client :as cas]
             [liiteri.db :as db]
             [liiteri.files.filesystem-store :as filesystem-store]
             [liiteri.files.s3-client :as s3-client]
@@ -34,6 +35,8 @@
     (apply component/system-map
            :config config
 
+           :login-cas-client (cas/new-cas-client config)
+
            :audit-logger (component/using
                            (audit-log/new-logger)
                            [:config])
@@ -46,7 +49,7 @@
 
            :server (component/using
                      (server/new-server)
-                     [:storage-engine :session-store :db :config :audit-logger])
+                     [:storage-engine :login-cas-client :session-store :db :config :audit-logger])
 
            :migrations (component/using
                          (migrations/new-migration)
