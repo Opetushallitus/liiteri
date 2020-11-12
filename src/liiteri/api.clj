@@ -177,10 +177,10 @@
                                                      :age age}})))))
 (defn- cas-login-url [config]
   (let [host (-> config :virkailija-host)]
-    (str host "/cas/login?service=" (str host "/auth/cas"))))
+    (str host "/cas/login?service=" host "/liiteri/auth/cas")))
 (defn- cas-logout-url [config]
   (let [host (-> config :virkailija-host)]
-    (str host "/cas/logout?service=" (str host "/auth/cas"))))
+    (str host "/cas/logout?service=" host "/liiteri/auth/cas")))
 
 (defn auth-routes [{:keys [login-cas-client
                            session-store
