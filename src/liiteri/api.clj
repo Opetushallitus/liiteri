@@ -192,7 +192,7 @@
       (response/unauthorized!)
       (handler req))))
 
-(defn new-api [{:keys [config session-store] :as this}]
+(defn new-api [{:keys [config session-store db] :as this}]
   (-> (api/api {:swagger    {:spec    "/liiteri/swagger.json"
                              :ui      "/liiteri/api-docs"
                              :data    {:info {:version     "0.1.0"
