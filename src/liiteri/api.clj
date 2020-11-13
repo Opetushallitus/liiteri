@@ -160,22 +160,7 @@
                              (audit-log/file-target key)
                              audit-log/no-changes)
               (response/ok {:key key}))
-          (response/not-found {:message (str "File with key " key " not found")}))))
-
-    (api/GET "/queue-status" []
-      :summary "Display virus scan file queue status metrics"
-      :return {:unprocessed-queue-length s/Int
-               :oldest-unprocessed-file  {:id  (s/maybe s/Int)
-                                          :key (s/maybe s/Str)
-                                          :age s/Int}}
-      (let [queue-length    (file-metadata-store/get-queue-length {:connection db})
-            {:keys [id key age] :or {age 0}} (file-metadata-store/get-oldest-unscanned-file {:connection db})
-            status-ok?      (and (< queue-length 100) (< age 3600))
-            response-status (if status-ok? response/ok response/internal-server-error)]
-        (response-status {:unprocessed-queue-length queue-length
-                          :oldest-unprocessed-file  {:id  id
-                                                     :key key
-                                                     :age age}})))))
+          (response/not-found {:message (str "File with key " key " not found")}))))))
 
 (defn auth-routes [{:keys [login-cas-client
                            session-store
@@ -225,6 +210,20 @@
                    (api/GET "/buildversion.txt" []
                      (response/ok (slurp (io/resource "buildversion.txt")))))
 
+                 (api/GET "/queue-status" []
+                   :summary "Display virus scan file queue status metrics"
+                   :return {:unprocessed-queue-length s/Int
+                            :oldest-unprocessed-file  {:id  (s/maybe s/Int)
+                                                       :key (s/maybe s/Str)
+                                                       :age s/Int}}
+                   (let [queue-length    (file-metadata-store/get-queue-length {:connection db})
+                         {:keys [id key age] :or {age 0}} (file-metadata-store/get-oldest-unscanned-file {:connection db})
+                         status-ok?      (and (< queue-length 100) (< age 3600))
+                         response-status (if status-ok? response/ok response/internal-server-error)]
+                     (response-status {:unprocessed-queue-length queue-length
+                                       :oldest-unprocessed-file  {:id  id
+                                                                  :key key
+                                                                  :age age}})))
                  (api/middleware
                    [(create-wrap-database-backed-session session-store)
                     (when-not (:dev? env)
