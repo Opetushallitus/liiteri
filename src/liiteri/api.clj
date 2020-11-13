@@ -25,11 +25,14 @@
             [schema.core :as s]
             [taoensso.timbre :as log]))
 
+(defn- dev? []
+  (= (:dev? env) "true"))
+
 (defn- create-wrap-database-backed-session [session-store]
   (fn [handler]
     (ring-session/wrap-session handler
                                {:root         "/liiteri"
-                                :cookie-attrs {:secure (not (:dev? env))}
+                                :cookie-attrs {:secure (not (dev?))}
                                 :store        session-store})))
 
 (defn- internal-server-error [& _]
@@ -187,7 +190,7 @@
 (defn verify-authorization! [handler]
   [handler]
   (fn [{:keys [session] :as req}]
-    (if-not (and (not (:dev? env))
+    (if-not (and (not (dev?))
                  (-> session :identity :superuser))
       (response/unauthorized!)
       (handler req))))
@@ -226,7 +229,7 @@
                                                                   :age age}})))
                  (api/middleware
                    [(create-wrap-database-backed-session session-store)
-                    (when-not (:dev? env)
+                    (when-not (dev?)
                       #(crdsa-auth-middleware/with-authentication % (urls/cas-login-url config)))]
                    (api/middleware [session-client/wrap-session-client-headers
                                     (session-timeout/wrap-idle-session-timeout config)]
