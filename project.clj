@@ -62,26 +62,28 @@
   :plugins [[lein-environ "1.1.0"]
             [lein-resource "17.06.1"]]
 
+  :env     {:dev? "true"}
+
   :profiles {:dev        {:dependencies   [[reloaded.repl "0.2.4"]]
                           :repl-options   {:init-ns user}
                           :source-paths   ["src" "dev-src"]
                           :resource-paths ["resources" "dev-resources"]
                           :plugins        [[lein-ancient "0.6.15"]]
-                          :env            {:dev? true
+                          :env            {:dev? "true"
                                            :config "dev-resources/dev-config.edn"}}
 
              :test-ci    {:test-paths            ["test"]
                           :resource-paths        ["resources" "dev-resources"]
                           :plugins               [[jonase/eastwood "0.2.5"]
                                                   [test2junit "1.3.3"]]
-                          :env            {:dev? true}
+                          :env            {:dev? "true"}
                           :test2junit-output-dir "target/test-reports"}
 
              :test-local {:test-paths     ["test"]
                           :resource-paths ["resources" "dev-resources"]
                           :plugins        [[lein-auto "0.1.3"]
                                            [jonase/eastwood "0.2.3"]]
-                          :env            {:dev? true
+                          :env            {:dev? "true"
                                            :config "dev-resources/local-test-config.edn"}}
 
              :uberjar    {:aot :all}

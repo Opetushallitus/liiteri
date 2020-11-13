@@ -190,10 +190,10 @@
 (defn verify-authorization! [handler]
   [handler]
   (fn [{:keys [session] :as req}]
-    (if-not (and (not (dev?))
-                 (-> session :identity :superuser))
-      (response/unauthorized!)
-      (handler req))))
+    (if (or (dev?)
+            (-> session :identity :superuser))
+      (handler req)
+      (response/unauthorized!))))
 
 (defn new-api [{:keys [config session-store db] :as this}]
   (-> (api/api {:swagger    {:spec    "/liiteri/swagger.json"
