@@ -195,7 +195,10 @@
     (if (or (dev?)
             (-> session :identity :superuser))
       (handler req)
-      (response/unauthorized!))))
+      (do
+        (log/error "unauthorized")
+        (log/error req)
+        (response/unauthorized!)))))
 
 (defn new-api [{:keys [config session-store db] :as this}]
   (-> (api/api {:swagger    {:spec    "/liiteri/swagger.json"
