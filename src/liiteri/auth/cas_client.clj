@@ -4,7 +4,7 @@
             [clj-http.client :as http-client]
             [taoensso.timbre :as log])
   (:import [fi.vm.sade.utils.cas CasClient CasParams]
-           [org.http4s.client.blaze package$]))
+           (org.http4s.client.blaze package$)))
 
 (def csrf-value "liiteri")
 (def caller-id "1.2.246.562.10.00000000001.liiteri.backend")
