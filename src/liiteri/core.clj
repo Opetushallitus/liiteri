@@ -53,7 +53,7 @@
 
            :server (component/using
                      (server/new-server)
-                     [:storage-engine :login-cas-client :session-store :db :config :audit-logger])
+                     [:storage-engine :login-cas-client :kayttooikeus-cas-client :session-store :db :config :audit-logger])
 
            :migrations (component/using
                          (migrations/new-migration)
