@@ -52,17 +52,25 @@
   (when (re-find file-extension-blacklist-pattern filename)
     (throw (IllegalArgumentException. (str "File " filename " has invalid extension")))))
 
+(defn check-authorization! [session]
+  (when-not (or (dev?)
+                (-> session :identity :superuser))
+    (do
+      (log/error "unauthorized")
+      (response/unauthorized!))))
+
 (defn api-routes [{:keys [storage-engine db config audit-logger]}]
   (api/context "/api" []
     :tags ["liiteri"]
 
-    (api/POST "/files" []
+    (api/POST "/files" {session :session}
       :summary "Upload a file"
       :header-params [{x-real-ip :- s/Str nil}
                       {user-agent :- s/Str nil}]
       :multipart-params [file :- (api/describe upload/TempFileUpload "File to upload")]
       :middleware [upload/wrap-multipart-params]
       :return schema/File
+      (check-authorization! session)
       (try
         (let [{:keys [filename tempfile content-type size]} file]
           (fail-if-file-extension-blacklisted! filename)
@@ -80,11 +88,12 @@
         (finally
           (io/delete-file (:tempfile file) true))))
 
-    (api/POST "/files/finalize" []
+    (api/POST "/files/finalize" {session :session}
       :summary "Finalize one or more files"
       :header-params [{x-real-ip :- s/Str nil}
                       {user-agent :- s/Str nil}]
       :body-params [keys :- [s/Str]]
+      (check-authorization! session)
       (when (> (count keys) 0)
         (file-metadata-store/finalize-files keys {:connection db})
         (doseq [key keys]
@@ -95,12 +104,13 @@
                          audit-log/no-changes)))
       (response/ok))
 
-    (api/GET "/files/metadata" []
+    (api/GET "/files/metadata" {session :session}
       :summary "Get metadata for one or more files"
       :query-params [key :- (api/describe [s/Str] "Key of the file")]
       :header-params [{x-real-ip :- s/Str nil}
                       {user-agent :- s/Str nil}]
       :return [schema/File]
+      (check-authorization! session)
       (let [metadata (file-metadata-store/get-normalized-metadata! key {:connection db})]
         (if (> (count metadata) 0)
           (do (doseq [{:keys [key]} metadata]
@@ -112,12 +122,13 @@
               (response/ok metadata))
           (response/not-found {:message (str "File with given keys not found")}))))
 
-    (api/POST "/files/metadata" []
+    (api/POST "/files/metadata" {session :session}
       :summary "Get metadata for one or more files"
       :body-params [keys :- (api/describe [s/Str] "Keys of the files")]
       :header-params [{x-real-ip :- s/Str nil}
                       {user-agent :- s/Str nil}]
       :return [schema/File]
+      (check-authorization! session)
       (let [metadata (file-metadata-store/get-normalized-metadata! keys {:connection db})]
         (if (= (count metadata) (count keys))
           (do (doseq [{:keys [key]} metadata]
@@ -129,11 +140,12 @@
               (response/ok metadata))
           (response/not-found {:message (str "Files with given keys not found")}))))
 
-    (api/GET "/files/:key" []
+    (api/GET "/files/:key" {session :session}
       :summary "Download a file"
       :header-params [{x-real-ip :- s/Str nil}
                       {user-agent :- s/Str nil}]
       :path-params [key :- (api/describe s/Str "Key of the file")]
+      (check-authorization! session)
       (let [[metadata] (file-metadata-store/get-normalized-metadata! [key] {:connection db})]
         (if (= "done" (:virus-scan-status metadata))
           (if-let [file-response (file-store/get-file-and-metadata key storage-engine {:connection db})]
@@ -149,12 +161,13 @@
             (response/not-found))
           (response/not-found))))
 
-    (api/DELETE "/files/:key" []
+    (api/DELETE "/files/:key" {session :session}
       :summary "Delete a file"
       :header-params [{x-real-ip :- s/Str nil}
                       {user-agent :- s/Str nil}]
       :path-params [key :- (api/describe s/Str "Key of the file")]
       :return {:key s/Str}
+      (check-authorization! session)
       (let [deleted-count (file-store/delete-file-and-metadata key storage-engine {:connection db})]
         (if (> deleted-count 0)
           (do (audit-log/log audit-logger
@@ -188,17 +201,6 @@
                         (cas-initiated-logout logoutRequest session-store))
                       (api/GET "/logout" {session :session}
                         (crdsa-login/logout session (urls/cas-logout-url config)))))))
-
-(defn verify-authorization! [handler]
-  [handler]
-  (fn [{:keys [session] :as req}]
-    (if (or (dev?)
-            (-> session :identity :superuser))
-      (handler req)
-      (do
-        (log/error "unauthorized")
-        (log/error req)
-        (response/unauthorized!)))))
 
 (defn new-api [{:keys [config session-store db] :as this}]
   (-> (api/api {:swagger    {:spec    "/liiteri/swagger.json"
@@ -238,8 +240,7 @@
                       #(crdsa-auth-middleware/with-authentication % (urls/cas-login-url config)))]
                    (api/middleware [session-client/wrap-session-client-headers
                                     (session-timeout/wrap-idle-session-timeout config)]
-                                   (api/middleware [verify-authorization!]
-                                                   (api-routes this)))
+                                   (api-routes this))
                    (auth-routes this))))
       (clj-access-logging/wrap-access-logging)
       (clj-timbre-access-logging/wrap-timbre-access-logging
