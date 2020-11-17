@@ -37,7 +37,7 @@
 
 (defn fetch-kayttaja-from-kayttoikeus-service [config kayttooikeus-cas-client username]
   (let [url (urls/kayttooikeus-service-kayttooikeus-kayttaja-url config username)
-        {:keys [status body]} (cas/cas-authenticated-get @kayttooikeus-cas-client url)]
+        {:keys [status body]} (cas/cas-authenticated-get kayttooikeus-cas-client url)]
     (if (= 200 status)
       (if-let [virkailija (first (json/parse-string body true))]
         virkailija
@@ -54,14 +54,19 @@
              config]
   (try
     (if-let [[username ticket] (login-provider)]
-      (let [virkailija (fetch-kayttaja-from-kayttoikeus-service config kayttooikeus-cas-client username)
-            response (crdsa-login/login
-                       {:username             username
-                        :ticket               ticket
-                        :success-redirect-url redirect-url})]
-        (login-succeeded response virkailija username))
-      (login-failed config))
-    (catch Exception e
+      (do
+        (log/info "got username " username)
+        (let [virkailija (fetch-kayttaja-from-kayttoikeus-service config kayttooikeus-cas-client username)
+              response (crdsa-login/login
+                         {:username             username
+                          :ticket               ticket
+                          :success-redirect-url redirect-url})]
+          (login-succeeded response virkailija username)))
+      (do
+        (log/error "loginprovider failed! ")
+        (login-failed config)))
+    (catch Throwable e
+      (log/error e)
       (login-failed config e))))
 
 (defn cas-initiated-logout [logout-request session-store]

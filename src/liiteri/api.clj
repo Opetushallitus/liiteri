@@ -175,12 +175,14 @@
                       (api/GET "/checkpermission" {session :session}
                         (response/ok (:superuser session)))
                       (api/GET "/cas" [ticket :as request]
+                        (log/info "Trying to login with ticket " ticket)
                         (let [redirect-url (or (get-in request [:session :original-url])
                                                (urls/cas-redirect-url config))
                               login-provider (cas-login config @login-cas-client ticket)]
+                          (log/info "Trying to login with ticket " ticket " with redirect-url " redirect-url)
                           (login login-provider
                                  redirect-url
-                                 kayttooikeus-cas-client
+                                 @kayttooikeus-cas-client
                                  config)))
                       (api/POST "/cas" [logoutRequest]
                         (cas-initiated-logout logoutRequest session-store))
