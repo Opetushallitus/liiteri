@@ -24,7 +24,8 @@
 (defn new-cas-client [config]
   (new CasClient
        (-> config :virkailija-host)
-       (.defaultClient package$/MODULE$)))
+       (.defaultClient package$/MODULE$)
+       caller-id))
 
 (defn new-client [config service security-uri-suffix session-cookie-name]
   {:pre [(some? (:cas config))]}
