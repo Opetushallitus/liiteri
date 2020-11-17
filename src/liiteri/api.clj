@@ -1,7 +1,7 @@
 (ns liiteri.api
   (:require [clj-access-logging]
             [clj-stdout-access-logging]
-            [liiteri.auth.auth :refer [login cas-login cas-initiated-logout]]
+            [liiteri.auth.auth :as auth]
             [clj-timbre-access-logging]
             [clojure.java.io :as io]
             [clojure.string :as string]
@@ -191,14 +191,14 @@
                         (log/info "Trying to login with ticket " ticket)
                         (let [redirect-url (or (get-in request [:session :original-url])
                                                (urls/cas-redirect-url config))
-                              login-provider (cas-login config @login-cas-client ticket)]
+                              login-provider (auth/cas-login config @login-cas-client ticket)]
                           (log/info "Trying to login with ticket " ticket " with redirect-url " redirect-url)
-                          (login login-provider
-                                 redirect-url
-                                 @kayttooikeus-cas-client
-                                 config)))
+                          (auth/login login-provider
+                                      redirect-url
+                                      @kayttooikeus-cas-client
+                                      config)))
                       (api/POST "/cas" [logoutRequest]
-                        (cas-initiated-logout logoutRequest session-store))
+                        (auth/cas-initiated-logout logoutRequest session-store))
                       (api/GET "/logout" {session :session}
                         (crdsa-login/logout session (urls/cas-logout-url config)))))))
 
