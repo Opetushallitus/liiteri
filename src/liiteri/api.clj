@@ -55,9 +55,7 @@
 (defn check-authorization! [session]
   (when-not (or (dev?)
                 (-> session :identity :superuser))
-    (do
-      (log/error "unauthorized")
-      (response/unauthorized!))))
+    (response/unauthorized!)))
 
 (defn api-routes [{:keys [storage-engine db config audit-logger]}]
   (api/context "/api" []
@@ -188,11 +186,9 @@
                       (api/GET "/checkpermission" {session :session}
                         (response/ok (:superuser session)))
                       (api/GET "/cas" [ticket :as request]
-                        (log/info "Trying to login with ticket " ticket)
                         (let [redirect-url (or (get-in request [:session :original-url])
                                                (urls/cas-redirect-url config))
                               login-provider (auth/cas-login config @login-cas-client ticket)]
-                          (log/info "Trying to login with ticket " ticket " with redirect-url " redirect-url)
                           (auth/login login-provider
                                       redirect-url
                                       @kayttooikeus-cas-client

@@ -24,9 +24,7 @@
 
 (def oph-organization "1.2.246.562.10.00000000001")
 
-(defn- login-succeeded [response virkailija username]
-  (log/info "user" username "logged in")
-  (log/info virkailija)
+(defn- login-succeeded [response virkailija]
   (let [organization-oids (set (map (fn [{:keys [organisaatioOid]}]
                                       organisaatioOid) (:organisaatiot virkailija)))]
     (update-in
@@ -54,19 +52,14 @@
              config]
   (try
     (if-let [[username ticket] (login-provider)]
-      (do
-        (log/info "got username " username)
-        (let [virkailija (fetch-kayttaja-from-kayttoikeus-service config kayttooikeus-cas-client username)
-              response (crdsa-login/login
-                         {:username             username
-                          :ticket               ticket
-                          :success-redirect-url redirect-url})]
-          (login-succeeded response virkailija username)))
-      (do
-        (log/error "loginprovider failed! ")
-        (login-failed config)))
+      (let [virkailija (fetch-kayttaja-from-kayttoikeus-service config kayttooikeus-cas-client username)
+            response (crdsa-login/login
+                       {:username             username
+                        :ticket               ticket
+                        :success-redirect-url redirect-url})]
+        (login-succeeded response virkailija))
+      (login-failed config))
     (catch Throwable e
-      (log/error e)
       (login-failed config e))))
 
 (defn cas-initiated-logout [logout-request session-store]
