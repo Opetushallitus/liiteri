@@ -24,15 +24,14 @@
 (defn new-cas-client [config]
   (new CasClient
        (-> config :virkailija-host)
-       (.defaultClient package$/MODULE$)
-       caller-id))
+       (.defaultClient package$/MODULE$)))
 
-(defn new-client [config service security-uri-suffix session-cookie-name caller-id]
+(defn new-client [config service security-uri-suffix session-cookie-name]
   {:pre [(some? (:cas config))]}
   (let [username   (get-in config [:cas :username])
         password   (get-in config [:cas :password])
         cas-params (CasParams/apply service security-uri-suffix username password)
-        cas-client (new-cas-client caller-id)]
+        cas-client (new-cas-client config)]
     (map->CasClientState {:client              cas-client
                           :params              cas-params
                           :session-cookie-name session-cookie-name
