@@ -40,7 +40,7 @@
 (defn- login-succeeded [response virkailija]
   (let [organization-oids (set (map (fn [{:keys [organisaatioOid]}]
                                       organisaatioOid) (:organisaatiot virkailija)))
-        rights (set (virkailija->right-organization-oids virkailija))]
+        rights (set (map first (virkailija->right-organization-oids virkailija)))]
     (update-in
       response
       [:session :identity]
