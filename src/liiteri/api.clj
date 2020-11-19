@@ -55,6 +55,7 @@
 (defn check-authorization! [session]
   (when-not (or (dev?)
                 (contains? (-> session :identity :rights) :liiteri-crud))
+    (log/error "Missing user rights: " (-> session :identity :rights))
     (response/unauthorized!)))
 
 (defn api-routes [{:keys [storage-engine db config audit-logger]}]
