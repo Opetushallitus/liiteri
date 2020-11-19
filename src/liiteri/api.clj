@@ -54,7 +54,7 @@
 
 (defn check-authorization! [session]
   (when-not (or (dev?)
-                (-> session :identity :superuser))
+                (contains? (-> session :identity :rights) :liiteri-crud))
     (response/unauthorized!)))
 
 (defn api-routes [{:keys [storage-engine db config audit-logger]}]

@@ -24,13 +24,28 @@
 
 (def oph-organization "1.2.246.562.10.00000000001")
 
+(def ^:private
+  oikeus-to-right
+  {{:palvelu "LIITERI" :oikeus "CRUD"}         :liiteri-crud})
+
+(defn virkailija->right-organization-oids
+  [virkailija]
+  (select-keys (->> (:organisaatiot virkailija)
+                    (mapcat (fn [{:keys [organisaatioOid kayttooikeudet]}]
+                              (map (fn [right] {right [organisaatioOid]})
+                                   (keep oikeus-to-right kayttooikeudet))))
+                    (reduce (partial merge-with concat) {}))
+               (vals oikeus-to-right)))
+
 (defn- login-succeeded [response virkailija]
   (let [organization-oids (set (map (fn [{:keys [organisaatioOid]}]
-                                      organisaatioOid) (:organisaatiot virkailija)))]
+                                      organisaatioOid) (:organisaatiot virkailija)))
+        rights (set (virkailija->right-organization-oids virkailija))]
     (update-in
       response
       [:session :identity]
       assoc
+      :rights rights
       :superuser (contains? organization-oids oph-organization))))
 
 (defn fetch-kayttaja-from-kayttoikeus-service [config kayttooikeus-cas-client username]
@@ -57,7 +72,6 @@
                        {:username             username
                         :ticket               ticket
                         :success-redirect-url redirect-url})]
-        (log/warn virkailija)
         (login-succeeded response virkailija))
       (login-failed config))
     (catch Throwable e
