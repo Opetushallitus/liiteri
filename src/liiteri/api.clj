@@ -54,7 +54,7 @@
 
 (defn check-authorization! [session]
   (when-not (or (dev?)
-                (contains? (-> session :identity :rights) "liiteri-crud"))
+                (some #(= "liiteri-crud" %) (-> session :identity :rights)))
     (log/error "Missing user rights: " (-> session :identity :rights))
     (response/unauthorized!)))
 
