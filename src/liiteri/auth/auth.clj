@@ -57,6 +57,7 @@
                        {:username             username
                         :ticket               ticket
                         :success-redirect-url redirect-url})]
+        (log/warn virkailija)
         (login-succeeded response virkailija))
       (login-failed config))
     (catch Throwable e
