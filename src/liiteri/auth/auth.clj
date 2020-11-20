@@ -45,6 +45,7 @@
       response
       [:session :identity]
       assoc
+      :oid (:oidHenkilo virkailija)
       :rights rights
       :superuser (contains? organization-oids oph-organization))))
 

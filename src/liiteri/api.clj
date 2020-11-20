@@ -76,7 +76,7 @@
           (let [resp (-> (mime/file->validated-file-spec! config filename tempfile size content-type)
                          (file-store/create-file-and-metadata storage-engine {:connection db}))]
             (audit-log/log audit-logger
-                           (audit-log/unknown-user x-real-ip user-agent)
+                           (audit-log/user session x-real-ip user-agent)
                            audit-log/operation-new
                            (audit-log/file-target (:key resp))
                            (audit-log/new-file-changes resp))
@@ -97,7 +97,7 @@
         (file-metadata-store/finalize-files keys {:connection db})
         (doseq [key keys]
           (audit-log/log audit-logger
-                         (audit-log/unknown-user x-real-ip user-agent)
+                         (audit-log/user session x-real-ip user-agent)
                          audit-log/operation-finalize
                          (audit-log/file-target key)
                          audit-log/no-changes)))
@@ -114,7 +114,7 @@
         (if (> (count metadata) 0)
           (do (doseq [{:keys [key]} metadata]
                 (audit-log/log audit-logger
-                               (audit-log/unknown-user x-real-ip user-agent)
+                               (audit-log/user session x-real-ip user-agent)
                                audit-log/operation-metadata-query
                                (audit-log/file-target key)
                                audit-log/no-changes))
@@ -132,7 +132,7 @@
         (if (= (count metadata) (count keys))
           (do (doseq [{:keys [key]} metadata]
                 (audit-log/log audit-logger
-                               (audit-log/unknown-user x-real-ip user-agent)
+                               (audit-log/user session x-real-ip user-agent)
                                audit-log/operation-metadata-query
                                (audit-log/file-target key)
                                audit-log/no-changes))
@@ -149,7 +149,7 @@
         (if (= "done" (:virus-scan-status metadata))
           (if-let [file-response (file-store/get-file-and-metadata key storage-engine {:connection db})]
             (do (audit-log/log audit-logger
-                               (audit-log/unknown-user x-real-ip user-agent)
+                               (audit-log/user session x-real-ip user-agent)
                                audit-log/operation-file-query
                                (audit-log/file-target key)
                                audit-log/no-changes)
@@ -170,7 +170,7 @@
       (let [deleted-count (file-store/delete-file-and-metadata key storage-engine {:connection db})]
         (if (> deleted-count 0)
           (do (audit-log/log audit-logger
-                             (audit-log/unknown-user x-real-ip user-agent)
+                             (audit-log/user session x-real-ip user-agent)
                              audit-log/operation-delete
                              (audit-log/file-target key)
                              audit-log/no-changes)

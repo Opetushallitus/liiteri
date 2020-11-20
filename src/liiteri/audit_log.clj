@@ -4,7 +4,8 @@
             [taoensso.timbre :as timbre]
             [taoensso.timbre.appenders.3rd-party.rolling :refer [rolling-appender]])
   (:import [fi.vm.sade.auditlog Audit ApplicationType Changes$Builder Logger Operation Target$Builder User]
-           java.net.InetAddress))
+           [org.ietf.jgss Oid]
+           (java.net InetAddress)))
 
 (deftype New []
   Operation
@@ -47,8 +48,16 @@
 
 (def no-changes (.build (new Changes$Builder)))
 
-(defn unknown-user [ip-str user-agent]
-  (new User (InetAddress/getByName ip-str) "" user-agent))
+(defn user [session ip-str user-agent]
+  (User.
+    (when-let [oid (-> session :identity :oid)]
+      (Oid. oid))
+    (or (InetAddress/getByName ip-str)
+        (InetAddress/getLocalHost))
+    (or (:key session) "no session")
+    (or user-agent
+        (:user-agent session)
+        "no user agent")))
 
 (deftype LoggerAdapter [log-config]
   Logger
