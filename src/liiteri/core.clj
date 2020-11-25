@@ -2,6 +2,7 @@
   (:require [com.stuartsierra.component :as component]
             [liiteri.audit-log :as audit-log]
             [liiteri.config :as config]
+            [liiteri.auth.cas-client :as cas]
             [liiteri.db :as db]
             [liiteri.files.filesystem-store :as filesystem-store]
             [liiteri.files.s3-client :as s3-client]
@@ -9,6 +10,7 @@
             [liiteri.migrations :as migrations]
             [liiteri.server :as server]
             [liiteri.virus-scan :as virus-scan]
+            [clj-ring-db-session.session.session-store :refer [create-session-store]]
             [liiteri.file-cleaner :as file-cleaner]
             [liiteri.mime-fixer :as mime-fixer]
             [liiteri.preview.preview-generator :as preview-generator]
@@ -33,6 +35,12 @@
     (apply component/system-map
            :config config
 
+           :login-cas-client (delay (cas/new-cas-client config))
+
+           :kayttooikeus-cas-client (delay (cas/new-client config
+                                                           "/kayttooikeus-service" "j_spring_cas_security_check"
+                                                           "JSESSIONID"))
+
            :audit-logger (component/using
                            (audit-log/new-logger)
                            [:config])
@@ -41,9 +49,11 @@
                  (db/new-pool)
                  [:config])
 
+           :session-store (create-session-store (db/get-datasource config))
+
            :server (component/using
                      (server/new-server)
-                     [:storage-engine :db :config :audit-logger])
+                     [:storage-engine :login-cas-client :kayttooikeus-cas-client :session-store :db :config :audit-logger])
 
            :migrations (component/using
                          (migrations/new-migration)

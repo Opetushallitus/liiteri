@@ -21,7 +21,7 @@
                  [camel-snake-kebab "0.4.0"]
                  [cheshire "5.9.0"]
                  [clj-time "0.15.2"]
-                 [metosin/compojure-api "2.0.0-alpha30"]
+                 [metosin/compojure-api "1.1.13"]
                  [com.stuartsierra/component "0.4.0"]
                  [org.flywaydb/flyway-core "6.0.4"]
                  [fi.vm.sade/auditlogger "8.3.1-SNAPSHOT"]
@@ -39,6 +39,7 @@
                  [org.slf4j/jcl-over-slf4j "1.7.26"]
                  [yesql "0.5.3"]
                  [environ "1.1.0"]
+                 [fi.vm.sade/scala-cas_2.12 "2.0.0-SNAPSHOT"]
                  [com.novemberain/pantomime "2.11.0"]
                  [org.apache.commons/commons-compress "1.19"]
                  [jarohen/chime "0.2.2"]
@@ -49,6 +50,8 @@
                  [com.github.jai-imageio/jai-imageio-core "1.3.1"]
                  [com.github.jai-imageio/jai-imageio-jpeg2000 "1.3.0"]
                  [com.levigo.jbig2/levigo-jbig2-imageio "2.0"]
+                 [ring/ring-session-timeout "0.2.0"]
+                 [oph/clj-ring-db-cas-session "0.3.0-SNAPSHOT"]
                  [oph/clj-access-logging "1.0.0-SNAPSHOT"]
                  [oph/clj-stdout-access-logging "1.0.0-SNAPSHOT"]
                  [oph/clj-timbre-access-logging "1.0.0-SNAPSHOT"]
@@ -59,24 +62,29 @@
   :plugins [[lein-environ "1.1.0"]
             [lein-resource "17.06.1"]]
 
+  :env     {:dev? "true"}
+
   :profiles {:dev        {:dependencies   [[reloaded.repl "0.2.4"]]
                           :repl-options   {:init-ns user}
                           :source-paths   ["src" "dev-src"]
                           :resource-paths ["resources" "dev-resources"]
                           :plugins        [[lein-ancient "0.6.15"]]
-                          :env            {:config "dev-resources/dev-config.edn"}}
+                          :env            {:dev? "true"
+                                           :config "dev-resources/dev-config.edn"}}
 
              :test-ci    {:test-paths            ["test"]
                           :resource-paths        ["resources" "dev-resources"]
                           :plugins               [[jonase/eastwood "0.2.5"]
                                                   [test2junit "1.3.3"]]
+                          :env            {:dev? "true"}
                           :test2junit-output-dir "target/test-reports"}
 
              :test-local {:test-paths     ["test"]
                           :resource-paths ["resources" "dev-resources"]
                           :plugins        [[lein-auto "0.1.3"]
                                            [jonase/eastwood "0.2.3"]]
-                          :env            {:config "dev-resources/local-test-config.edn"}}
+                          :env            {:dev? "true"
+                                           :config "dev-resources/local-test-config.edn"}}
 
              :uberjar    {:aot :all}
 
