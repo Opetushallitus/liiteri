@@ -49,7 +49,8 @@ SELECT key, filename, content_type
           virus_scan_retry_after < now())
   )
   AND deleted IS NULL
-  ORDER BY uploaded DESC
+  AND final = TRUE
+  ORDER BY uploaded ASC
   LIMIT 1 FOR UPDATE SKIP LOCKED;
 
 -- name: sql-get-file-without-mime-type
