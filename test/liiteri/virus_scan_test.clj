@@ -32,6 +32,7 @@
                                                   :content-type "text/plain"
                                                   :size         1}
                                                  conn))
+    (metadata-store/finalize-files file-key conn)
     (reset! file (io/file (str base-dir "/" file-key)))))
 
 (defn- remove-test-file []

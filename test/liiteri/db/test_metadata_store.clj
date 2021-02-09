@@ -13,3 +13,6 @@
   (-> (db-utils/kwd->snake-case spec)
       (sql-create-file<! conn)
       (db-utils/unwrap-data)))
+
+(defn finalize-files [keys conn]
+  (sql-finalize-files! {:keys keys} conn))
