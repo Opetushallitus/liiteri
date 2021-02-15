@@ -12,7 +12,11 @@
 (defn cas-login [config cas-client ticket]
   (fn []
     (when ticket
-      [(.run (.validateServiceTicket cas-client (urls/liiteri-login-url config) ticket))
+      [(.run (.validateServiceTicket
+               cas-client
+               (urls/liiteri-login-url config)
+               ticket
+               (.decodeVirkailijaUsername cas-client)))
        ticket])))
 
 (defn- login-failed
