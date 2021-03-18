@@ -33,6 +33,7 @@
                  [metosin/schema-tools "0.12.0"]
                  [javax.servlet/servlet-api "2.5"]
                  [com.taoensso/timbre "4.10.0"]
+                 [timbre-ns-pattern-level "0.1.2"]
                  [com.fzakaria/slf4j-timbre "0.3.14"]
                  [org.slf4j/slf4j-api "1.7.26"]
                  [org.slf4j/log4j-over-slf4j "1.7.26"]

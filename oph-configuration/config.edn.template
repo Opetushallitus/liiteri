@@ -59,6 +59,7 @@
  :server {:port {{liiteri_server_port}}}
  :access-log {:path "{{liiteri_accesslog_path}}"}
  :audit-log {:path "{{liiteri_auditlog_path}}"}
+ :app-log {:path "{{liiteri_applog_path}}"}
  :antivirus {:clamav-url "{{liiteri_clamav_url}}"
              :mock? {{liiteri_antivirus_mock_mode}}
              :poll-interval-seconds {{liiteri_antivirus_poll_interval_seconds}}
