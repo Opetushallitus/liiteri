@@ -23,7 +23,7 @@
 
 (defn new-cas-client [config]
   (new CasClient
-       (-> config :virkailija-host)
+       (str (-> config :virkailija-host) "/cas")
        (.defaultClient package$/MODULE$)
        caller-id))
 
