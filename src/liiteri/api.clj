@@ -7,7 +7,6 @@
             [clojure.string :as string]
             [compojure.api.exception :as ex]
             [compojure.api.sweet :as api]
-            [compojure.api.upload :as upload]
             [liiteri.urls :as urls]
             [environ.core :refer [env]]
             [clj-ring-db-session.authentication.login :as crdsa-login]
@@ -62,19 +61,18 @@
   (api/context "/api" []
     :tags ["liiteri"]
 
-    (api/POST "/files" {session :session}
-      :summary "Upload a file"
+    (api/POST "/files/delivered/:key" {session :session}
+      :summary "Mark upload delivered"
       :header-params [{x-real-ip :- s/Str nil}
                       {user-agent :- s/Str nil}]
-      :multipart-params [file :- (api/describe upload/TempFileUpload "File to upload")]
-      :middleware [upload/wrap-multipart-params]
-      :return schema/File
+      :query-params [filename :- (api/describe s/Str "Filename")]
+      :path-params  [key :- (api/describe s/Str "Key of the file")]
       (check-authorization! session)
       (try
-        (let [{:keys [filename tempfile content-type size]} file]
+        (let [{:keys [size file]} (file-store/get-size-and-file storage-engine key)]
           (fail-if-file-extension-blacklisted! filename)
-          (let [resp (-> (mime/file->validated-file-spec! config filename tempfile size content-type)
-                         (file-store/create-file-and-metadata storage-engine {:connection db}))]
+          (let [resp (-> (mime/file->validated-file-spec! config filename file size)
+                         (file-store/create-metadata key {:connection db}))]
             (audit-log/log audit-logger
                            (audit-log/user session x-real-ip user-agent)
                            audit-log/operation-new
@@ -83,9 +81,7 @@
             (response/ok resp)))
         (catch IllegalArgumentException e
           (log/warn (format "File failed upload validation: %s", (.getMessage e)))
-          (response/bad-request! (get-in (ex-data e) [:response :body])))
-        (finally
-          (io/delete-file (:tempfile file) true))))
+          (response/bad-request! (get-in (ex-data e) [:response :body])))))
 
     (api/POST "/files/finalize" {session :session}
       :summary "Finalize one or more files"
