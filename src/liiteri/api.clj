@@ -22,7 +22,8 @@
             [ring.util.http-response :as response]
             [ring.swagger.upload]
             [schema.core :as s]
-            [taoensso.timbre :as log]))
+            [taoensso.timbre :as log])
+  (:import (org.apache.tika.io TikaInputStream)))
 
 (defn- dev? []
   (= (:dev? env) "true"))
@@ -70,15 +71,17 @@
       (check-authorization! session)
       (try
         (let [{:keys [size file]} (file-store/get-size-and-file storage-engine key)]
-          (fail-if-file-extension-blacklisted! filename)
-          (let [resp (-> (mime/file->validated-file-spec! config filename file size)
-                         (file-store/create-metadata key {:connection db}))]
-            (audit-log/log audit-logger
-                           (audit-log/user session x-real-ip user-agent)
-                           audit-log/operation-new
-                           (audit-log/file-target (:key resp))
-                           (audit-log/new-file-changes resp))
-            (response/ok resp)))
+          (with-open [^InputStream raw-file              file
+                      ^TikaInputStream tika-input-stream (TikaInputStream/get raw-file)]
+            (fail-if-file-extension-blacklisted! filename)
+            (let [resp (-> (mime/file->validated-file-spec! config filename tika-input-stream size)
+                           (file-store/create-metadata key {:connection db}))]
+              (audit-log/log audit-logger
+                             (audit-log/user session x-real-ip user-agent)
+                             audit-log/operation-new
+                             (audit-log/file-target (:key resp))
+                             (audit-log/new-file-changes resp))
+              (response/ok resp))))
         (catch IllegalArgumentException e
           (log/warn (format "File failed upload validation: %s", (.getMessage e)))
           (response/bad-request! (get-in (ex-data e) [:response :body])))))
