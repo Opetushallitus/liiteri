@@ -22,7 +22,8 @@
             [ring.util.http-response :as response]
             [ring.swagger.upload]
             [schema.core :as s]
-            [taoensso.timbre :as log]))
+            [taoensso.timbre :as log])
+  (:import (java.io InputStream)))
 
 (defn- dev? []
   (= (:dev? env) "true"))
