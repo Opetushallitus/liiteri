@@ -23,7 +23,8 @@
             [ring.swagger.upload]
             [schema.core :as s]
             [taoensso.timbre :as log])
-  (:import (java.io InputStream)))
+  (:import (java.io InputStream)
+           (org.apache.tika.io TikaInputStream)))
 
 (defn- dev? []
   (= (:dev? env) "true"))
@@ -71,9 +72,10 @@
       (check-authorization! session)
       (try
         (let [{:keys [size file]} (file-store/get-size-and-file storage-engine key)]
-          (with-open [^InputStream raw-file file]
+          (with-open [^InputStream raw-file file
+                      ^TikaInputStream tika-stream (TikaInputStream/get raw-file)]
             (fail-if-file-extension-blacklisted! filename)
-            (let [resp (-> (mime/file->validated-file-spec! config filename raw-file size)
+            (let [resp (-> (mime/file->validated-file-spec! config filename tika-stream size)
                            (file-store/create-metadata key {:connection db}))]
               (audit-log/log audit-logger
                              (audit-log/user session x-real-ip user-agent)
