@@ -83,6 +83,9 @@
               (response/ok resp))))
         (catch IllegalArgumentException e
           (log/warn (format "File failed upload validation: %s", (.getMessage e)))
+          (response/bad-request! (get-in (ex-data e) [:response :body])))
+        (catch Throwable e
+          (log/error (format "Unexpected error: %s", (.getMessage e)) e)
           (response/bad-request! (get-in (ex-data e) [:response :body])))))
 
     (api/POST "/files/finalize" {session :session}
