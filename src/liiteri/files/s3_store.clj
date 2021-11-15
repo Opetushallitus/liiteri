@@ -23,7 +23,16 @@
 
   (get-file [this file-key]
     (-> (.getObject (:s3-client s3-client) (bucket-name config) file-key)
-        (.getObjectContent))))
+        (.getObjectContent)))
+
+  (get-size-and-file [this file-key]
+    (let [s3-object (.getObject (:s3-client s3-client) (bucket-name config) file-key)
+          length    (-> s3-object
+                        (.getObjectMetadata)
+                        (.getContentLength))
+          content   (.getObjectContent s3-object)]
+      {:size length
+       :file content})))
 
 (defn new-store []
   (map->S3Store {}))
