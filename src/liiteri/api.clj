@@ -131,15 +131,16 @@
                       {user-agent :- s/Str nil}]
       :return [schema/File]
       (check-authorization! session)
-      (let [metadata (file-metadata-store/get-normalized-metadata! keys {:connection db})]
+      (let [metadata (file-metadata-store/get-normalized-metadata! keys {:connection db})
+            metadata-with-content-disposition (map #(assoc % :content-disposition (str "attachment; filename=\"" (:filename %) "\"")) metadata)]
         (if (= (count metadata) (count keys))
-          (do (doseq [{:keys [key]} metadata]
+          (do (doseq [{:keys [key]} metadata-with-content-disposition]
                 (audit-log/log audit-logger
                                (audit-log/user session x-real-ip user-agent)
                                audit-log/operation-metadata-query
                                (audit-log/file-target key)
                                audit-log/no-changes))
-              (response/ok metadata))
+              (response/ok metadata-with-content-disposition))
           (response/not-found {:message (str "Files with given keys not found")}))))
 
     (api/GET "/files/:key" {session :session}
