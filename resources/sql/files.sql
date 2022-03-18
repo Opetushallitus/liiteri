@@ -1,5 +1,5 @@
 -- name: sql-create-file<!
-INSERT INTO files (key, filename, content_type, size) VALUES (:key, :filename, :content_type, :size);
+INSERT INTO files (key, filename, content_type, size, application_key) VALUES (:key, :filename, :content_type, :size, :application_key);
 
 -- name: sql-set-file-page-count-and-preview-status!
 update files SET page_count = :page_count, preview_status = :preview_status::preview_generation_status WHERE key = :key;

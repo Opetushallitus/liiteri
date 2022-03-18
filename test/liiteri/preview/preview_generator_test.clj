@@ -47,11 +47,12 @@
       (let [uploaded  (-> (t/now)
                           (.getMillis)
                           (Timestamp.))
-            file-spec {:key          filename
-                       :filename     filename
-                       :content-type content-type
-                       :size         size
-                       :uploaded     uploaded}]
+            file-spec {:key             filename
+                       :filename        filename
+                       :content-type    content-type
+                       :size            size
+                       :uploaded        uploaded
+                       :application-key "1.2.246.562.11.000000000000000000001"}]
         (test-metadata-store/create-file file-spec conn)
         (file-store/create-file store file-object filename)
         (metadata-store/set-virus-scan-status! filename "done" conn)
@@ -71,11 +72,12 @@
       (let [uploaded  (-> (t/now)
                           (.getMillis)
                           (Timestamp.))
-            file-spec {:key          filename
-                       :filename     filename
-                       :content-type content-type
-                       :size         size
-                       :uploaded     uploaded}]
+            file-spec {:key             filename
+                       :filename        filename
+                       :content-type    content-type
+                       :size            size
+                       :uploaded        uploaded
+                       :application-key "1.2.246.562.11.000000000000000000001"}]
         (test-metadata-store/create-file file-spec conn)
         (file-store/create-file store file-object filename)
         (metadata-store/set-virus-scan-status! filename "done" conn)

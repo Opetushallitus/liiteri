@@ -28,15 +28,17 @@
 (defn- init-test-file [uploaded]
   (let [filename "test-file.txt"
         file-key (str (UUID/randomUUID))
-        conn     {:connection (:db @system)}
+        application-key "1.2.246.562.11.000000000000000000001"
+        conn {:connection (:db @system)}
         base-dir (get-in (:config @system) [:file-store :filesystem :base-path])]
     (with-open [w (io/writer (str base-dir "/" file-key))]
       (.write w "test file\n"))
-    (reset! metadata (test-metadata-store/create-file {:key          file-key
-                                                       :filename     filename
-                                                       :content-type "text/plain"
-                                                       :size         1
-                                                       :uploaded     uploaded}
+    (reset! metadata (test-metadata-store/create-file {:key             file-key
+                                                       :filename        filename
+                                                       :content-type    "text/plain"
+                                                       :size            1
+                                                       :uploaded        uploaded
+                                                       :application-key application-key}
                                                       conn))
     (reset! file (io/file (str base-dir "/" file-key)))))
 
