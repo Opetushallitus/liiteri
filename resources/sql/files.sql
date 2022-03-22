@@ -126,3 +126,9 @@ LIMIT 1;
 
 -- name: sql-update-filename!
 UPDATE files SET filename = :filename WHERE key = :file_key;
+
+-- name: sql-get-file-keys-by-application-keys
+SELECT key
+FROM files
+WHERE application_key IN (:application_keys) AND deleted IS NULL;
+

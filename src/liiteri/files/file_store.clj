@@ -1,5 +1,6 @@
 (ns liiteri.files.file-store
-  (:require [liiteri.db.file-metadata-store :as metadata-store]))
+  (:require [liiteri.db.file-metadata-store :as metadata-store]
+            [clojure.data :as data]))
 
 (defprotocol StorageEngine
   (create-file [this file file-key])
@@ -36,3 +37,12 @@
     (when (> (count metadata) 0)
       {:body     (.get-file storage-engine key)
        :filename (:filename (first metadata))})))
+
+(defn get-file-keys-by-application-keys [application-keys conn]
+  (metadata-store/get-file-keys-by-application-keys application-keys conn))
+
+(defn delete-files-and-metadata-by-application-keys [application-keys storage-engine conn]
+  (let [keys-to-delete (get-file-keys-by-application-keys application-keys conn)
+        deleted-keys (doall
+                       (map #(when (= 1 (delete-file-and-metadata (:key %) storage-engine conn)) %) keys-to-delete))]
+    {:deleted-keys deleted-keys :not-deleted-keys (first (data/diff keys-to-delete deleted-keys))}))

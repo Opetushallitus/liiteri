@@ -63,7 +63,7 @@
   (api/context "/api" []
     :tags ["liiteri"]
 
-    (api/POST "/files/delivered/:key/:application-key" {session :session}
+    (api/POST "/files/delivered/:key/application/:application-key" {session :session}
       :summary "Mark upload delivered"
       :header-params [{x-real-ip :- s/Str nil}
                       {user-agent :- s/Str nil}]
@@ -180,7 +180,27 @@
                              (audit-log/file-target key)
                              audit-log/no-changes)
               (response/ok {:key key}))
-          (response/not-found {:message (str "File with key " key " not found")}))))))
+          (response/not-found {:message (str "File with key " key " not found")}))))
+
+    (api/POST "/files/delete" {session :session}
+      :summary "Delete files by multiple application keys"
+      :header-params [{x-real-ip :- s/Str nil}
+                      {user-agent :- s/Str nil}]
+      :body-params [application-keys :- (api/describe [s/Str] "Application keys")]
+      :return {:key s/Str}
+      (check-authorization! session)
+      (let [result (file-store/delete-files-and-metadata-by-application-keys application-keys storage-engine {:connection db})
+            deleted-keys (:deleted-keys result)
+            not-deleted-keys (:not-deleted-keys result)]
+        (if (> deleted-keys 0)
+          (do
+            (audit-log/log audit-logger
+                             (audit-log/user session x-real-ip user-agent)
+                             audit-log/operation-delete
+                             (audit-log/file-target deleted-keys)
+                             audit-log/no-changes)
+              (response/ok {:deleted-keys deleted-keys :not-deleted-keys not-deleted-keys}))
+          (response/not-found {:message (str "Files with keys " not-deleted-keys " not found")}))))))
 
 (defn auth-routes [{:keys [login-cas-client
                            session-store

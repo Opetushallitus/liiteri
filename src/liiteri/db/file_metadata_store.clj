@@ -29,6 +29,7 @@
 (declare sql-set-file-page-count-and-preview-status!)
 (declare sql-mark-previews-final!)
 (declare sql-update-filename!)
+(declare sql-get-file-keys-by-application-keys)
 
 (sql/defqueries "sql/files.sql")
 
@@ -203,3 +204,6 @@
 
 (defn mark-previews-final! [file-key conn]
   (sql-mark-previews-final! {:file_key file-key} conn))
+
+(defn get-file-keys-by-application-keys [application-keys conn]
+  (sql-get-file-keys-by-application-keys {:application_keys application-keys} conn))
