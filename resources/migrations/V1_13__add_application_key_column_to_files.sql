@@ -1,1 +1,1 @@
-alter table files add column if not exists application_key varchar(40) not null;
+alter table files add column if not exists application_key varchar(40) not null default 'TODO application-key';
