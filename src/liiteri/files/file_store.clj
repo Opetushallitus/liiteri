@@ -44,7 +44,5 @@
   (let [keys-to-delete (get-file-keys-by-application-keys application-keys conn)
         deleted-keys (doall
                        (map #(when (= 1 (delete-file-and-metadata (:key %) storage-engine conn)) %) keys-to-delete))]
-    (println "original:" deleted-keys)
-    (println "result:" (vec (map :key deleted-keys)))
     (vec (map :key deleted-keys))
     ))

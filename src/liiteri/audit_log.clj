@@ -34,7 +34,6 @@
 (def operation-metadata-query (->MetadataQuery))
 
 (defn file-target [key]
-  (timbre/info "AUDIT KEY:" key)
   (-> (new Target$Builder)
       (.setField "file-key" key)
       .build))

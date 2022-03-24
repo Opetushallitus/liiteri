@@ -190,7 +190,6 @@
       :return {:deleted-keys [s/Str]}
       (check-authorization! session)
       (let [keys (file-store/delete-files-and-metadata-by-application-keys application-keys storage-engine {:connection db})]
-        (log/info "Result: " keys)
         (if (> (count keys) 0)
           (do
             (doseq [key keys]
