@@ -79,4 +79,5 @@ jobs:
           cp -v ./target/liiteri.jar $DOCKER_BUILD_DIR/artifact/liiteri.jar 
           cp -vr ./oph-configuration $DOCKER_BUILD_DIR/config/ 
           ./ci-tools/github-build/build-fatjar.sh liiteri
+          ./ci-tools/github-build/upload-image.sh liiteri
           ./ci-tools/common/clean-docker-build-dir.sh
