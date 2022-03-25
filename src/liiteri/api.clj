@@ -70,7 +70,7 @@
       :query-params [filename :- (api/describe s/Str "Filename")]
       :path-params [key :- (api/describe s/Str "Key of the file")
                     origin-system :- (api/describe s/Str "Origin system - for example Ataru")
-                    origin-reference :- (api/describe s/Str nil "Origin reference - For example Application key")]
+                    origin-reference :- (api/describe (s/maybe s/Str) "Origin reference - for example Application key - optional")]
       (check-authorization! session)
       (try
         (let [{:keys [size file]} (file-store/get-size-and-file storage-engine key)]
@@ -98,7 +98,7 @@
                       {user-agent :- s/Str nil}]
       :body-params [keys :- [s/Str]]
       :path-params [origin-system :- (api/describe s/Str "Origin system - for example Ataru")
-                    origin-reference :- (api/describe [s/Str] "Origin reference - For example Application key")]
+                    origin-reference :- (api/describe s/Str "Origin reference - for example Application key")]
       (check-authorization! session)
       (when (> (count keys) 0)
         (file-metadata-store/finalize-files keys origin-system origin-reference {:connection db})
