@@ -165,8 +165,10 @@
        first
        db-utils/unwrap-data))
 
-(defn finalize-files [keys conn]
-  (sql-finalize-files! {:keys keys} conn))
+(defn finalize-files [keys origin-system origin-reference conn]
+  (sql-finalize-files! {:keys keys
+                        :origin_system origin-system
+                        :origin_reference origin-reference} conn))
 
 (defn set-content-type-and-filename! [file-key filename content-type conn]
   (sql-set-content-type-and-filename! {:file_key     file-key

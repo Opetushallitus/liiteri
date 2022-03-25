@@ -63,13 +63,14 @@
   (api/context "/api" []
     :tags ["liiteri"]
 
-    (api/POST "/files/delivered/:key/application/:application-key" {session :session}
+    (api/POST "/files/delivered/:key/origin/:origin-system/origin-reference/:origin-reference" {session :session}
       :summary "Mark upload delivered"
       :header-params [{x-real-ip :- s/Str nil}
                       {user-agent :- s/Str nil}]
       :query-params [filename :- (api/describe s/Str "Filename")]
       :path-params [key :- (api/describe s/Str "Key of the file")
-                    application-key :- (api/describe s/Str "Application key (OID)")]
+                    origin-system :- (api/describe s/Str "Origin system - for example Ataru")
+                    origin-reference :- (api/describe [s/Str] "Origin reference - For example Application key")]
       (check-authorization! session)
       (try
         (let [{:keys [size file]} (file-store/get-size-and-file storage-engine key)]
@@ -77,7 +78,7 @@
                       ^TikaInputStream tika-stream (TikaInputStream/get raw-file)]
             (fail-if-file-extension-blacklisted! filename)
             (let [resp (-> (mime/file->validated-file-spec! config filename tika-stream size)
-                           (file-store/create-metadata key application-key {:connection db}))]
+                           (file-store/create-metadata key origin-system origin-reference {:connection db}))]
               (audit-log/log audit-logger
                              (audit-log/user session x-real-ip user-agent)
                              audit-log/operation-new
@@ -91,14 +92,16 @@
           (log/error (format "Unexpected error: %s", (.getMessage e)) e)
           (response/bad-request! (get-in (ex-data e) [:response :body])))))
 
-    (api/POST "/files/finalize" {session :session}
+    (api/POST "/files/finalize/origin-system/:origin-system/origin-reference/:origin-reference" {session :session}
       :summary "Finalize one or more files"
       :header-params [{x-real-ip :- s/Str nil}
                       {user-agent :- s/Str nil}]
       :body-params [keys :- [s/Str]]
+      :path-params [origin-system :- (api/describe s/Str "Origin system - for example Ataru")
+                    origin-reference :- (api/describe [s/Str] "Origin reference - For example Application key")]
       (check-authorization! session)
       (when (> (count keys) 0)
-        (file-metadata-store/finalize-files keys {:connection db})
+        (file-metadata-store/finalize-files keys origin-system origin-reference {:connection db})
         (doseq [key keys]
           (audit-log/log audit-logger
                          (audit-log/user session x-real-ip user-agent)

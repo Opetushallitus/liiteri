@@ -12,8 +12,8 @@
 
   (get-size-and-file [this file-key]))
 
-(defn create-metadata [file key application-key conn]
-  (let [file-spec (assoc (select-keys file [:filename :content-type :size]) :key key :application-key application-key)]
+(defn create-metadata [file key origin-system origin-reference conn]
+  (let [file-spec (assoc (select-keys file [:filename :content-type :size]) :key key :origin-system origin-system :origin-reference origin-reference)]
     (metadata-store/create-file file-spec conn)))
 
 (defn delete-preview-and-metadata [key storage-engine conn]

@@ -44,7 +44,8 @@
       (.added "uploaded" (str (:uploaded file)))
       (.added "filename" (:filename file))
       (.added "content-type" (:content-type file))
-      (.added "application-key" (:application-key file))
+      (.added "origin-system" (:origin-system file))
+      (.added "origin-reference" (:origin-reference file))
       (.build)))
 
 (def no-changes (.build (new Changes$Builder)))

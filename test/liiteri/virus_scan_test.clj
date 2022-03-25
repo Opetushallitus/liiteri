@@ -23,7 +23,9 @@
 (defn- init-test-file []
   (let [filename "test-file.txt"
         file-key (str (UUID/randomUUID))
-        conn     {:connection (:db @system)}
+        origin-system "Test-system"
+        origin-reference "1.2.246.562.11.000000000000000000001"
+        conn {:connection (:db @system)}
         base-dir (get-in (:config @system) [:file-store :filesystem :base-path])]
     (with-open [w (io/writer (str base-dir "/" file-key))]
       (.write w "test file\n"))
@@ -31,10 +33,10 @@
                                                   :filename         filename
                                                   :content-type     "text/plain"
                                                   :size             1
-                                                  :origin-system    "Test-system"
-                                                  :origin-reference "1.2.246.562.11.000000000000000000001"}
+                                                  :origin-system    origin-system
+                                                  :origin-reference origin-reference}
                                                  conn))
-    (metadata-store/finalize-files file-key conn)
+    (metadata-store/finalize-files file-key origin-system origin-reference conn)
     (reset! file (io/file (str base-dir "/" file-key)))))
 
 (defn- remove-test-file []

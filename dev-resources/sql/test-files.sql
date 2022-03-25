@@ -7,4 +7,4 @@ SELECT key, filename, content_type, size, uploaded, deleted, virus_scan_status, 
 INSERT INTO files (key, filename, content_type, size, uploaded, origin_system, origin_reference) VALUES (:key, :filename, :content_type, :size, :uploaded, :origin_system, :origin_reference);
 
 -- name: sql-finalize-files!
-UPDATE files SET final = TRUE WHERE key IN (:keys);
+UPDATE files SET final = TRUE, origin_system = :origin_system, origin_reference = :origin_reference WHERE key IN (:keys);
