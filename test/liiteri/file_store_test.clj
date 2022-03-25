@@ -50,6 +50,7 @@
         application-key2 "1.2.246.562.11.000000000000000000002"
         application-key3 "1.2.246.562.11.000000000000000000003"
         application-key4 "1.2.246.562.11.000000000000000000003"
+        origin-system "Test-system"
         conn {:connection (:db @system)}
         base-dir (get-in (:config @system) [:file-store :filesystem :base-path])]
     (with-open [w (io/writer (str base-dir "/" file-key1))]
@@ -62,41 +63,46 @@
       (.write w "test file4\n"))
     (with-open [w (io/writer (str base-dir "/" file-key4))]
       (.write w "test file5\n"))
-    (reset! metadata1 (test-metadata-store/create-file {:key             file-key1
-                                                        :filename        filename1
-                                                        :content-type    "text/plain"
-                                                        :size            1
-                                                        :uploaded        uploaded
-                                                        :application-key application-key1}
+    (reset! metadata1 (test-metadata-store/create-file {:key              file-key1
+                                                        :filename         filename1
+                                                        :content-type     "text/plain"
+                                                        :size             1
+                                                        :uploaded         uploaded
+                                                        :origin-system    origin-system
+                                                        :origin-reference application-key1}
                                                        conn))
-    (reset! metadata2 (test-metadata-store/create-file {:key             file-key2
-                                                        :filename        filename2
-                                                        :content-type    "text/plain"
-                                                        :size            1
-                                                        :uploaded        uploaded
-                                                        :application-key application-key2}
+    (reset! metadata2 (test-metadata-store/create-file {:key              file-key2
+                                                        :filename         filename2
+                                                        :content-type     "text/plain"
+                                                        :size             1
+                                                        :uploaded         uploaded
+                                                        :origin-system    origin-system
+                                                        :origin-reference application-key2}
                                                        conn))
-    (reset! metadata3 (test-metadata-store/create-file {:key             file-key3
-                                                        :filename        filename3
-                                                        :content-type    "text/plain"
-                                                        :size            1
-                                                        :uploaded        uploaded
-                                                        :application-key application-key3}
+    (reset! metadata3 (test-metadata-store/create-file {:key              file-key3
+                                                        :filename         filename3
+                                                        :content-type     "text/plain"
+                                                        :size             1
+                                                        :uploaded         uploaded
+                                                        :origin-system    origin-system
+                                                        :origin-reference application-key3}
                                                        conn))
-    (reset! metadata4 (test-metadata-store/create-file {:key             file-key4
-                                                        :filename        filename4
-                                                        :content-type    "text/plain"
-                                                        :size            1
-                                                        :uploaded        uploaded
-                                                        :application-key application-key4}
+    (reset! metadata4 (test-metadata-store/create-file {:key              file-key4
+                                                        :filename         filename4
+                                                        :content-type     "text/plain"
+                                                        :size             1
+                                                        :uploaded         uploaded
+                                                        :origin-system    origin-system
+                                                        :origin-reference application-key4}
                                                        conn))
-    (reset! metadata5 (test-metadata-store/create-file {:key             file-key5
-                                                        :filename        filename5
-                                                        :content-type    "text/plain"
-                                                        :size            1
-                                                        :uploaded        uploaded
-                                                        :deleted         deleted
-                                                        :application-key application-key4}
+    (reset! metadata5 (test-metadata-store/create-file {:key              file-key5
+                                                        :filename         filename5
+                                                        :content-type     "text/plain"
+                                                        :size             1
+                                                        :uploaded         uploaded
+                                                        :deleted          deleted
+                                                        :origin-system    origin-system
+                                                        :origin-reference application-key4}
                                                        conn))
     (reset! file1 (io/file (str base-dir "/" file-key1)))
     (reset! file2 (io/file (str base-dir "/" file-key2)))
@@ -134,11 +140,12 @@
                     (Timestamp.))]
     (init-test-files uploaded deleted)
 
-    (file-store/delete-files-and-metadata-by-application-keys ["1.2.246.562.11.000000000000000000002"
-                                                               "1.2.246.562.11.000000000000000000003"
-                                                               "1.2.246.562.11.000000000000000000009"]
-                                                              storage-engine
-                                                              {:connection db})
+    (file-store/delete-files-and-metadata-by-origin-references-and-origin-system ["1.2.246.562.11.000000000000000000002"
+                                                                                  "1.2.246.562.11.000000000000000000003"
+                                                                                  "1.2.246.562.11.000000000000000000009"]
+                                                                                 "Test-system"
+                                                                                 storage-engine
+                                                                                 {:connection db})
 
     (let [metadata1 (test-metadata-store/get-metadata-for-tests [(:key @metadata1)] {:connection db})
           metadata2 (test-metadata-store/get-metadata-for-tests [(:key @metadata2)] {:connection db})

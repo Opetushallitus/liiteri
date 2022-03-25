@@ -37,11 +37,11 @@
       {:body     (.get-file storage-engine key)
        :filename (:filename (first metadata))})))
 
-(defn get-file-keys-by-application-keys [application-keys conn]
-  (metadata-store/get-file-keys-by-application-keys application-keys conn))
+(defn get-file-keys-by-origin-references-and-origin-system [origin-references origin-system conn]
+  (metadata-store/get-file-keys-by-origin-references-and-origin-system origin-references origin-system conn))
 
-(defn delete-files-and-metadata-by-application-keys [application-keys storage-engine conn]
-  (let [keys-to-delete (get-file-keys-by-application-keys application-keys conn)
+(defn delete-files-and-metadata-by-origin-references-and-origin-system [origin-references origin-system storage-engine conn]
+  (let [keys-to-delete (get-file-keys-by-origin-references-and-origin-system origin-references origin-system conn)
         deleted-keys (doall
                        (map #(when (= 1 (delete-file-and-metadata (:key %) storage-engine conn)) %) keys-to-delete))]
     (vec (map :key deleted-keys))

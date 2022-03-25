@@ -29,6 +29,7 @@
   (let [filename "test-file.txt"
         file-key (str (UUID/randomUUID))
         application-key "1.2.246.562.11.000000000000000000001"
+        origin-system "Test-system"
         conn {:connection (:db @system)}
         base-dir (get-in (:config @system) [:file-store :filesystem :base-path])]
     (with-open [w (io/writer (str base-dir "/" file-key))]
@@ -38,7 +39,8 @@
                                                        :content-type    "text/plain"
                                                        :size            1
                                                        :uploaded        uploaded
-                                                       :application-key application-key}
+                                                       :origin-system   origin-system
+                                                       :origin-reference application-key}
                                                       conn))
     (reset! file (io/file (str base-dir "/" file-key)))))
 

@@ -186,10 +186,11 @@
       :summary "Delete files by multiple application keys"
       :header-params [{x-real-ip :- s/Str nil}
                       {user-agent :- s/Str nil}]
-      :body-params [application-keys :- (api/describe [s/Str] "Application keys")]
+      :body-params [origin-references :- (api/describe [s/Str] "Origin references - For example Application keys")
+                    origin-system :- (api/describe s/Str "Origin system - For example Ataru")]
       :return {:deleted-keys [s/Str]}
       (check-authorization! session)
-      (let [keys (file-store/delete-files-and-metadata-by-application-keys application-keys storage-engine {:connection db})]
+      (let [keys (file-store/delete-files-and-metadata-by-origin-references-and-origin-system origin-references origin-system storage-engine {:connection db})]
         (if (> (count keys) 0)
           (do
             (doseq [key keys]
@@ -199,7 +200,7 @@
                              (audit-log/file-target key)
                              audit-log/no-changes))
             (response/ok {:deleted-keys keys}))
-          (response/not-found {:message (str "Files to delete for application keys:" application-keys "not found")}))))))
+          (response/not-found {:message (str "Files to delete for origin references:" origin-references "and origin system" origin-system "not found")}))))))
 
 (defn auth-routes [{:keys [login-cas-client
                            session-store

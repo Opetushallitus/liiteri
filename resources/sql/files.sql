@@ -1,5 +1,5 @@
 -- name: sql-create-file<!
-INSERT INTO files (key, filename, content_type, size, application_key) VALUES (:key, :filename, :content_type, :size, :application_key);
+INSERT INTO files (key, filename, content_type, size, origin_system, origin_reference) VALUES (:key, :filename, :content_type, :size, :origin_system, :origin_reference);
 
 -- name: sql-set-file-page-count-and-preview-status!
 update files SET page_count = :page_count, preview_status = :preview_status::preview_generation_status WHERE key = :key;
@@ -127,8 +127,8 @@ LIMIT 1;
 -- name: sql-update-filename!
 UPDATE files SET filename = :filename WHERE key = :file_key;
 
--- name: sql-get-file-keys-by-application-keys
+-- name: sql-get-file-keys-by-origin-references-and-origin-system
 SELECT key
 FROM files
-WHERE application_key IN (:application_keys) AND deleted IS NULL;
+WHERE origin_reference IN (:origin_references) AND origin_system = :origin_system AND deleted IS NULL;
 

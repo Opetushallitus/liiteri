@@ -52,7 +52,8 @@
                        :content-type    content-type
                        :size            size
                        :uploaded        uploaded
-                       :application-key "1.2.246.562.11.000000000000000000001"}]
+                       :origin-system    "Test-system"
+                       :origin-reference "1.2.246.562.11.000000000000000000001"}]
         (test-metadata-store/create-file file-spec conn)
         (file-store/create-file store file-object filename)
         (metadata-store/set-virus-scan-status! filename "done" conn)
@@ -77,7 +78,8 @@
                        :content-type    content-type
                        :size            size
                        :uploaded        uploaded
-                       :application-key "1.2.246.562.11.000000000000000000001"}]
+                       :origin-system    "Test-system"
+                       :origin-reference "1.2.246.562.11.000000000000000000001"}]
         (test-metadata-store/create-file file-spec conn)
         (file-store/create-file store file-object filename)
         (metadata-store/set-virus-scan-status! filename "done" conn)
