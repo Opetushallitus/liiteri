@@ -86,7 +86,7 @@ WHERE key = :file_key
 RETURNING virus_scan_status, virus_scan_retry_count;
 
 -- name: sql-finalize-files!
-UPDATE files SET final = TRUE WHERE key IN (:keys);
+UPDATE files SET final = TRUE, origin_system = :origin_system, origin_reference = :origin_reference WHERE key IN (:keys);
 
 -- name: sql-set-content-type-and-filename!
 UPDATE files SET content_type = :content_type, filename = :filename WHERE key = :file_key;
