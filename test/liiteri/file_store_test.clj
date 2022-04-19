@@ -140,12 +140,11 @@
                     (Timestamp.))]
     (init-test-files uploaded deleted)
 
-    (file-store/delete-files-and-metadata-by-origin-references-and-origin-system ["1.2.246.562.11.000000000000000000002"
-                                                                                  "1.2.246.562.11.000000000000000000003"
-                                                                                  "1.2.246.562.11.000000000000000000009"]
-                                                                                 "Test-system"
-                                                                                 storage-engine
-                                                                                 {:connection db})
+    (file-store/delete-files-and-metadata-by-origin-references ["1.2.246.562.11.000000000000000000002"
+                                                                "1.2.246.562.11.000000000000000000003"
+                                                                "1.2.246.562.11.000000000000000000009"]
+                                                               storage-engine
+                                                               {:connection db})
 
     (let [metadata1 (test-metadata-store/get-metadata-for-tests [(:key @metadata1)] {:connection db})
           metadata2 (test-metadata-store/get-metadata-for-tests [(:key @metadata2)] {:connection db})

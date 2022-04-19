@@ -127,8 +127,8 @@ LIMIT 1;
 -- name: sql-update-filename!
 UPDATE files SET filename = :filename WHERE key = :file_key;
 
--- name: sql-get-file-keys-by-origin-references-and-origin-system
+-- name: sql-get-file-keys-by-origin-references
 SELECT key
 FROM files
-WHERE origin_reference IN (:origin_references) AND origin_system = :origin_system AND deleted IS NULL;
+WHERE origin_reference IN (:origin_references) AND deleted IS NULL;
 

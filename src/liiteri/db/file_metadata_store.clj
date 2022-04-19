@@ -29,7 +29,7 @@
 (declare sql-set-file-page-count-and-preview-status!)
 (declare sql-mark-previews-final!)
 (declare sql-update-filename!)
-(declare sql-get-file-keys-by-origin-references-and-origin-system)
+(declare sql-get-file-keys-by-origin-references)
 
 (sql/defqueries "sql/files.sql")
 
@@ -207,6 +207,5 @@
 (defn mark-previews-final! [file-key conn]
   (sql-mark-previews-final! {:file_key file-key} conn))
 
-(defn get-file-keys-by-origin-references-and-origin-system [origin-references origin-system conn]
-  (sql-get-file-keys-by-origin-references-and-origin-system {:origin_references origin-references
-                                          :origin_system origin-system} conn))
+(defn get-file-keys-by-origin-references [origin-references conn]
+  (sql-get-file-keys-by-origin-references {:origin_references origin-references} conn))
