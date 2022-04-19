@@ -68,8 +68,8 @@
       :header-params [{x-real-ip :- s/Str nil}
                       {user-agent :- s/Str nil}]
       :query-params [filename :- (api/describe s/Str "Filename")
-                     origin-system :- (api/describe s/Str "Origin system - for example Ataru")
-                     {origin-reference :- (api/describe (s/maybe s/Str) "Origin reference - for example Application key - optional") nil}]
+                     {origin-system :- (api/describe (s/maybe s/Str) "Origin system - for example Ataru - optional") "tuntematon"}
+                     {origin-reference :- (api/describe (s/maybe s/Str) "Origin reference - for example Application key - optional") "tuntematon"}]
       :path-params [key :- (api/describe s/Str "Key of the file")]
       (check-authorization! session)
       (try
@@ -96,8 +96,8 @@
       :summary "Finalize one or more files"
       :header-params [{x-real-ip :- s/Str nil}
                       {user-agent :- s/Str nil}]
-      :query-params [origin-system :- (api/describe s/Str "Origin system - for example Ataru")
-                     origin-reference :- (api/describe s/Str "Origin reference - for example Application key")]
+      :query-params [{origin-system :- (api/describe (s/maybe s/Str) "Origin system - for example Ataru - optional") "tuntematon"}
+                     {origin-reference :- (api/describe (s/maybe s/Str) "Origin reference - for example Application key - optional") "tuntematon"}]
       :body-params [keys :- [s/Str]]
       (check-authorization! session)
       (when (> (count keys) 0)
