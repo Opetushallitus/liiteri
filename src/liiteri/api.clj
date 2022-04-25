@@ -175,7 +175,8 @@
       :path-params [key :- (api/describe s/Str "Key of the file")]
       :return {:key s/Str}
       (check-authorization! session)
-      (let [deleted-count (file-store/delete-file-and-metadata key storage-engine {:connection db})]
+      (let [user (get-in session [:identity :oid])
+            deleted-count (file-store/delete-file-and-metadata key user storage-engine {:connection db})]
         (if (> deleted-count 0)
           (do (audit-log/log audit-logger
                              (audit-log/user session x-real-ip user-agent)
@@ -185,14 +186,14 @@
               (response/ok {:key key}))
           (response/not-found {:message (str "File with key " key " not found")}))))
 
-    (api/POST "/files/delete" {session :session}
-      :summary "Delete files by multiple application keys"
+    (api/POST "/files/mass-delete" {session :session}
+      :summary "Delete multiple files by application keys"
       :header-params [{x-real-ip :- s/Str nil}
                       {user-agent :- s/Str nil}]
       :body-params [origin-references :- (api/describe [s/Str] "Origin references - For example Application keys")]
       :return {:deleted-keys [s/Str]}
       (check-authorization! session)
-      (let [keys (file-store/delete-files-and-metadata-by-origin-references origin-references storage-engine {:connection db})]
+      (let [keys (file-store/delete-files-and-metadata-by-origin-references origin-references session storage-engine {:connection db})]
         (if (> (count keys) 0)
           (do
             (doseq [key keys]

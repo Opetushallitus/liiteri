@@ -70,8 +70,9 @@
       (dissoc :virus-scan-retry-after)
       (dissoc :id)))
 
-(defn delete-file [key conn]
-  (sql-delete-file! {:key key} conn))
+(defn delete-file [key user conn]
+  (sql-delete-file! {:key key
+                     :deleted_by user} conn))
 
 (defn delete-preview [key conn]
   (sql-delete-preview! {:key key} conn))

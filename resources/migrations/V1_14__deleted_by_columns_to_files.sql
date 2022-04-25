@@ -1,0 +1,1 @@
+alter table files add column if not exists deleted_by varchar(256);

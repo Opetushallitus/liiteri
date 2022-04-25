@@ -5,7 +5,7 @@ INSERT INTO files (key, filename, content_type, size, origin_system, origin_refe
 update files SET page_count = :page_count, preview_status = :preview_status::preview_generation_status WHERE key = :key;
 
 -- name: sql-delete-file!
-UPDATE files SET deleted = NOW() WHERE key = :key AND deleted IS NULL;
+UPDATE files SET deleted = NOW(), deleted_by = :deleted_by WHERE key = :key AND deleted IS NULL;
 
 -- name: sql-delete-preview!
 UPDATE previews SET deleted = NOW() WHERE key = :key AND deleted IS NULL;

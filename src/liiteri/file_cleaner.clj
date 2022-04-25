@@ -12,7 +12,7 @@
 (defn- clean-file [conn storage-engine file]
   (log/info (str "Cleaning file: " (:key file)))
   (try
-    (file-store/delete-file-and-metadata (:key file) storage-engine conn)
+    (file-store/delete-file-and-metadata (:key file) "liiteri-file-cleaner" storage-engine conn)
     (catch Exception e
       (log/error e (str "Failed to clean file " (:key file))))))
 
