@@ -37,11 +37,8 @@
       {:body     (.get-file storage-engine key)
        :filename (:filename (first metadata))})))
 
-(defn get-file-keys-by-origin-references [origin-references conn]
-  (metadata-store/get-file-keys-by-origin-references origin-references conn))
-
 (defn delete-files-and-metadata-by-origin-references [origin-references session storage-engine conn]
-  (let [keys-to-delete (get-file-keys-by-origin-references origin-references conn)
+  (let [keys-to-delete (metadata-store/get-file-keys-by-origin-references origin-references conn)
         user (get-in session [:identity :oid])
         deleted-keys (doall
                        (map #(when (= 1 (delete-file-and-metadata (:key %) user storage-engine conn)) %) keys-to-delete))]
