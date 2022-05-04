@@ -67,8 +67,10 @@
       :summary "Mark upload delivered"
       :header-params [{x-real-ip :- s/Str nil}
                       {user-agent :- s/Str nil}]
-      :query-params [filename :- (api/describe s/Str "Filename")]
-      :path-params  [key :- (api/describe s/Str "Key of the file")]
+      :query-params [filename :- (api/describe s/Str "Filename")
+                     {origin-system :- (api/describe (s/maybe s/Str) "Origin system - for example Ataru - optional") "tuntematon"}
+                     {origin-reference :- (api/describe (s/maybe s/Str) "Origin reference - for example Application key - optional") "tuntematon"}]
+      :path-params [key :- (api/describe s/Str "Key of the file")]
       (check-authorization! session)
       (try
         (let [{:keys [size file]} (file-store/get-size-and-file storage-engine key)]
@@ -76,7 +78,7 @@
                       ^TikaInputStream tika-stream (TikaInputStream/get raw-file)]
             (fail-if-file-extension-blacklisted! filename)
             (let [resp (-> (mime/file->validated-file-spec! config filename tika-stream size)
-                           (file-store/create-metadata key {:connection db}))]
+                           (file-store/create-metadata key origin-system origin-reference {:connection db}))]
               (audit-log/log audit-logger
                              (audit-log/user session x-real-ip user-agent)
                              audit-log/operation-new
@@ -94,10 +96,12 @@
       :summary "Finalize one or more files"
       :header-params [{x-real-ip :- s/Str nil}
                       {user-agent :- s/Str nil}]
+      :query-params [{origin-system :- (api/describe (s/maybe s/Str) "Origin system - for example Ataru - optional") "tuntematon"}
+                     {origin-reference :- (api/describe (s/maybe s/Str) "Origin reference - for example Application key - optional") "tuntematon"}]
       :body-params [keys :- [s/Str]]
       (check-authorization! session)
       (when (> (count keys) 0)
-        (file-metadata-store/finalize-files keys {:connection db})
+        (file-metadata-store/finalize-files keys origin-system origin-reference {:connection db})
         (doseq [key keys]
           (audit-log/log audit-logger
                          (audit-log/user session x-real-ip user-agent)
@@ -171,7 +175,8 @@
       :path-params [key :- (api/describe s/Str "Key of the file")]
       :return {:key s/Str}
       (check-authorization! session)
-      (let [deleted-count (file-store/delete-file-and-metadata key storage-engine {:connection db})]
+      (let [user (get-in session [:identity :oid])
+            deleted-count (file-store/delete-file-and-metadata key user storage-engine {:connection db})]
         (if (> deleted-count 0)
           (do (audit-log/log audit-logger
                              (audit-log/user session x-real-ip user-agent)
@@ -179,7 +184,26 @@
                              (audit-log/file-target key)
                              audit-log/no-changes)
               (response/ok {:key key}))
-          (response/not-found {:message (str "File with key " key " not found")}))))))
+          (response/not-found {:message (str "File with key " key " not found")}))))
+
+    (api/POST "/files/mass-delete" {session :session}
+      :summary "Delete multiple files by application keys"
+      :header-params [{x-real-ip :- s/Str nil}
+                      {user-agent :- s/Str nil}]
+      :body-params [origin-references :- (api/describe [s/Str] "Origin references - For example Application keys")]
+      :return {:deleted-keys [s/Str]}
+      (check-authorization! session)
+      (let [keys (file-store/delete-files-and-metadata-by-origin-references origin-references session storage-engine {:connection db})]
+        (if (> (count keys) 0)
+          (do
+            (doseq [key keys]
+              (audit-log/log audit-logger
+                             (audit-log/user session x-real-ip user-agent)
+                             audit-log/operation-delete
+                             (audit-log/file-target key)
+                             audit-log/no-changes))
+            (response/ok {:deleted-keys keys}))
+          (response/not-found {:message (str "Files to delete for origin-references:" origin-references "not found")}))))))
 
 (defn auth-routes [{:keys [login-cas-client
                            session-store
@@ -227,9 +251,9 @@
                             :oldest-unprocessed-file  {:id  (s/maybe s/Int)
                                                        :key (s/maybe s/Str)
                                                        :age s/Int}}
-                   (let [queue-length    (file-metadata-store/get-queue-length {:connection db})
+                   (let [queue-length (file-metadata-store/get-queue-length {:connection db})
                          {:keys [id key age] :or {age 0}} (file-metadata-store/get-oldest-unscanned-file {:connection db})
-                         status-ok?      (and (< queue-length 100) (< age 3600))
+                         status-ok? (and (< queue-length 100) (< age 3600))
                          response-status (if status-ok? response/ok response/internal-server-error)]
                      (response-status {:unprocessed-queue-length queue-length
                                        :oldest-unprocessed-file  {:id  id
@@ -245,5 +269,5 @@
                    (auth-routes this))))
       (clj-access-logging/wrap-access-logging)
       (clj-timbre-access-logging/wrap-timbre-access-logging
-       {:path (str (get-in config [:access-log :path])
-                   (when (:hostname env) (str "_" (:hostname env))))})))
+        {:path (str (get-in config [:access-log :path])
+                    (when (:hostname env) (str "_" (:hostname env))))})))

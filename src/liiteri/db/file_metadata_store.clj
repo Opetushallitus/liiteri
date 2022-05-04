@@ -29,6 +29,7 @@
 (declare sql-set-file-page-count-and-preview-status!)
 (declare sql-mark-previews-final!)
 (declare sql-update-filename!)
+(declare sql-get-file-keys-by-origin-references)
 
 (sql/defqueries "sql/files.sql")
 
@@ -69,8 +70,9 @@
       (dissoc :virus-scan-retry-after)
       (dissoc :id)))
 
-(defn delete-file [key conn]
-  (sql-delete-file! {:key key} conn))
+(defn delete-file [key user conn]
+  (sql-delete-file! {:key key
+                     :deleted_by user} conn))
 
 (defn delete-preview [key conn]
   (sql-delete-preview! {:key key} conn))
@@ -164,8 +166,10 @@
        first
        db-utils/unwrap-data))
 
-(defn finalize-files [keys conn]
-  (sql-finalize-files! {:keys keys} conn))
+(defn finalize-files [keys origin-system origin-reference conn]
+  (sql-finalize-files! {:keys keys
+                        :origin_system origin-system
+                        :origin_reference origin-reference} conn))
 
 (defn set-content-type-and-filename! [file-key filename content-type conn]
   (sql-set-content-type-and-filename! {:file_key     file-key
@@ -203,3 +207,6 @@
 
 (defn mark-previews-final! [file-key conn]
   (sql-mark-previews-final! {:file_key file-key} conn))
+
+(defn get-file-keys-by-origin-references [origin-references conn]
+  (sql-get-file-keys-by-origin-references {:origin_references origin-references} conn))

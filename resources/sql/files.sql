@@ -1,11 +1,11 @@
 -- name: sql-create-file<!
-INSERT INTO files (key, filename, content_type, size) VALUES (:key, :filename, :content_type, :size);
+INSERT INTO files (key, filename, content_type, size, origin_system, origin_reference) VALUES (:key, :filename, :content_type, :size, :origin_system, :origin_reference);
 
 -- name: sql-set-file-page-count-and-preview-status!
 update files SET page_count = :page_count, preview_status = :preview_status::preview_generation_status WHERE key = :key;
 
 -- name: sql-delete-file!
-UPDATE files SET deleted = NOW() WHERE key = :key AND deleted IS NULL;
+UPDATE files SET deleted = NOW(), deleted_by = :deleted_by WHERE key = :key AND deleted IS NULL;
 
 -- name: sql-delete-preview!
 UPDATE previews SET deleted = NOW() WHERE key = :key AND deleted IS NULL;
@@ -86,7 +86,7 @@ WHERE key = :file_key
 RETURNING virus_scan_status, virus_scan_retry_count;
 
 -- name: sql-finalize-files!
-UPDATE files SET final = TRUE WHERE key IN (:keys);
+UPDATE files SET final = TRUE, origin_system = :origin_system, origin_reference = :origin_reference WHERE key IN (:keys);
 
 -- name: sql-set-content-type-and-filename!
 UPDATE files SET content_type = :content_type, filename = :filename WHERE key = :file_key;
@@ -126,3 +126,9 @@ LIMIT 1;
 
 -- name: sql-update-filename!
 UPDATE files SET filename = :filename WHERE key = :file_key;
+
+-- name: sql-get-file-keys-by-origin-references
+SELECT key
+FROM files
+WHERE origin_reference IN (:origin_references) AND deleted IS NULL;
+

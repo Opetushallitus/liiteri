@@ -29,11 +29,13 @@
       (let [uploaded  (-> (t/now)
                           (.getMillis)
                           (Timestamp.))
-            file-spec {:key          filename
-                       :filename     mangled-filename
-                       :content-type nil
-                       :size         size
-                       :uploaded     uploaded}]
+            file-spec {:key              filename
+                       :filename         mangled-filename
+                       :content-type     nil
+                       :size             size
+                       :uploaded         uploaded
+                       :origin-system    "Test-system"
+                       :origin-reference "1.2.246.562.11.000000000000000000001"}]
         (metadata-store/create-file file-spec conn)
         (file-store/create-file store file-object filename)
         (mime-fixer/fix-mime-type-of-file conn store {:key      filename

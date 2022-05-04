@@ -47,15 +47,19 @@
       (let [uploaded  (-> (t/now)
                           (.getMillis)
                           (Timestamp.))
-            file-spec {:key          filename
-                       :filename     filename
-                       :content-type content-type
-                       :size         size
-                       :uploaded     uploaded}]
+            origin-system "Test-system"
+            origin-reference "1.2.246.562.11.000000000000000000001"
+            file-spec {:key              filename
+                       :filename         filename
+                       :content-type     content-type
+                       :size             size
+                       :uploaded         uploaded
+                       :origin-system    origin-system
+                       :origin-reference origin-reference}]
         (test-metadata-store/create-file file-spec conn)
         (file-store/create-file store file-object filename)
         (metadata-store/set-virus-scan-status! filename "done" conn)
-        (metadata-store/finalize-files [filename] conn)
+        (metadata-store/finalize-files [filename] origin-system origin-reference conn)
         (preview-generator/generate-file-previews (:config @system) conn store file-spec)
 
         (let [file-metadata-after-preview (first (metadata-store/get-normalized-metadata! [filename] conn))
@@ -71,18 +75,22 @@
       (let [uploaded  (-> (t/now)
                           (.getMillis)
                           (Timestamp.))
-            file-spec {:key          filename
-                       :filename     filename
-                       :content-type content-type
-                       :size         size
-                       :uploaded     uploaded}]
+            origin-system "Test-system"
+            origin-reference "1.2.246.562.11.000000000000000000001"
+            file-spec {:key             filename
+                       :filename        filename
+                       :content-type    content-type
+                       :size            size
+                       :uploaded        uploaded
+                       :origin-system    origin-system
+                       :origin-reference origin-reference}]
         (test-metadata-store/create-file file-spec conn)
         (file-store/create-file store file-object filename)
         (metadata-store/set-virus-scan-status! filename "done" conn)
-        (metadata-store/finalize-files [filename] conn)
+        (metadata-store/finalize-files [filename] origin-system origin-reference conn)
         (preview-generator/generate-file-previews (:config @system) conn store file-spec)
 
-        (file-store/delete-file-and-metadata (:key file-spec) store conn)
+        (file-store/delete-file-and-metadata (:key file-spec) "preview-generator-test" store conn)
 
         (let [file-metadata-after-preview (first (metadata-store/get-normalized-metadata! [filename] conn))
               generated-previews          (vec (metadata-store/get-previews filename conn))]
