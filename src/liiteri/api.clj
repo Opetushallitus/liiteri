@@ -176,7 +176,7 @@
       :return {:key s/Str}
       (check-authorization! session)
       (let [user (get-in session [:identity :oid])
-            deleted-count (file-store/delete-file-and-metadata key user storage-engine {:connection db})]
+            deleted-count (file-store/delete-file-and-metadata key user storage-engine {:connection db} false)]
         (if (> deleted-count 0)
           (do (audit-log/log audit-logger
                              (audit-log/user session x-real-ip user-agent)

@@ -40,7 +40,7 @@
     (reset! file (io/file (str base-dir "/" file-key)))))
 
 (defn- remove-test-file []
-  (metadata-store/delete-file (:key @metadata) "virus-scan-test" {:connection (:db @system)})
+  (metadata-store/delete-file (:key @metadata) "virus-scan-test" {:connection (:db @system)} false)
   (io/delete-file @file true))
 
 (use-fixtures :once

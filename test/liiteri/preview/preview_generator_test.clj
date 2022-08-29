@@ -90,7 +90,7 @@
         (metadata-store/finalize-files [filename] origin-system origin-reference conn)
         (preview-generator/generate-file-previews (:config @system) conn store file-spec)
 
-        (file-store/delete-file-and-metadata (:key file-spec) "preview-generator-test" store conn)
+        (file-store/delete-file-and-metadata (:key file-spec) "preview-generator-test" store conn false)
 
         (let [file-metadata-after-preview (first (metadata-store/get-normalized-metadata! [filename] conn))
               generated-previews          (vec (metadata-store/get-previews filename conn))]

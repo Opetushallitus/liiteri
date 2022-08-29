@@ -50,7 +50,6 @@
  :virkailija-host "http://localhost"
  :server {:port 16832}
  :access-log {:path "/tmp/access_liiteri"}
- :audit-log {:path "/tmp/auditlog_liiteri.log"}
  :audit-log {:path "/tmp/app_liiteri.log"}
  :antivirus {:clamav-url "http://localhost:8765"
              :mock? false
@@ -58,6 +57,7 @@
              :max-retry-count 5
              :retry-wait-minutes 5}
  :file-cleaner {:poll-interval-seconds 100}
+ :file-delete-cleaner {:poll-interval-seconds 100}
  :mime-fixer {:poll-interval-seconds 5}
  :preview-generator {:poll-interval-seconds 5
                      :preview-page-count 19
