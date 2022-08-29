@@ -110,8 +110,7 @@ SELECT key, filename, content_type, size, uploaded, deleted, virus_scan_status, 
 SELECT key, filename, content_type, size, uploaded, deleted, virus_scan_status, final
 FROM files
 WHERE
-    NOT final
-  AND deleted IS NOT NULL
+  deleted IS NOT NULL
   AND deleted < NOW() - INTERVAL '180 day'
     LIMIT 1 FOR UPDATE SKIP LOCKED;
 
