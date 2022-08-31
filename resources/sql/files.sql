@@ -7,6 +7,12 @@ update files SET page_count = :page_count, preview_status = :preview_status::pre
 -- name: sql-delete-file!
 UPDATE files SET deleted = NOW(), deleted_by = :deleted_by WHERE key = :key AND deleted IS NULL;
 
+-- name: sql-delete-file-permanently!
+DELETE FROM files WHERE key = :key;
+
+-- name: sql-delete-preview-permanently!
+DELETE FROM previews WHERE file_id IN (SELECT id FROM files WHERE key = :key);
+
 -- name: sql-delete-preview!
 UPDATE previews SET deleted = NOW() WHERE key = :key AND deleted IS NULL;
 
@@ -99,6 +105,14 @@ SELECT key, filename, content_type, size, uploaded, deleted, virus_scan_status, 
     AND deleted IS NULL
     AND uploaded < NOW() - INTERVAL '1 day'
   LIMIT 1 FOR UPDATE SKIP LOCKED;
+
+-- name: sql-get-old-deleted-file
+SELECT key, filename, content_type, size, uploaded, deleted, virus_scan_status, final
+FROM files
+WHERE
+  deleted IS NOT NULL
+  AND deleted < NOW() - INTERVAL '180 day'
+    LIMIT 1 FOR UPDATE SKIP LOCKED;
 
 -- name: sql-get-draft-preview
 SELECT key, filename, content_type, size, uploaded, deleted, final

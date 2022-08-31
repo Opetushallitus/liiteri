@@ -64,8 +64,12 @@
                          [:db :storage-engine :config :migrations])
 
            :file-cleaner (component/using
-                           (file-cleaner/new-cleaner)
+                           (file-cleaner/new-cleaner false)
                            [:db :storage-engine :config :migrations])
+
+           :deleted-file-cleaner (component/using
+                                   (file-cleaner/new-cleaner true)
+                                   [:db :storage-engine :config :migrations])
 
            :mime-fixer (component/using
                          (mime-fixer/new-mime-fixer)

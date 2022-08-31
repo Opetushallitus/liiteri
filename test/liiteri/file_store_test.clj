@@ -111,11 +111,11 @@
     (reset! file5 (io/file (str base-dir "/" file-key5)))))
 
 (defn- remove-test-files []
-  (metadata-store/delete-file (:key @metadata1) "file-store-test" {:connection (:db @system)})
-  (metadata-store/delete-file (:key @metadata2) "file-store-test" {:connection (:db @system)})
-  (metadata-store/delete-file (:key @metadata3) "file-store-test" {:connection (:db @system)})
-  (metadata-store/delete-file (:key @metadata4) "file-store-test" {:connection (:db @system)})
-  (metadata-store/delete-file (:key @metadata5) "file-store-test" {:connection (:db @system)})
+  (metadata-store/delete-file (:key @metadata1) "file-store-test" {:connection (:db @system)} false)
+  (metadata-store/delete-file (:key @metadata2) "file-store-test" {:connection (:db @system)} false)
+  (metadata-store/delete-file (:key @metadata3) "file-store-test" {:connection (:db @system)} false)
+  (metadata-store/delete-file (:key @metadata4) "file-store-test" {:connection (:db @system)} false)
+  (metadata-store/delete-file (:key @metadata5) "file-store-test" {:connection (:db @system)} false)
   (io/delete-file @file1 true)
   (io/delete-file @file2 true)
   (io/delete-file @file3 true)

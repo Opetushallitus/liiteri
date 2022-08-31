@@ -69,7 +69,7 @@
                   (metadata-store/set-virus-scan-status! file-key "done" conn))
                 (do
                   (log-virus-scan-result file-key filename content-type config :virus-found elapsed-time)
-                  (file-store/delete-file-and-metadata file-key "liiteri-virus-scan" storage-engine conn)
+                  (file-store/delete-file-and-metadata file-key "liiteri-virus-scan" storage-engine conn false)
                   (metadata-store/set-virus-scan-status! file-key "virus_found" conn)))
               (= (:status scan-result) 503)
               (log/warn "Failed to scan file" filename "with key" file-key ": Service Unavailable")

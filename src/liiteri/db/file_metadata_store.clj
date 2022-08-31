@@ -11,11 +11,14 @@
 
 (declare sql-create-file<!)
 (declare sql-delete-file!)
+(declare sql-delete-file-permanently!)
+(declare sql-delete-preview-permanently!)
 (declare sql-delete-preview!)
 (declare sql-get-previews)
 (declare sql-get-metadata)
 (declare sql-get-unscanned-file)
 (declare sql-get-draft-file)
+(declare sql-get-old-deleted-file)
 (declare sql-get-draft-preview)
 (declare sql-get-file-without-mime-type)
 (declare sql-get-file-without-preview)
@@ -70,9 +73,13 @@
       (dissoc :virus-scan-retry-after)
       (dissoc :id)))
 
-(defn delete-file [key user conn]
-  (sql-delete-file! {:key key
-                     :deleted_by user} conn))
+(defn delete-file [key user conn delete-file-permanently?]
+  (if delete-file-permanently?
+    (do
+      (sql-delete-preview-permanently! {:key key} conn)
+      (sql-delete-file-permanently! {:key key} conn))
+    (sql-delete-file! {:key key
+                       :deleted_by user} conn)))
 
 (defn delete-preview [key conn]
   (sql-delete-preview! {:key key} conn))
@@ -135,6 +142,11 @@
 
 (defn get-old-draft-file [conn]
   (->> (sql-get-draft-file {} conn)
+       (map db-utils/unwrap-data)
+       (first)))
+
+(defn get-old-deleted-file [conn]
+  (->> (sql-get-old-deleted-file {} conn)
        (map db-utils/unwrap-data)
        (first)))
 
