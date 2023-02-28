@@ -15,6 +15,7 @@
                                       "image/png"
                                       "image/gif"
                                       "image/tiff"
+                                      "image/webp"
                                       "application/rtf"
                                       "application/pdf"
                                       "application/vnd.oasis.opendocument.text"
