@@ -2,10 +2,12 @@
   (:require [taoensso.timbre :as log]
             [ring.util.http-response :as http-response]
             [pantomime.mime :as mime]
-            [me.raynes.fs :as fs]))
+            [me.raynes.fs :as fs])
+  (:import (org.apache.tika.io TikaInputStream)
+           (org.apache.tika.io Detector)))
 
 (defn detect-mime-type [file-or-stream-or-buffer]
-  (mime/mime-type-of file-or-stream-or-buffer))
+  (mime/mime-type-of file-or-stream-or-buffer)) ;; TODO vaihda Tika Detector/detect
 
 (defn validate-file-content-type! [config filename real-content-type]
   (let [allowed-mime-types (-> config :file-store :attachment-mime-types)]
@@ -16,7 +18,7 @@
       real-content-type)))
 
 (defn fix-extension [filename real-content-type]
-  (let [extension-from-mimetype (mime/extension-for-name real-content-type)
+  (let [extension-from-mimetype (mime/extension-for-name real-content-type) ;; TODO vaihda Tika-metodiin
         [fname] (fs/split-ext filename)]
     (format "%s%s" fname extension-from-mimetype)))
 
