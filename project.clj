@@ -42,6 +42,7 @@
                  [environ "1.1.0"]
                  [fi.vm.sade/scala-cas_2.12 "2.2.2.1-SNAPSHOT"]
                  [org.apache.tika/tika-core "2.8.0"]
+                 [org.apache.tika/tika-parsers-standard-package "2.8.0"]
                  [org.apache.commons/commons-compress "1.19"]
                  [jarohen/chime "0.2.2"]
                  [clj-http "3.10.0"]
