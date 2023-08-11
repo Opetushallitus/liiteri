@@ -19,13 +19,12 @@
                                              :allowed-content-types allowed-mime-types}))
       real-content-type)))
 
-(defn fix-extension [filename real-content-type]
+(defn fix-extension [filename real-content-type-name]
   (try
-    (let [^MimeType mimetype-by-name (.forName mimetypes real-content-type)
-          extension-from-mimetype
-          (if-let [mt mimetype-by-name]
-            (.getExtension mt)
-            "")
+    (let [^MimeType mimetype-by-name (.forName mimetypes real-content-type-name)
+          extension-from-mimetype    (if-let [mt mimetype-by-name]
+                                       (.getExtension mt)
+                                       "")
           [fname]                    (fs/split-ext filename)]
       (format "%s%s" fname extension-from-mimetype))
     (catch MimeTypeException e
