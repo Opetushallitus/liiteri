@@ -2,8 +2,7 @@
   (:require [taoensso.timbre :as log]
             [ring.util.http-response :as http-response]
             [me.raynes.fs :as fs])
-  (:import (org.apache.tika.io TikaInputStream)
-           (org.apache.tika Tika)
+  (:import (org.apache.tika Tika)
            (org.apache.tika.mime MimeType MimeTypes MimeTypeException)))
 
 (def ^Tika detector (Tika.))
