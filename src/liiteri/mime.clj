@@ -29,7 +29,7 @@
       (format "%s%s" fname extension-from-mimetype))
     (catch MimeTypeException e
       (log/warn
-       (str "Could not get extension for content-type '" real-content-type "', exception: " (.getMessage e)))
+       (str "Could not get extension for content-type '" real-content-type-name "', exception: " (.getMessage e)))
       (first (fs/split-ext filename)))))
 
 (defn file->validated-file-spec! [config filename tempfile size]
