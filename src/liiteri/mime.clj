@@ -1,12 +1,13 @@
 (ns liiteri.mime
   (:require [taoensso.timbre :as log]
             [ring.util.http-response :as http-response]
-            [me.raynes.fs :as fs])
+            [me.raynes.fs :as fs]
+            [clojure.java.io])
   (:import (org.apache.tika Tika)
            (org.apache.tika.config TikaConfig)
            (org.apache.tika.mime MimeType MimeTypes MimeTypeException)))
 
-(def ^TikaConfig tikaConfig (TikaConfig. "src/liiteri/tika-config.xml")) ;; needed for excluding some parsers
+(def ^TikaConfig tikaConfig (TikaConfig. (.getCanonicalPath (clojure.java.io/file "./tika-config.xml")))) ;; config needed for excluding some parsers
 (def ^Tika detector (Tika. tikaConfig))
 (def ^MimeTypes mimetypes (MimeTypes/getDefaultMimeTypes))
 
