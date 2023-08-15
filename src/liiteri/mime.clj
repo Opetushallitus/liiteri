@@ -7,7 +7,7 @@
            (org.apache.tika.config TikaConfig)
            (org.apache.tika.mime MimeType MimeTypes MimeTypeException)))
 
-(def ^TikaConfig tikaConfig (TikaConfig. (.getCanonicalPath (clojure.java.io/file "./tika-config.xml")))) ;; config needed for excluding some parsers
+(def ^TikaConfig tikaConfig (TikaConfig. (.getCanonicalPath (clojure.java.io/file "./src/liiteri/tika-config.xml")))) ;; config needed for excluding some parsers
 (def ^Tika detector (Tika. tikaConfig))
 (def ^MimeTypes mimetypes (MimeTypes/getDefaultMimeTypes))
 
