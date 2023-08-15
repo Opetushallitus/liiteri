@@ -3,9 +3,11 @@
             [ring.util.http-response :as http-response]
             [me.raynes.fs :as fs])
   (:import (org.apache.tika Tika)
+           (org.apache.tika.config TikaConfig)
            (org.apache.tika.mime MimeType MimeTypes MimeTypeException)))
 
-(def ^Tika detector (Tika.))
+(def ^TikaConfig tikaConfig (TikaConfig. "resources/tika-config.xml")) ;; needed for excluding some parsers
+(def ^Tika detector (Tika. tikaConfig))
 (def ^MimeTypes mimetypes (MimeTypes/getDefaultMimeTypes))
 
 (defn detect-mime-type [file-or-stream-or-buffer]
