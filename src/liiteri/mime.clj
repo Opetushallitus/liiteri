@@ -1,11 +1,18 @@
 (ns liiteri.mime
   (:require [taoensso.timbre :as log]
             [ring.util.http-response :as http-response]
-            [pantomime.mime :as mime]
-            [me.raynes.fs :as fs]))
+            [me.raynes.fs :as fs]
+            [clojure.java.io :as io])
+  (:import (org.apache.tika Tika)
+           (org.apache.tika.config TikaConfig)
+           (org.apache.tika.mime MimeType MimeTypes MimeTypeException)))
+
+(def ^TikaConfig tikaConfig (TikaConfig. (io/resource "tika-config.xml"))) ;; config needed for excluding some parsers
+(def ^Tika detector (Tika. tikaConfig))
+(def ^MimeTypes mimetypes (MimeTypes/getDefaultMimeTypes))
 
 (defn detect-mime-type [file-or-stream-or-buffer]
-  (mime/mime-type-of file-or-stream-or-buffer))
+  (.detect detector file-or-stream-or-buffer))
 
 (defn validate-file-content-type! [config filename real-content-type]
   (let [allowed-mime-types (-> config :file-store :attachment-mime-types)]
@@ -15,10 +22,18 @@
                                              :allowed-content-types allowed-mime-types}))
       real-content-type)))
 
-(defn fix-extension [filename real-content-type]
-  (let [extension-from-mimetype (mime/extension-for-name real-content-type)
-        [fname] (fs/split-ext filename)]
-    (format "%s%s" fname extension-from-mimetype)))
+(defn fix-extension [filename real-content-type-name]
+  (try
+    (let [^MimeType mimetype-by-name (.forName mimetypes real-content-type-name)
+          extension-from-mimetype    (if-let [mt mimetype-by-name]
+                                       (.getExtension mt)
+                                       "")
+          [fname]                    (fs/split-ext filename)]
+      (format "%s%s" fname extension-from-mimetype))
+    (catch MimeTypeException e
+      (log/warn
+       (str "Could not get extension for content-type '" real-content-type-name "', exception: " (.getMessage e)))
+      (first (fs/split-ext filename)))))
 
 (defn file->validated-file-spec! [config filename tempfile size]
   (let [detected-content-type (detect-mime-type tempfile)

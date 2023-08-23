@@ -17,6 +17,7 @@
    :jpg  "image/jpeg"
    :png  "image/png"
    :gif  "image/gif"
+   :heic  "image/heic"
    :rtf  "application/rtf"
    :pdf  "application/pdf"
    :odt  "application/vnd.oasis.opendocument.text"
@@ -30,6 +31,7 @@
 
 (def ok-files [(load-test-file {:filename "sample.doc" :content-type (:doc file-types)})
                (load-test-file {:filename "sample.docx" :content-type (:docx file-types)})
+               (load-test-file {:filename "sample.heic" :content-type (:heic file-types)})
                (load-test-file {:filename "sample.jpg" :content-type (:jpg file-types)})
                (load-test-file {:filename "sample.ods" :content-type (:ods file-types)})
                (load-test-file {:filename "sample.odt" :content-type (:odt file-types)})
@@ -42,6 +44,7 @@
 (def mangled-extension-files [(load-mangled-extension-test-file {:mangled-filename "sample.docx" :filename "sample.doc" :content-type (:doc file-types)})
                               (load-mangled-extension-test-file {:mangled-filename "sample.doc" :filename "sample.docx" :content-type (:docx file-types)})
                               (load-mangled-extension-test-file {:mangled-filename "sample.png" :filename "sample.jpg" :content-type (:jpg file-types)})
+                              (load-mangled-extension-test-file {:mangled-filename "sample.qt" :filename "sample.heic" :content-type (:heic file-types)})
                               (load-mangled-extension-test-file {:mangled-filename "sample.xls" :filename "sample.ods" :content-type (:ods file-types)})
                               (load-mangled-extension-test-file {:mangled-filename "sample.doc" :filename "sample.odt" :content-type (:odt file-types)})
                               (load-mangled-extension-test-file {:mangled-filename "sample.doc" :filename "sample.pdf" :content-type (:pdf file-types)})
