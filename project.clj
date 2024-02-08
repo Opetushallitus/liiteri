@@ -44,6 +44,7 @@
                  [org.apache.tika/tika-core "2.9.1"]
                  [org.apache.tika/tika-parsers-standard-package "2.9.1"]
                  [org.apache.commons/commons-compress "1.19"]
+                 [commons-io/commons-io "2.15.1"]
                  [jarohen/chime "0.2.2"]
                  [clj-http "3.10.0"]
                  [aleph "0.4.6"]

@@ -5,9 +5,7 @@
             [liiteri.mime :as mime]
             [taoensso.timbre :as log]
             [liiteri.files.file-store :as file-store])
-  (:import (java.util.concurrent Executors TimeUnit ScheduledFuture)
-           (org.apache.tika.io TikaInputStream)
-           (java.io InputStream)))
+  (:import (java.util.concurrent Executors TimeUnit ScheduledFuture)))
 
 (def mime-type-for-failed-cases "application/octet-stream")
 
@@ -17,10 +15,6 @@
   (let [status-str (if (= status :successful) "OK" "FAILED")]
     (log/info (str "Mime type fix took " elapsed-time " ms, status " status-str " for file " filename " with key " file-key " (" content-type ")"))))
 
-(defn- drain-stream [stream]
-  (let [buffer (byte-array 65536)]
-    (while (> (.read stream buffer) 0))))
-
 (defn fix-mime-type-of-file [conn
                              storage-engine
                              {file-key :key
@@ -29,17 +23,14 @@
   (let [start-time (System/currentTimeMillis)]
     (try
       (log/info (str "Fixing mime type of '" filename "' with key '" file-key "', uploaded on " uploaded " ..."))
-      (with-open [^InputStream file                  (file-store/get-file storage-engine file-key)
-                  ^TikaInputStream tika-input-stream (TikaInputStream/get file)]
-        (let [detected-content-type (mime/detect-mime-type tika-input-stream)
-              fixed-filename        (mime/fix-extension filename detected-content-type)
-              names-for-logging     (if (= filename fixed-filename)
-                                      fixed-filename
-                                      (str fixed-filename " (originally '" filename "')"))]
-          (drain-stream file)
-          (metadata-store/set-content-type-and-filename! file-key fixed-filename detected-content-type conn)
-          (log-mime-type-fix-result file-key names-for-logging detected-content-type :successful (- (System/currentTimeMillis) start-time))
-          true))
+      (let [detected-content-type (mime/detect-mime-type #(file-store/get-file storage-engine file-key))
+            fixed-filename        (mime/fix-extension filename detected-content-type)
+            names-for-logging     (if (= filename fixed-filename)
+                                    fixed-filename
+                                    (str fixed-filename " (originally '" filename "')"))]
+        (metadata-store/set-content-type-and-filename! file-key fixed-filename detected-content-type conn)
+        (log-mime-type-fix-result file-key names-for-logging detected-content-type :successful (- (System/currentTimeMillis) start-time))
+        true)
       (catch Exception e
         (log/error e (str "Failed to fix mime type of file '" filename "' with key '" file-key "', uploaded on " uploaded " : " (.getMessage e)))
         (metadata-store/set-content-type-and-filename! file-key filename mime-type-for-failed-cases conn)
