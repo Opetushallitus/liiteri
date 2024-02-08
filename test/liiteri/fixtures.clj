@@ -25,7 +25,8 @@
    :docx "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
    :ods  "application/vnd.oasis.opendocument.spreadsheet"
    :xls  "application/vnd.ms-excel"
-   :xlsx "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})
+   :xlsx "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+   :mp4 "video/mp4"})
 
 (def forbidden-files [(load-test-file {:filename "sample.exe" :content-type (:exe file-types)})])
 
@@ -39,7 +40,8 @@
                (load-test-file {:filename "sample.png" :content-type (:png file-types)})
                (load-test-file {:filename "sample.txt" :content-type (:txt file-types)})
                (load-test-file {:filename "sample.xls" :content-type (:xls file-types)})
-               (load-test-file {:filename "sample.xlsx" :content-type (:xlsx file-types)})])
+               (load-test-file {:filename "sample.xlsx" :content-type (:xlsx file-types)})
+               (load-test-file {:filename "sample.mp4" :content-type (:mp4 file-types)})])
 
 (def mangled-extension-files [(load-mangled-extension-test-file {:mangled-filename "sample.docx" :filename "sample.doc" :content-type (:doc file-types)})
                               (load-mangled-extension-test-file {:mangled-filename "sample.doc" :filename "sample.docx" :content-type (:docx file-types)})
