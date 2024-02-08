@@ -25,7 +25,7 @@
   (get-size-and-file [this file-key]
     (let [base-path (get-in config [:file-store :filesystem :base-path])
           path      (str base-path "/" file-key)]
-      [0 (io/input-stream (io/file path))])))
+      {:size 0 :file (io/input-stream (io/file path))})))
 
 (defn new-store []
   (map->FilesystemStore {}))
