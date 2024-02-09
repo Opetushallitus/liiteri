@@ -59,7 +59,8 @@
  :virkailija-host "http://localhost"
  :server {:port 16832}
  :access-log {:path "/tmp/access_liiteri"}
- :audit-log {:path "/tmp/app_liiteri.log"}
+ :audit-log {:path "/tmp/auditlog_liiteri.log"}
+ :app-log {:path "/tmp/app_liiteri.log"}
  :antivirus {:clamav-url "http://localhost:8765"
              :mock? false
              :poll-interval-seconds 5
