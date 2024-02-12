@@ -16,7 +16,7 @@
                          [org.clojure/tools.reader "1.3.2"]
                          [org.apache.pdfbox/pdfbox "2.0.17"]]
 
-  :dependencies [[org.clojure/clojure "1.10.1"]
+  :dependencies [[org.clojure/clojure "1.11.1"]
                  [com.amazonaws/aws-java-sdk-s3 "1.11.641"]
                  [camel-snake-kebab "0.4.0"]
                  [cheshire "5.9.0"]
