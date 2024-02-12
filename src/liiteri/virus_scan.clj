@@ -8,27 +8,12 @@
             [com.stuartsierra.component :as component]
             [liiteri.db.file-metadata-store :as metadata-store]
             [liiteri.files.file-store :as file-store]
-            [clj-http.client :as http-client]
-            [ring.util.http-response :as response]
-            [taoensso.timbre :as log])
-  (:import java.util.concurrent.TimeUnit))
-
-(def ^:private successful-resp-body "Everything ok : true\n")
-(def ^:private failed-resp-body "Everything ok : false\n")
-(def ^:private mock-filename-virus-pattern #"(?i)eicar|virus")
+            [taoensso.timbre :as log]
+            [cheshire.core :as json])
+  (:import [com.amazonaws.services.sqs.model ReceiveMessageRequest]))
 
 (defn- mock-enabled? [config]
   (true? (get-in config [:antivirus :mock?])))
-
-(defn- wait-randomly []
-  (Thread/sleep (rand-int 10000)))
-
-(defn- mock-scan-file [filename]
-  (let [scan-failed (re-find mock-filename-virus-pattern filename)
-        result      (if scan-failed
-                      failed-resp-body
-                      successful-resp-body)]
-    (response/ok result)))
 
 (defn- log-virus-scan-result [file-key filename content-type config status elapsed-time]
   (let [status-str (string/upper-case (name status))]
@@ -41,87 +26,79 @@
     (when (= (:virus-scan-status status) "failed")
       (log/error "FINAL: Scan of file " filename " with key " file-key " (" content-type ") will not be retried"))))
 
-(defn- scan-file [conn
-                  storage-engine
-                  config
-                  {file-key     :key
-                   filename     :filename
-                   content-type :content-type}]
-  (let [clamav-url         (str (get-in config [:antivirus :clamav-url]) "/scan")
-        max-retry-count    (get-in config [:antivirus :max-retry-count])
-        retry-wait-minutes (get-in config [:antivirus :retry-wait-minutes])]
-    (try
-      (log/info (str "Virus scan for " filename " with key " file-key))
-      (let [file         (.get-file storage-engine file-key)
-            start-time   (System/currentTimeMillis)
-            scan-result  (if (mock-enabled? config)
-                           (mock-scan-file filename)
-                           (http-client/post clamav-url {:multipart        [{:name "file" :content file :filename filename}
-                                                                            {:name "name" :content filename}]
-                                                         :throw-exceptions false
-                                                         :socket-timeout   (.toMillis TimeUnit/MINUTES 22)
-                                                         :conn-timeout     (.toMillis TimeUnit/SECONDS 2)}))
-            elapsed-time (- (System/currentTimeMillis) start-time)]
-        (cond (= (:status scan-result) 200)
-              (if (= (:body scan-result) "Everything ok : true\n")
-                (do
-                  (log-virus-scan-result file-key filename content-type config :ok elapsed-time)
-                  (metadata-store/set-virus-scan-status! file-key "done" conn))
-                (do
-                  (log-virus-scan-result file-key filename content-type config :virus-found elapsed-time)
-                  (file-store/delete-file-and-metadata file-key "liiteri-virus-scan" storage-engine conn false)
-                  (metadata-store/set-virus-scan-status! file-key "virus_found" conn)))
-              (= (:status scan-result) 503)
-              (log/warn "Failed to scan file" filename "with key" file-key ": Service Unavailable")
-              :else
-              (mark-and-log-failure file-key filename content-type max-retry-count retry-wait-minutes conn)))
-      (catch Exception e
-        (log/warn e (str "Got exception when scanning file " filename " with key " file-key " (" content-type ") using Clamav at " clamav-url))
-        (mark-and-log-failure file-key filename content-type max-retry-count retry-wait-minutes conn)))))
-
-(defn- scan-next-file [db storage-engine config]
-  (try
-    (jdbc/with-db-transaction [tx db]
-      (let [conn {:connection tx}]
-        (when-let [file (metadata-store/get-unscanned-file conn)]
-          (scan-file conn storage-engine config file))))
-    (catch Exception e
-      (log/error e "Failed to scan the next file"))))
-
-(defn- scan-files [db storage-engine config]
-  (loop []
-    (when (mock-enabled? config)
-      (wait-randomly))
-    (when (scan-next-file db storage-engine config)
-      (recur))))
+(defn- poll-scan-results [sqs-client result-queue-url db storage-engine config]
+  (doseq [message (-> (.receiveMessage sqs-client (-> (ReceiveMessageRequest. result-queue-url)
+                                                     (.withWaitTimeSeconds (int 0))))
+                     (.getMessages))]
+    (let [scan-result (json/parse-string (.getBody message) true)]
+       (when [= (:bucket scan-result) (get-in config [:file-store :s3 :bucket])]
+          (let [file-key (:key scan-result)
+                custom-data (json/parse-string (:custom_data scan-result) true)
+                start-time (:start-time custom-data)
+                elapsed-time (- (System/currentTimeMillis) start-time)
+                filename (:filename custom-data)
+                content-type (:content-type custom-data)]
+          (jdbc/with-db-transaction [tx db]
+            (let [conn {:connection tx}]
+              (case (:status scan-result)
+                "clean" (do
+                          (log-virus-scan-result file-key filename content-type config :ok elapsed-time)
+                          (metadata-store/set-virus-scan-status! file-key "done" conn))
+                "infected" (do
+                             (log-virus-scan-result file-key filename content-type config :virus-found elapsed-time)
+                             (file-store/delete-file-and-metadata file-key "liiteri-virus-scan" storage-engine conn false)
+                             (metadata-store/set-virus-scan-status! file-key "virus_found" conn))
+                (mark-and-log-failure file-key filename content-type 0 0 conn)))))))
+      (.deleteMessage sqs-client result-queue-url (.getReceiptHandle message))))
 
 (defprotocol Scanner
-  (scan-files! [this]))
+  (request-file-scan [this file-key filename content-type]))
 
-(defrecord VirusScanner [db storage-engine config]
+(defrecord VirusScanner [db storage-engine config sqs-client]
   component/Lifecycle
 
   (start [this]
-    (let [poll-interval (get-in config [:antivirus :poll-interval-seconds])
+    (let [result-queue-name (get-in config [:bucketav :scan-result-queue-name])
+          result-queue-url (-> (.getQueueUrl (:sqs-client sqs-client) result-queue-name)
+                                (.getQueueUrl))
+          poll-interval (get-in config [:antivirus :poll-interval-seconds])
           times         (c/chime-ch (p/periodic-seq (t/now) (t/seconds poll-interval))
                                     {:ch (a/chan (a/sliding-buffer 1))})]
-      (log/info "Starting virus scan process")
+      (log/info "Starting virus scan results polling")
       (a/go-loop []
         (when-let [_ (a/<! times)]
-          (scan-files db storage-engine config)
+          (poll-scan-results (:sqs-client sqs-client) result-queue-url db storage-engine config)
           (recur)))
-      (assoc this :chan times)))
+      (assoc this :chan times))
+
+    (let [request-queue-name (get-in config [:bucketav :scan-request-queue-name])
+          request-queue-url (-> (.getQueueUrl (:sqs-client sqs-client) request-queue-name)
+                                (.getQueueUrl))
+          s3-bucket (get-in config [:file-store :s3 :bucket])]
+      (assoc this :request-queue-url request-queue-url
+                  :sqs-client (:sqs-client sqs-client)
+                  :s3-bucket s3-bucket)))
 
   (stop [this]
     (when-let [chan (:chan this)]
       (a/close! chan))
-    (log/info "Stopped virus scan process")
-    (assoc this :chan nil))
+    (log/info "Stopped virus scan results polling")
+    (assoc this :chan nil
+                :request-queue-url nil
+                :sqs-client nil
+                :s3-bucket nil))
 
   Scanner
 
-  (scan-files! [this]
-    (scan-files db storage-engine config)))
+  (request-file-scan [this file-key filename content-type]
+    (log/info (str "Requested file scan for " file-key ", to bucket " (:s3-bucket this)))
+    (.sendMessage (:sqs-client this) (:request-queue-url this)
+                  (json/generate-string {:objects [{
+                                                    :bucket (:s3-bucket this)
+                                                    :key file-key
+                                                    :custom_data (json/generate-string {:start-time (System/currentTimeMillis)
+                                                                                        :filename filename
+                                                                                        :content-type content-type})}]}))))
 
 (defn new-scanner []
   (map->VirusScanner {}))

@@ -18,6 +18,7 @@
 
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [com.amazonaws/aws-java-sdk-s3 "1.11.641"]
+                 [com.amazonaws/aws-java-sdk-sqs "1.11.641"]
                  [camel-snake-kebab "0.4.0"]
                  [cheshire "5.9.0"]
                  [clj-time "0.15.2"]

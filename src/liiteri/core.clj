@@ -16,7 +16,9 @@
             [liiteri.preview.preview-generator :as preview-generator]
             [taoensso.timbre :as log]
             [taoensso.timbre.appenders.3rd-party.rolling :refer [rolling-appender]]
-            [timbre-ns-pattern-level :as pattern-level])
+            [timbre-ns-pattern-level :as pattern-level]
+            [liiteri.sqs-client :as sqs-client]
+            [liiteri.local :as local])
   (:import [java.util TimeZone])
   (:gen-class))
 
@@ -53,7 +55,7 @@
 
            :server (component/using
                      (server/new-server)
-                     [:storage-engine :login-cas-client :kayttooikeus-cas-client :session-store :db :config :audit-logger])
+                     [:storage-engine :login-cas-client :kayttooikeus-cas-client :session-store :db :config :audit-logger :virus-scan])
 
            :migrations (component/using
                          (migrations/new-migration)
@@ -61,7 +63,7 @@
 
            :virus-scan (component/using
                          (virus-scan/new-scanner)
-                         [:db :storage-engine :config :migrations])
+                         [:db :storage-engine :config :migrations :sqs-client])
 
            :file-cleaner (component/using
                            (file-cleaner/new-cleaner false)
@@ -78,6 +80,10 @@
            :preview-generator (component/using
                                 (preview-generator/new-preview-generator)
                                 [:db :storage-engine :config :migrations])
+
+           :sqs-client (component/using (sqs-client/new-client) [:config])
+
+           :local (component/using (local/new-local) [:config :sqs-client])
 
            (case (get-in config [:file-store :engine])
              :filesystem [:storage-engine (component/using

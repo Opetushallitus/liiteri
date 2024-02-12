@@ -22,7 +22,8 @@
             [ring.util.http-response :as response]
             [ring.swagger.upload]
             [schema.core :as s]
-            [taoensso.timbre :as log]))
+            [taoensso.timbre :as log]
+            [liiteri.virus-scan :as virus-scan]))
 
 (defn- dev? []
   (= (:dev? env) "true"))
@@ -57,7 +58,7 @@
     (log/error "Missing user rights: " (-> session :identity :rights))
     (response/unauthorized!)))
 
-(defn api-routes [{:keys [storage-engine db config audit-logger]}]
+(defn api-routes [{:keys [storage-engine db config audit-logger virus-scan]}]
   (api/context "/api" []
     :tags ["liiteri"]
 
@@ -97,12 +98,14 @@
       (check-authorization! session)
       (when (> (count keys) 0)
         (file-metadata-store/finalize-files keys origin-system origin-reference {:connection db})
-        (doseq [key keys]
-          (audit-log/log audit-logger
-                         (audit-log/user session x-real-ip user-agent)
-                         audit-log/operation-finalize
-                         (audit-log/file-target key)
-                         audit-log/no-changes)))
+        (let [metadata (file-metadata-store/get-metadata keys {:connection db})]
+          (doseq [{key :key filename :filename content-type :content-type} metadata]
+            (virus-scan/request-file-scan virus-scan key filename content-type)
+            (audit-log/log audit-logger
+                           (audit-log/user session x-real-ip user-agent)
+                           audit-log/operation-finalize
+                           (audit-log/file-target key)
+                           audit-log/no-changes))))
       (response/ok))
 
     (api/GET "/files/metadata" {session :session}
