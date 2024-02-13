@@ -1,18 +1,13 @@
 (ns liiteri.file-store-test
   (:require [clj-time.core :as t]
-            [clojure.java.jdbc :as jdbc]
-            [clojure.java.io :as io]
             [clojure.test :refer :all]
             [liiteri.core :as system]
             [liiteri.db.file-metadata-store :as metadata-store]
             [liiteri.db.test-metadata-store :as test-metadata-store]
             [liiteri.files.file-store :as file-store]
-            [liiteri.file-cleaner :as cleaner]
-            [liiteri.test-utils :as u]
-            [taoensso.timbre :as log])
+            [liiteri.test-utils :as u])
   (:import [java.util UUID]
-           [java.sql Timestamp]
-           [java.io File]))
+           [java.sql Timestamp]))
 
 (def system (atom (system/new-system)))
 (def metadata1 (atom nil))
@@ -20,20 +15,19 @@
 (def metadata3 (atom nil))
 (def metadata4 (atom nil))
 (def metadata5 (atom nil))
-(def file1 (atom nil))
-(def file2 (atom nil))
-(def file3 (atom nil))
-(def file4 (atom nil))
-(def file5 (atom nil))
+
+(def application-key1 "1.2.246.562.11.000000000000000000001")
+(def application-key2 "1.2.246.562.11.000000000000000000002")
+(def application-key3 "1.2.246.562.11.000000000000000000003")
+(def application-key4 "1.2.246.562.11.000000000000000000004")
+(def application-key5 "1.2.246.562.11.000000000000000000005")
 
 (use-fixtures :once
               (fn [tests]
                 (u/start-system system)
-                (u/create-temp-dir system)
                 (tests)
                 (u/clear-database! system)
-                (u/stop-system system)
-                (u/remove-temp-dir system)))
+                (u/stop-system system)))
 
 (defn- init-test-files [uploaded deleted]
   (let [filename1 "test-file.txt"
@@ -46,23 +40,14 @@
         file-key3 (str (UUID/randomUUID))
         file-key4 (str (UUID/randomUUID))
         file-key5 (str (UUID/randomUUID))
-        application-key1 "1.2.246.562.11.000000000000000000001"
-        application-key2 "1.2.246.562.11.000000000000000000002"
-        application-key3 "1.2.246.562.11.000000000000000000003"
-        application-key4 "1.2.246.562.11.000000000000000000003"
         origin-system "Test-system"
         conn {:connection (:db @system)}
-        base-dir (get-in (:config @system) [:file-store :filesystem :base-path])]
-    (with-open [w (io/writer (str base-dir "/" file-key1))]
-      (.write w "test file\n"))
-    (with-open [w (io/writer (str base-dir "/" file-key2))]
-      (.write w "test file2\n"))
-    (with-open [w (io/writer (str base-dir "/" file-key3))]
-      (.write w "test file3\n"))
-    (with-open [w (io/writer (str base-dir "/" file-key4))]
-      (.write w "test file4\n"))
-    (with-open [w (io/writer (str base-dir "/" file-key4))]
-      (.write w "test file5\n"))
+        store (:storage-engine @system)]
+    (file-store/create-file-from-bytearray store (.getBytes "test file1") file-key1)
+    (file-store/create-file-from-bytearray store (.getBytes "test file2") file-key2)
+    (file-store/create-file-from-bytearray store (.getBytes "test file3") file-key3)
+    (file-store/create-file-from-bytearray store (.getBytes "test file4") file-key4)
+    (file-store/create-file-from-bytearray store (.getBytes "test file5") file-key5)
     (reset! metadata1 (test-metadata-store/create-file {:key              file-key1
                                                         :filename         filename1
                                                         :content-type     "text/plain"
@@ -102,13 +87,8 @@
                                                         :uploaded         uploaded
                                                         :deleted          deleted
                                                         :origin-system    origin-system
-                                                        :origin-reference application-key4}
-                                                       conn))
-    (reset! file1 (io/file (str base-dir "/" file-key1)))
-    (reset! file2 (io/file (str base-dir "/" file-key2)))
-    (reset! file3 (io/file (str base-dir "/" file-key3)))
-    (reset! file4 (io/file (str base-dir "/" file-key4)))
-    (reset! file5 (io/file (str base-dir "/" file-key5)))))
+                                                        :origin-reference application-key5}
+                                                       conn))))
 
 (defn- remove-test-files []
   (metadata-store/delete-file (:key @metadata1) "file-store-test" {:connection (:db @system)} false)
@@ -116,11 +96,11 @@
   (metadata-store/delete-file (:key @metadata3) "file-store-test" {:connection (:db @system)} false)
   (metadata-store/delete-file (:key @metadata4) "file-store-test" {:connection (:db @system)} false)
   (metadata-store/delete-file (:key @metadata5) "file-store-test" {:connection (:db @system)} false)
-  (io/delete-file @file1 true)
-  (io/delete-file @file2 true)
-  (io/delete-file @file3 true)
-  (io/delete-file @file4 true)
-  (io/delete-file @file5 true))
+  (file-store/delete-file (:storage-engine @system) (:key @metadata1))
+  (file-store/delete-file (:storage-engine @system) (:key @metadata2))
+  (file-store/delete-file (:storage-engine @system) (:key @metadata3))
+  (file-store/delete-file (:storage-engine @system) (:key @metadata4))
+  (file-store/delete-file (:storage-engine @system) (:key @metadata5)))
 
 (use-fixtures :each
               (fn [tests]
@@ -140,8 +120,10 @@
                     (Timestamp.))]
     (init-test-files uploaded deleted)
 
-    (file-store/delete-files-and-metadata-by-origin-references ["1.2.246.562.11.000000000000000000002"
-                                                                "1.2.246.562.11.000000000000000000003"
+    (file-store/delete-files-and-metadata-by-origin-references [application-key2
+                                                                application-key3
+                                                                application-key4
+                                                                application-key5
                                                                 "1.2.246.562.11.000000000000000000009"]
                                                                "file-store-test"
                                                                storage-engine
@@ -158,8 +140,8 @@
       (is (some? (:deleted metadata3)))
       (is (some? (:deleted metadata4)))
       (is (some? (:deleted metadata5)))
-      (is (.exists (File. (.getPath @file1))))
-      (is (not (.exists (File. (.getPath @file2)))))
-      (is (not (.exists (File. (.getPath @file3)))))
-      (is (not (.exists (File. (.getPath @file4)))))
-      (is (not (.exists (File. (.getPath @file5))))))))
+      (is (file-store/file-exists? (:storage-engine @system) (:key metadata1)))
+      (is (not (file-store/file-exists? (:storage-engine @system) (:key metadata2))))
+      (is (not (file-store/file-exists? (:storage-engine @system) (:key metadata3))))
+      (is (not (file-store/file-exists? (:storage-engine @system) (:key metadata4))))
+      (is (not (file-store/file-exists? (:storage-engine @system) (:key metadata5)))))))

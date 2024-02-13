@@ -66,7 +66,9 @@
   :plugins [[lein-environ "1.1.0"]
             [lein-resource "17.06.1"]]
 
-  :env     {:dev? "true"}
+  :env     {:dev? "true"
+            :aws-access-key "localstack"
+            :aws-secret-key "localstack"}
 
   :profiles {:dev        {:dependencies   [[reloaded.repl "0.2.4"]]
                           :repl-options   {:init-ns user}
