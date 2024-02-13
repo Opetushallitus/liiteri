@@ -58,24 +58,23 @@
   component/Lifecycle
 
   (start [this]
-    (let [result-queue-name (get-in config [:bucketav :scan-result-queue-name])
+    (let [request-queue-name (get-in config [:bucketav :scan-request-queue-name])
+          request-queue-url (-> (.getQueueUrl (:sqs-client sqs-client) request-queue-name)
+                                (.getQueueUrl))
+          result-queue-name (get-in config [:bucketav :scan-result-queue-name])
           result-queue-url (-> (.getQueueUrl (:sqs-client sqs-client) result-queue-name)
                                 (.getQueueUrl))
           poll-interval (get-in config [:antivirus :poll-interval-seconds])
           times         (c/chime-ch (p/periodic-seq (t/now) (t/seconds poll-interval))
-                                    {:ch (a/chan (a/sliding-buffer 1))})]
+                                    {:ch (a/chan (a/sliding-buffer 1))})
+          s3-bucket (get-in config [:file-store :s3 :bucket])]
       (log/info "Starting virus scan results polling")
       (a/go-loop []
         (when-let [_ (a/<! times)]
           (poll-scan-results (:sqs-client sqs-client) result-queue-url db storage-engine config)
           (recur)))
-      (assoc this :chan times))
-
-    (let [request-queue-name (get-in config [:bucketav :scan-request-queue-name])
-          request-queue-url (-> (.getQueueUrl (:sqs-client sqs-client) request-queue-name)
-                                (.getQueueUrl))
-          s3-bucket (get-in config [:file-store :s3 :bucket])]
-      (assoc this :request-queue-url request-queue-url
+      (assoc this :chan times
+                  :request-queue-url request-queue-url
                   :sqs-client (:sqs-client sqs-client)
                   :s3-bucket s3-bucket)))
 

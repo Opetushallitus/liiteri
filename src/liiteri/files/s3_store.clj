@@ -32,7 +32,10 @@
                         (.getContentLength))
           content   (.getObjectContent s3-object)]
       {:size length
-       :file content})))
+       :file content}))
+
+  (file-exists? [this file-key]
+    (.doesObjectExist (:s3-client s3-client) (bucket-name config) file-key)))
 
 (defn new-store []
   (map->S3Store {}))
