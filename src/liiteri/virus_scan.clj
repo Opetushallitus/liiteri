@@ -30,26 +30,31 @@
   (doseq [message (-> (.receiveMessage sqs-client (-> (ReceiveMessageRequest. result-queue-url)
                                                      (.withWaitTimeSeconds (int 0))))
                      (.getMessages))]
-    (let [scan-result (json/parse-string (.getBody message) true)]
-       (when [= (:bucket scan-result) (get-in config [:file-store :s3 :bucket])]
+    (try
+      (let [message (json/parse-string (.getBody message) true)
+            scan-result (json/parse-string (:Message message) true)]
+        (when [= (:bucket scan-result) (get-in config [:file-store :s3 :bucket])]
           (let [file-key (:key scan-result)
-                custom-data (json/parse-string (:custom_data scan-result) true)
+                custom-data (json/parse-string (:custom_data scan-result "{}") true)
                 start-time (:start-time custom-data)
-                elapsed-time (- (System/currentTimeMillis) start-time)
+                elapsed-time (if start-time (- (System/currentTimeMillis) start-time) nil)
                 filename (:filename custom-data)
                 content-type (:content-type custom-data)]
-          (jdbc/with-db-transaction [tx db]
-            (let [conn {:connection tx}]
-              (case (:status scan-result)
-                "clean" (do
-                          (log-virus-scan-result file-key filename content-type config :ok elapsed-time)
-                          (metadata-store/set-virus-scan-status! file-key "done" conn))
-                "infected" (do
-                             (log-virus-scan-result file-key filename content-type config :virus-found elapsed-time)
-                             (file-store/delete-file-and-metadata file-key "liiteri-virus-scan" storage-engine conn false)
-                             (metadata-store/set-virus-scan-status! file-key "virus_found" conn))
-                (mark-and-log-failure file-key filename content-type 0 0 conn)))))))
-      (.deleteMessage sqs-client result-queue-url (.getReceiptHandle message))))
+            (jdbc/with-db-transaction [tx db]
+                                      (let [conn {:connection tx}]
+                                        (case (:status scan-result)
+                                          "clean" (do
+                                                    (log-virus-scan-result file-key filename content-type config :ok elapsed-time)
+                                                    (metadata-store/set-virus-scan-status! file-key "done" conn))
+                                          "infected" (do
+                                                       (log-virus-scan-result file-key filename content-type config :virus-found elapsed-time)
+                                                       (file-store/delete-file-and-metadata file-key "liiteri-virus-scan" storage-engine conn false)
+                                                       (metadata-store/set-virus-scan-status! file-key "virus_found" conn))
+                                          (mark-and-log-failure file-key filename content-type 0 0 conn)))))))
+      (.deleteMessage sqs-client result-queue-url (.getReceiptHandle message))
+      (catch Exception e
+        (log/error e (str "Failed to process scan result for message: " (.getBody message)))
+        ))))
 
 (defprotocol Scanner
   (request-file-scan [this file-key filename content-type]))

@@ -53,10 +53,11 @@
         (let [custom-data (json/parse-string (:custom_data scan-request) true)
               filename (:filename custom-data)
               scan-failed (re-find mock-filename-virus-pattern filename)]
-              (.sendMessage sqs-client result-queue-url (json/generate-string {:bucket (:bucket scan-request)
-                                                                               :key (:key scan-request)
-                                                                               :status (if scan-failed "infected" "clean")
-                                                                               :custom_data (:custom_data scan-request)}))))
+              (.sendMessage sqs-client result-queue-url
+                            (json/generate-string {:Message (json/generate-string {:bucket (:bucket scan-request)
+                                                             :key (:key scan-request)
+                                                             :status (if scan-failed "infected" "clean")
+                                                             :custom_data (:custom_data scan-request)})}))))
       (.deleteMessage sqs-client request-queue-url (.getReceiptHandle message)))
    (catch Exception e
      (log/error e "Failed to process scan request"))))

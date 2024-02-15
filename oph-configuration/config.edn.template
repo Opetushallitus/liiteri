@@ -62,6 +62,8 @@
  :access-log {:path "{{liiteri_accesslog_path}}"}
  :audit-log {:path "{{liiteri_auditlog_path}}"}
  :app-log {:path "{{liiteri_applog_path}}"}
+ :bucketav {:scan-request-queue-name "{{liiteri_scan_request_queue_name}}"
+            :scan-result-queue-name "{{liiteri_scan_result_queue_name}}"}
  :antivirus {:clamav-url "{{liiteri_clamav_url}}"
              :mock? {{liiteri_antivirus_mock_mode}}
              :poll-interval-seconds {{liiteri_antivirus_poll_interval_seconds}}
