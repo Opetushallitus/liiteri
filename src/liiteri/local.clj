@@ -6,7 +6,8 @@
             [com.stuartsierra.component :as component]
             [environ.core :refer [env]]
             [taoensso.timbre :as log]
-            [cheshire.core :as json])
+            [cheshire.core :as json]
+            [clojure.java.io :as io])
   (:import [com.amazonaws.services.sqs.model ReceiveMessageRequest]))
 
 (def ^:private mock-filename-virus-pattern #"(?i)eicar|virus")
@@ -41,7 +42,11 @@
             (when (empty? (filter (fn [bucket] (= bucket-name (.getName bucket))) buckets))
                   (log/info (str "creating bucket " bucket-name))
                   (let [bucket (.createBucket s3-client bucket-name)]
-                       (log/info (str "created bucket: " (.getName bucket)))))))
+                       (log/info (str "created bucket: " (.getName bucket))))
+                  (.putObject s3-client
+                              bucket-name
+                              "4555c853-2a56-491f-b217-6e15a86aa0a8"
+                              (io/file (io/resource "three_page_pdf_for_testing.pdf"))))))
 
 (defn- poll-scan-requests [sqs-client request-queue-url result-queue-url]
   (try

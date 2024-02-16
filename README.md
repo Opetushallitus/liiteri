@@ -52,14 +52,6 @@ Quick start:
 
 ```make start```
 
-To get temporary AWS credentials for accessing S3 locally, run [bin/create-aws-temp-creds.sh](bin/create-aws-temp-creds.sh) .
-
-Use its output to add the neccessary JVM_OPTS for running the service, e.g. by
-
-```bash
-$ JVM_OPTS="-Daws.accessKeyId=access-key -Daws.secretKey=secret-key -Daws.sessionToken=session-token"  lein repl
-```
-
 When the REPL prompt opens, you can start the service by invoking
 
 ```clojure
@@ -71,3 +63,15 @@ When you make changes to any files, run `(reset)` again.
 Other REPL commands are as documented in the [reloaded.repl](https://github.com/weavejester/reloaded.repl) workflow.
 
 The server runs on <http://localhost:16832/liiteri> by default. See <http://localhost:16832/liiteri/api-docs/index.html> for the Swagger API documentation.
+
+In local setup, Localstack is used for S3. At startup /dev/resources/three_page_pdf_for_testing.pdf is loaded under the key
+"4555c853-2a56-491f-b217-6e15a86aa0a8". You can load additional files and inspect the bucket with aws cli by
+specifying the endpoint, e.g.:
+
+```
+export AWS_ACCESS_KEY_ID=localstack
+export AWS_SECRET_ACCESS_KEY=localstack
+aws s3 cp dev-resources/three_page_pdf_for_testing.pdf s3://opintopolku-untuva-liiteri/4555c853-2a56-491f-b217-6e15a86aa0a9 --endpoint-url http://localhost:4566
+aws s3 ls s3://opintopolku-local-liiteri --endpoint-url http://localhost:4566
+```
+
