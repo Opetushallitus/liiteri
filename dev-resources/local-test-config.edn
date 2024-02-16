@@ -60,12 +60,8 @@
  :audit-log {:path "/tmp/auditlog_liiteri.log"}
  :app-log {:path "/tmp/app_liiteri.log"}
  :bucketav {:scan-request-queue-name "bucketav-scan-requests"
-            :scan-result-queue-name "bucketav-scan-results"}
- :antivirus {:clamav-url            "http://localhost:8765"
-             :mock?                 true
-             :poll-interval-seconds 5
-             :max-retry-count 5
-             :retry-wait-minutes 5}
+            :scan-result-queue-name "bucketav-scan-results"
+            :poll-interval-seconds 5}
  :file-cleaner {:poll-interval-seconds 100}
  :file-delete-cleaner {:poll-interval-seconds 100}
  :mime-fixer {:poll-interval-seconds 5}

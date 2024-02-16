@@ -8,10 +8,7 @@
             [liiteri.virus-scan :as virus-scan])
   (:import [java.util UUID]))
 
-(def system (atom (system/new-system {:antivirus {:mock?                 false
-                                                  :poll-interval-seconds 5
-                                                  :max-retry-count       5
-                                                  :retry-wait-minutes    0}})))
+(def system (atom (system/new-system {})))
 (def metadata (atom nil))
 
 (defn- init-test-file []

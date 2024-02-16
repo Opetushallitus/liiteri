@@ -12,13 +12,9 @@
             [cheshire.core :as json])
   (:import [com.amazonaws.services.sqs.model ReceiveMessageRequest]))
 
-(defn- mock-enabled? [config]
-  (true? (get-in config [:antivirus :mock?])))
-
-(defn- log-virus-scan-result [file-key filename content-type config status elapsed-time]
+(defn- log-virus-scan-result [file-key filename content-type status elapsed-time]
   (let [status-str (string/upper-case (name status))]
-    (log/info (str "Virus scan took " elapsed-time " ms, status " status-str " for file " filename " with key " file-key " (" content-type ")"
-                   (when (mock-enabled? config) ", virus scan process in mock mode")))))
+    (log/info (str "Virus scan took " elapsed-time " ms, status " status-str " for file " filename " with key " file-key " (" content-type ")"))))
 
 (defn- mark-and-log-failure [file-key filename content-type max-retry-count retry-wait-minutes conn]
   (let [status (metadata-store/mark-virus-scan-for-retry-or-fail file-key max-retry-count retry-wait-minutes conn)]
@@ -44,10 +40,10 @@
                                       (let [conn {:connection tx}]
                                         (case (:status scan-result)
                                           "clean" (do
-                                                    (log-virus-scan-result file-key filename content-type config :ok elapsed-time)
+                                                    (log-virus-scan-result file-key filename content-type :ok elapsed-time)
                                                     (metadata-store/set-virus-scan-status! file-key "done" conn))
                                           "infected" (do
-                                                       (log-virus-scan-result file-key filename content-type config :virus-found elapsed-time)
+                                                       (log-virus-scan-result file-key filename content-type :virus-found elapsed-time)
                                                        (file-store/delete-file-and-metadata file-key "liiteri-virus-scan" storage-engine conn false)
                                                        (metadata-store/set-virus-scan-status! file-key "virus_found" conn))
                                           (mark-and-log-failure file-key filename content-type 0 0 conn)))))))
@@ -69,7 +65,7 @@
           result-queue-name (get-in config [:bucketav :scan-result-queue-name])
           result-queue-url (-> (.getQueueUrl (:sqs-client sqs-client) result-queue-name)
                                 (.getQueueUrl))
-          poll-interval (get-in config [:antivirus :poll-interval-seconds])
+          poll-interval (get-in config [:bucketav :poll-interval-seconds])
           times         (c/chime-ch (p/periodic-seq (t/now) (t/seconds poll-interval))
                                     {:ch (a/chan (a/sliding-buffer 1))})
           s3-bucket (get-in config [:file-store :s3 :bucket])]
