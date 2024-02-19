@@ -22,9 +22,7 @@
             [ring.util.http-response :as response]
             [ring.swagger.upload]
             [schema.core :as s]
-            [taoensso.timbre :as log])
-  (:import (java.io InputStream)
-           (org.apache.tika.io TikaInputStream)))
+            [taoensso.timbre :as log]))
 
 (defn- dev? []
   (= (:dev? env) "true"))
@@ -73,18 +71,15 @@
       :path-params [key :- (api/describe s/Str "Key of the file")]
       (check-authorization! session)
       (try
-        (let [{:keys [size file]} (file-store/get-size-and-file storage-engine key)]
-          (with-open [^InputStream raw-file file
-                      ^TikaInputStream tika-stream (TikaInputStream/get raw-file)]
-            (fail-if-file-extension-blacklisted! filename)
-            (let [resp (-> (mime/file->validated-file-spec! config filename tika-stream size)
-                           (file-store/create-metadata key origin-system origin-reference {:connection db}))]
-              (audit-log/log audit-logger
-                             (audit-log/user session x-real-ip user-agent)
-                             audit-log/operation-new
-                             (audit-log/file-target (:key resp))
-                             (audit-log/new-file-changes resp))
-              (response/ok resp))))
+        (fail-if-file-extension-blacklisted! filename)
+        (let [metadata (mime/file->validated-file-spec! config filename #(file-store/get-size-and-file storage-engine key))
+              resp (file-store/create-metadata metadata key origin-system origin-reference {:connection db})]
+          (audit-log/log audit-logger
+                         (audit-log/user session x-real-ip user-agent)
+                         audit-log/operation-new
+                         (audit-log/file-target (:key resp))
+                         (audit-log/new-file-changes resp))
+          (response/ok resp))
         (catch IllegalArgumentException e
           (log/warn (format "File failed upload validation: %s", (.getMessage e)))
           (response/bad-request! (get-in (ex-data e) [:response :body])))
