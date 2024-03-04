@@ -6,8 +6,10 @@
       :port-number       16433
       :minimum-idle      20
       :maximum-pool-size 20}
- :file-store {:engine :filesystem
-              :filesystem {:base-path "/tmp/liiteri-tests"}
+ :file-store {:engine :s3
+              :s3 {:bucket "opintopolku-local-liiteri"
+                   :region "eu-west-1"
+                   }
               :attachment-mime-types ["text/plain"
                                       "image/jpeg"
                                       "image/png"
@@ -57,11 +59,9 @@
  :access-log {:path "/tmp/access_liiteri"}
  :audit-log {:path "/tmp/auditlog_liiteri.log"}
  :app-log {:path "/tmp/app_liiteri.log"}
- :antivirus {:clamav-url            "http://localhost:8765"
-             :mock?                 true
-             :poll-interval-seconds 5
-             :max-retry-count 5
-             :retry-wait-minutes 5}
+ :bucketav {:scan-request-queue-name "bucketav-scan-requests"
+            :scan-result-queue-name "bucketav-scan-results"
+            :poll-interval-seconds 5}
  :file-cleaner {:poll-interval-seconds 100}
  :file-delete-cleaner {:poll-interval-seconds 100}
  :mime-fixer {:poll-interval-seconds 5}

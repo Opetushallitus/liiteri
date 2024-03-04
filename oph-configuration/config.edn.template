@@ -62,11 +62,9 @@
  :access-log {:path "{{liiteri_accesslog_path}}"}
  :audit-log {:path "{{liiteri_auditlog_path}}"}
  :app-log {:path "{{liiteri_applog_path}}"}
- :antivirus {:clamav-url "{{liiteri_clamav_url}}"
-             :mock? {{liiteri_antivirus_mock_mode}}
-             :poll-interval-seconds {{liiteri_antivirus_poll_interval_seconds}}
-             :max-retry-count {{liiteri_antivirus_max_retry_count | default('5')}}
-             :retry-wait-minutes {{liiteri_antivirus_retry_wait_minutes | default('5')}}}
+ :bucketav {:scan-request-queue-name "{{liiteri_scan_request_queue_name}}"
+            :scan-result-queue-name "{{liiteri_scan_result_queue_name}}"
+            :poll-interval-seconds {{liiteri_antivirus_poll_interval_seconds}}}
  :file-cleaner {:poll-interval-seconds {{liiteri_file_cleaner_poll_interval_seconds}}}
  :file-delete-cleaner {:poll-interval-seconds {{liiteri_file_delete_cleaner_poll_interval_seconds | default('100') }}}
  :mime-fixer {:poll-interval-seconds {{liiteri_mime_fixer_poll_interval_seconds | default('5') }}}

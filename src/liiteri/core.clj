@@ -4,7 +4,6 @@
             [liiteri.config :as config]
             [liiteri.auth.cas-client :as cas]
             [liiteri.db :as db]
-            [liiteri.files.filesystem-store :as filesystem-store]
             [liiteri.files.s3-client :as s3-client]
             [liiteri.files.s3-store :as s3-store]
             [liiteri.migrations :as migrations]
@@ -16,7 +15,9 @@
             [liiteri.preview.preview-generator :as preview-generator]
             [taoensso.timbre :as log]
             [taoensso.timbre.appenders.3rd-party.rolling :refer [rolling-appender]]
-            [timbre-ns-pattern-level :as pattern-level])
+            [timbre-ns-pattern-level :as pattern-level]
+            [liiteri.sqs-client :as sqs-client]
+            [liiteri.local :as local])
   (:import [java.util TimeZone])
   (:gen-class))
 
@@ -32,7 +33,7 @@
                         :middleware     [(pattern-level/middleware {"com.zaxxer.hikari.HikariConfig" :debug
                                                                     :all                             :info})]
                         :output-fn      (partial log/default-output-fn {:stacktrace-fonts {}})})
-    (apply component/system-map
+    (component/system-map
            :config config
 
            :login-cas-client (delay (cas/new-cas-client config))
@@ -53,7 +54,7 @@
 
            :server (component/using
                      (server/new-server)
-                     [:storage-engine :login-cas-client :kayttooikeus-cas-client :session-store :db :config :audit-logger])
+                     [:storage-engine :login-cas-client :kayttooikeus-cas-client :session-store :db :config :audit-logger :virus-scan])
 
            :migrations (component/using
                          (migrations/new-migration)
@@ -61,7 +62,7 @@
 
            :virus-scan (component/using
                          (virus-scan/new-scanner)
-                         [:db :storage-engine :config :migrations])
+                         [:db :storage-engine :config :migrations :sqs-client])
 
            :file-cleaner (component/using
                            (file-cleaner/new-cleaner false)
@@ -79,16 +80,17 @@
                                 (preview-generator/new-preview-generator)
                                 [:db :storage-engine :config :migrations])
 
-           (case (get-in config [:file-store :engine])
-             :filesystem [:storage-engine (component/using
-                                            (filesystem-store/new-store)
-                                            [:config])]
-             :s3 [:s3-client (component/using
-                               (s3-client/new-client)
-                               [:config])
-                  :storage-engine (component/using
-                                    (s3-store/new-store)
-                                    [:s3-client :config])]))))
+           :sqs-client (component/using (sqs-client/new-client) [:config])
+
+           :s3-client (component/using
+                        (s3-client/new-client)
+                        [:config])
+
+           :storage-engine (component/using
+                             (s3-store/new-store)
+                             [:s3-client :config])
+
+           :local (component/using (local/new-local) [:config :sqs-client :s3-client]))))
 
 (defn -main [& _]
   (let [_ (component/start-system (new-system))]

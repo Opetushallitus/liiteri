@@ -30,6 +30,7 @@ jobs:
           git clone https://github.com/Opetushallitus/ci-tools.git
           source ci-tools/common/setup-tools.sh
           docker run --name liiteri-test-db -e POSTGRES_PASSWORD=oph -e POSTGRES_USER=oph -e POSTGRES_DB=liiteri -p 16433:5432 -d postgres:11
+          docker run --name liiteri-localstack -p 4566:4566 -d localstack/localstack:3.0.1
           npm install
           CONFIG=dev-resources/local-test-config.edn ./bin/cibuild.sh run-tests
 

@@ -16,8 +16,9 @@
                          [org.clojure/tools.reader "1.3.2"]
                          [org.apache.pdfbox/pdfbox "2.0.17"]]
 
-  :dependencies [[org.clojure/clojure "1.10.1"]
+  :dependencies [[org.clojure/clojure "1.11.1"]
                  [com.amazonaws/aws-java-sdk-s3 "1.11.641"]
+                 [com.amazonaws/aws-java-sdk-sqs "1.11.641"]
                  [camel-snake-kebab "0.4.0"]
                  [cheshire "5.9.0"]
                  [clj-time "0.15.2"]
@@ -65,7 +66,9 @@
   :plugins [[lein-environ "1.1.0"]
             [lein-resource "17.06.1"]]
 
-  :env     {:dev? "true"}
+  :env     {:dev? "true"
+            :aws-access-key "localstack"
+            :aws-secret-key "localstack"}
 
   :profiles {:dev        {:dependencies   [[reloaded.repl "0.2.4"]]
                           :repl-options   {:init-ns user}

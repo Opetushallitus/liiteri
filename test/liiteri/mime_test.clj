@@ -4,7 +4,7 @@
             [liiteri.fixtures :refer :all]
             [clojure.test :refer :all]
             [taoensso.timbre :as log])
-  (:import (java.io FileInputStream)))
+  (:import [java.io FileInputStream]))
 
 (def config (config/new-config))
 

@@ -10,7 +10,9 @@
 
   (get-file [this file-key])
 
-  (get-size-and-file [this file-key]))
+  (get-size-and-file [this file-key])
+
+  (file-exists? [this file-key]))
 
 (defn create-metadata [file key origin-system origin-reference conn]
   (let [file-spec (assoc (select-keys file [:filename :content-type :size]) :key key :origin-system origin-system :origin-reference origin-reference)]

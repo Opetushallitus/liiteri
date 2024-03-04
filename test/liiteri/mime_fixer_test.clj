@@ -15,12 +15,10 @@
 (use-fixtures :once
               (fn [tests]
                 (u/start-system system)
-                (u/create-temp-dir system)
                 (component/stop (:mime-fixer @system))
                 (tests)
                 (u/clear-database! system)
-                (u/stop-system system)
-                (u/remove-temp-dir system)))
+                (u/stop-system system)))
 
 (deftest mime-fixer-ok-files
   (let [store (u/new-in-memory-store)

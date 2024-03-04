@@ -18,21 +18,6 @@
     (jdbc/db-do-commands datasource ["DROP SCHEMA IF EXISTS public CASCADE"
                                      "CREATE SCHEMA public"])))
 
-(defn- temp-dir [system]
-  (-> (get-in (:config @system) [:file-store :filesystem :base-path])
-      (io/file)))
-
-(defn create-temp-dir [system]
-  (.mkdirs (temp-dir system)))
-
-(defn remove-temp-dir [system]
-  (letfn [(remove-node [node]
-            (when (.isDirectory node)
-              (doseq [child-node (.listFiles node)]
-                (remove-node child-node)))
-            (io/delete-file node))]
-    (remove-node (temp-dir system))))
-
 (def files-atom (atom {}))
 
 (defrecord InMemoryS3Store [config]
