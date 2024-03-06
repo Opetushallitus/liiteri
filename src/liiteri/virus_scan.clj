@@ -23,34 +23,39 @@
       (log/error "FINAL: Scan of file " filename " with key " file-key " (" content-type ") will not be retried"))))
 
 (defn- poll-scan-results [sqs-client result-queue-url db storage-engine config]
-  (doseq [message (-> (.receiveMessage sqs-client (-> (ReceiveMessageRequest. result-queue-url)
-                                                     (.withWaitTimeSeconds (int 0))))
-                     (.getMessages))]
-    (try
-      (let [message (json/parse-string (.getBody message) true)
-            scan-result (json/parse-string (:Message message) true)]
-        (when [= (:bucket scan-result) (get-in config [:file-store :s3 :bucket])]
-          (let [file-key (:key scan-result)
-                custom-data (json/parse-string (:custom_data scan-result "{}") true)
-                start-time (:start-time custom-data)
-                elapsed-time (if start-time (- (System/currentTimeMillis) start-time) nil)
-                filename (:filename custom-data)
-                content-type (:content-type custom-data)]
-            (jdbc/with-db-transaction [tx db]
-                                      (let [conn {:connection tx}]
-                                        (case (:status scan-result)
-                                          "clean" (do
-                                                    (log-virus-scan-result file-key filename content-type :ok elapsed-time)
-                                                    (metadata-store/set-virus-scan-status! file-key "done" conn))
-                                          "infected" (do
-                                                       (log-virus-scan-result file-key filename content-type :virus-found elapsed-time)
-                                                       (file-store/delete-file-and-metadata file-key "liiteri-virus-scan" storage-engine conn false)
-                                                       (metadata-store/set-virus-scan-status! file-key "virus_found" conn))
-                                          (mark-and-log-failure file-key filename content-type 0 0 conn)))))))
-      (.deleteMessage sqs-client result-queue-url (.getReceiptHandle message))
-      (catch Exception e
-        (log/error e (str "Failed to process scan result for message: " (.getBody message)))
-        ))))
+  (try
+     (let [messages (-> (.receiveMessage sqs-client (-> (ReceiveMessageRequest. result-queue-url)
+                                                        (.withWaitTimeSeconds (int 1)))) ; wait time of 1 second is to enable long polling which means we get answers from all sqs servers
+                        (.getMessages))]
+       (doseq [message messages]
+         (try
+           (let [message (json/parse-string (.getBody message) true)
+                 scan-result (json/parse-string (:Message message) true)]
+             (when [= (:bucket scan-result) (get-in config [:file-store :s3 :bucket])]
+               (let [file-key (:key scan-result)
+                     custom-data (json/parse-string (:custom_data scan-result "{}") true)
+                     start-time (:start-time custom-data)
+                     elapsed-time (if start-time (- (System/currentTimeMillis) start-time) nil)
+                     filename (:filename custom-data)
+                     content-type (:content-type custom-data)]
+                 (jdbc/with-db-transaction [tx db]
+                                           (let [conn {:connection tx}]
+                                             (case (:status scan-result)
+                                               "clean" (do
+                                                         (log-virus-scan-result file-key filename content-type :ok elapsed-time)
+                                                         (metadata-store/set-virus-scan-status! file-key "done" conn))
+                                               "infected" (do
+                                                            (log-virus-scan-result file-key filename content-type :virus-found elapsed-time)
+                                                            (file-store/delete-file-and-metadata file-key "liiteri-virus-scan" storage-engine conn false)
+                                                            (metadata-store/set-virus-scan-status! file-key "virus_found" conn))
+                                               (mark-and-log-failure file-key filename content-type 0 0 conn)))))))
+           (.deleteMessage sqs-client result-queue-url (.getReceiptHandle message))
+           (catch Exception e
+             (log/error e (str "Failed to process scan result for message: " (.getBody message))))))
+       (.size messages))
+     (catch Exception e
+       (log/error e "Failed to process messages from scan result queue")
+       0)))
 
 (defprotocol Scanner
   (request-file-scan [this file-key filename content-type]))
@@ -72,7 +77,7 @@
       (log/info "Starting virus scan results polling")
       (a/go-loop []
         (when-let [_ (a/<! times)]
-          (poll-scan-results (:sqs-client sqs-client) result-queue-url db storage-engine config)
+          (while (< 0 (poll-scan-results (:sqs-client sqs-client) result-queue-url db storage-engine config)))
           (recur)))
       (assoc this :chan times
                   :request-queue-url request-queue-url
