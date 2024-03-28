@@ -37,6 +37,7 @@
                                       "audio/3gpp2"
                                       "audio/mp3"
                                       "audio/m4a"
+                                      "audio/mp4"
                                       "audio/aiff"
                                       "audio/x-aiff"
                                       "audio/x-ms-wma"
