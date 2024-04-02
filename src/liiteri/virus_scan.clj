@@ -55,7 +55,10 @@
        (.size messages))
      (catch Exception e
        (log/error e "Failed to process messages from scan result queue")
-       0)))
+       0)
+     (catch Throwable t
+       (log/error t "Catastrophically failed to process messages from scan result queue")
+       (throw t))))
 
 (defprotocol Scanner
   (request-file-scan [this file-key filename content-type]))
