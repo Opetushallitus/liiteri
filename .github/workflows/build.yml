@@ -6,13 +6,17 @@ on:
     paths-ignore:
       - '**.md'
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
 
-      - uses: dcodeIO/setup-node-nvm@master
+      - uses: actions/setup-node@v4
         with:
           node-version: lts/*
 
@@ -21,15 +25,13 @@ jobs:
 
       - name: Run tests
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
           ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
           GA_BUILD_NUMBER: ${{ github.run_number }}
         run: |
           git clone https://github.com/Opetushallitus/ci-tools.git
           source ci-tools/common/setup-tools.sh
-          docker run --name liiteri-test-db -e POSTGRES_PASSWORD=oph -e POSTGRES_USER=oph -e POSTGRES_DB=liiteri -p 16433:5432 -d postgres:11
+          docker run --name liiteri-test-db -e POSTGRES_PASSWORD=oph -e POSTGRES_USER=oph -e POSTGRES_DB=liiteri -p 16433:5432 -d postgres:15
           docker run --name liiteri-localstack -p 4566:4566 -d localstack/localstack:3.0.1
           npm install
           CONFIG=dev-resources/local-test-config.edn ./bin/cibuild.sh run-tests
@@ -37,7 +39,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Prepare clojure env
         uses: ./.github/actions/prepare-clojure-env
@@ -45,7 +47,7 @@ jobs:
       - name: Build
         run: CONFIG=dev-resources/local-test-config.edn ./bin/cibuild.sh create-uberjar
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v4
         id: restore-build
         with:
           path: target
@@ -53,32 +55,12 @@ jobs:
 
   deploy:
     needs: [ test, build ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-
-      - uses: actions/cache@v2
-        id: restore-build
-        with:
-          path: target
-          key: ${{ github.sha }}
-
-      - name: Build and deploy Docker containers
-        shell: bash
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-          GA_BUILD_NUMBER: ${{ github.run_number }}
-        run: |
-          git clone https://github.com/Opetushallitus/ci-tools.git
-          source ci-tools/common/setup-tools.sh
-
-          export BASE_IMAGE="baseimage-fatjar-openjdk11:master"
-          ./ci-tools/common/pull-image.sh
-          cp -v ./target/liiteri.jar $DOCKER_BUILD_DIR/artifact/liiteri.jar 
-          cp -vr ./oph-configuration $DOCKER_BUILD_DIR/config/ 
-          ./ci-tools/github-build/build-fatjar.sh liiteri
-          ./ci-tools/github-build/upload-image.sh liiteri
-          ./ci-tools/common/clean-docker-build-dir.sh
+    uses: Opetushallitus/.github/.github/workflows/push-scan-java-ecr.yml@main
+    with:
+      application: liiteri
+      base-image: baseimage-fatjar-openjdk11:master
+      configfolder: oph-configuration
+      jarfile: liiteri.jar
+      jarfolder: target
+    secrets:
+      AWS_UTILITY_ROLE_ARN: ${{ secrets.AWS_OPH_UTILITY_ROLE_ARN }}
