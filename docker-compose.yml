@@ -1,7 +1,7 @@
 version: '3.2'
 services:
   liiteri-dev-db:
-    image: postgres:11
+    image: postgres:15
     environment:
       - POSTGRES_DB=liiteri
       - POSTGRES_PASSWORD=oph
@@ -9,7 +9,7 @@ services:
     ports:
       - "16432:5432"
   liiteri-test-db:
-    image: postgres:11
+    image: postgres:15
     environment:
       - POSTGRES_DB=liiteri
       - POSTGRES_PASSWORD=oph
