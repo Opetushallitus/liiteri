@@ -61,7 +61,7 @@
         get-metadata #(test-metadata-store/get-metadata-for-tests [(:key @metadata)] {:connection db})
         {:keys [key filename content-type]} (get-metadata)
         store (:storage-engine @system)]
-    (virus-scan/request-file-scan virus-scan key filename content-type)
+    (virus-scan/request-file-scan virus-scan [{:key key :filename filename :content-type content-type}])
     (wait-for-status "done" get-metadata)
     (is (file-store/file-exists? store key))))
 
@@ -71,7 +71,7 @@
         get-metadata #(test-metadata-store/get-metadata-for-tests [(:key @metadata)] {:connection db})
         {:keys [key content-type]} (get-metadata)
         store (:storage-engine @system)]
-    (virus-scan/request-file-scan virus-scan key "eicar" content-type)
+    (virus-scan/request-file-scan virus-scan [{:key key :filename "eicar" :content-type content-type}])
     (wait-for-status "virus_found" get-metadata)
     ; objects that fail virus scan get deleted
     (is (not (file-store/file-exists? store key)))))

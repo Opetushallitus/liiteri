@@ -7,7 +7,8 @@
             [environ.core :refer [env]]
             [taoensso.timbre :as log]
             [cheshire.core :as json]
-            [clojure.java.io :as io])
+            [clojure.java.io :as io]
+            [liiteri.sqs-client :refer [get-sqs-client]])
   (:import [com.amazonaws.services.sqs.model ReceiveMessageRequest]))
 
 (def ^:private mock-filename-virus-pattern #"(?i)eicar|virus")
@@ -67,21 +68,22 @@
    (catch Exception e
      (log/error e "Failed to process scan request"))))
 
-(defrecord Local [config sqs-client s3-client]
+(defrecord Local [config s3-client]
   component/Lifecycle
 
   (start [this]
     (if (dev?)
       (do
         (log/info "Setting up local environment" this)
-        (let [request-queue-url (ensure-queue-exists (:sqs-client sqs-client) (get-scan-request-queue-name config))
-              result-queue-url (ensure-queue-exists (:sqs-client sqs-client) (get-scan-result-queue-name config))
+        (let [sqs-client (get-sqs-client)
+              request-queue-url (ensure-queue-exists sqs-client (get-scan-request-queue-name config))
+              result-queue-url (ensure-queue-exists sqs-client (get-scan-result-queue-name config))
               times (c/chime-ch (p/periodic-seq (t/now) (t/seconds 1))
                                 {:ch (a/chan (a/sliding-buffer 1))})]
              (ensure-bucket-exists (:s3-client s3-client) (get-bucket-name config))
              (a/go-loop []
                (when-let [_ (a/<! times)]
-                         (poll-scan-requests (:sqs-client sqs-client) request-queue-url result-queue-url)
+                         (poll-scan-requests sqs-client request-queue-url result-queue-url)
                          (recur)))
              (assoc this :chan times)))
       this))
