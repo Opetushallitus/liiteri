@@ -20,10 +20,10 @@ JVM system properties on startup.
 
 ## Testing
 
-Tests require own separate database. You can start it with Docker by hand
+Tests require own separate database and Localstack. You can start them with Docker by hand
 
 ```bash
-$ docker run --name liiteri-test-db -e POSTGRES_PASSWORD=oph -e POSTGRES_USER=oph -e POSTGRES_DB=liiteri -p 5435:5432 -d postgres:11
+$ docker-compose up -d
 ```
 
 and then run tests once by invoking

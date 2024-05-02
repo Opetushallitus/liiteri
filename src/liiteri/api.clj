@@ -97,10 +97,10 @@
       :body-params [keys :- [s/Str]]
       (check-authorization! session)
       (when (> (count keys) 0)
-        (file-metadata-store/finalize-files keys origin-system origin-reference {:connection db})
         (let [metadata (file-metadata-store/get-metadata keys {:connection db})]
-          (doseq [{key :key filename :filename content-type :content-type} metadata]
-            (virus-scan/request-file-scan virus-scan key filename content-type)
+          (file-metadata-store/finalize-files keys origin-system origin-reference {:connection db})
+          (virus-scan/request-file-scan virus-scan (filter (fn [item] (not (:final item))) metadata))
+          (doseq [{key :key} metadata]
             (audit-log/log audit-logger
                            (audit-log/user session x-real-ip user-agent)
                            audit-log/operation-finalize

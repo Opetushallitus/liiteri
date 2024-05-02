@@ -8,6 +8,7 @@
             [com.stuartsierra.component :as component]
             [liiteri.db.file-metadata-store :as metadata-store]
             [liiteri.files.file-store :as file-store]
+            [liiteri.sqs-client :refer [get-sqs-client]]
             [taoensso.timbre :as log]
             [cheshire.core :as json])
   (:import [com.amazonaws.services.sqs.model ReceiveMessageRequest]))
@@ -61,17 +62,19 @@
        (throw t))))
 
 (defprotocol Scanner
-  (request-file-scan [this file-key filename content-type]))
+  (request-file-scan [this metadata]))
 
-(defrecord VirusScanner [db storage-engine config sqs-client]
+(defrecord VirusScanner [db storage-engine config]
   component/Lifecycle
 
   (start [this]
-    (let [request-queue-name (get-in config [:bucketav :scan-request-queue-name])
-          request-queue-url (-> (.getQueueUrl (:sqs-client sqs-client) request-queue-name)
+    (let [sqs-request-scan-client (get-sqs-client)
+          sqs-poll-results-client (get-sqs-client)
+          request-queue-name (get-in config [:bucketav :scan-request-queue-name])
+          request-queue-url (-> (.getQueueUrl sqs-request-scan-client request-queue-name)
                                 (.getQueueUrl))
           result-queue-name (get-in config [:bucketav :scan-result-queue-name])
-          result-queue-url (-> (.getQueueUrl (:sqs-client sqs-client) result-queue-name)
+          result-queue-url (-> (.getQueueUrl sqs-poll-results-client result-queue-name)
                                 (.getQueueUrl))
           poll-interval (get-in config [:bucketav :poll-interval-seconds])
           times         (c/chime-ch (p/periodic-seq (t/now) (t/seconds poll-interval))
@@ -80,11 +83,11 @@
       (log/info "Starting virus scan results polling")
       (a/go-loop []
         (when-let [_ (a/<! times)]
-          (while (< 0 (poll-scan-results (:sqs-client sqs-client) result-queue-url db storage-engine config)))
+          (while (< 0 (poll-scan-results sqs-poll-results-client result-queue-url db storage-engine config)))
           (recur)))
       (assoc this :chan times
                   :request-queue-url request-queue-url
-                  :sqs-client (:sqs-client sqs-client)
+                  :sqs-request-scan-client sqs-request-scan-client
                   :s3-bucket s3-bucket)))
 
   (stop [this]
@@ -93,20 +96,23 @@
     (log/info "Stopped virus scan results polling")
     (assoc this :chan nil
                 :request-queue-url nil
-                :sqs-client nil
+                :sqs-request-scan-client nil
                 :s3-bucket nil))
 
   Scanner
 
-  (request-file-scan [this file-key filename content-type]
-    (log/info (str "Requested file scan for " file-key ", to bucket " (:s3-bucket this)))
-    (.sendMessage (:sqs-client this) (:request-queue-url this)
-                  (json/generate-string {:objects [{
-                                                    :bucket (:s3-bucket this)
-                                                    :key file-key
-                                                    :custom_data (json/generate-string {:start-time (System/currentTimeMillis)
-                                                                                        :filename filename
-                                                                                        :content-type content-type})}]}))))
+  (request-file-scan [this metadata]
+    (doseq [file metadata]
+      (log/info (str "Requesting file scan for " (:key file) ", to bucket " (:s3-bucket this))))
+    (.sendMessage (:sqs-request-scan-client this) (:request-queue-url this)
+                  (json/generate-string {:objects
+                                         (map (fn [file]
+                                                {:bucket (:s3-bucket this)
+                                                 :key (:key file)
+                                                 :custom_data (json/generate-string {:start-time (System/currentTimeMillis)
+                                                                                     :filename (:filename file)
+                                                                                     :content-type (:content-type file)})})
+                                              metadata)}))))
 
 (defn new-scanner []
   (map->VirusScanner {}))

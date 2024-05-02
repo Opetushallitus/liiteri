@@ -16,7 +16,6 @@
             [taoensso.timbre :as log]
             [taoensso.timbre.appenders.3rd-party.rolling :refer [rolling-appender]]
             [timbre-ns-pattern-level :as pattern-level]
-            [liiteri.sqs-client :as sqs-client]
             [liiteri.local :as local])
   (:import [java.util TimeZone])
   (:gen-class))
@@ -62,7 +61,7 @@
 
            :virus-scan (component/using
                          (virus-scan/new-scanner)
-                         [:db :storage-engine :config :migrations :sqs-client])
+                         [:db :storage-engine :config :migrations])
 
            :file-cleaner (component/using
                            (file-cleaner/new-cleaner false)
@@ -80,8 +79,6 @@
                                 (preview-generator/new-preview-generator)
                                 [:db :storage-engine :config :migrations])
 
-           :sqs-client (component/using (sqs-client/new-client) [:config])
-
            :s3-client (component/using
                         (s3-client/new-client)
                         [:config])
@@ -90,7 +87,7 @@
                              (s3-store/new-store)
                              [:s3-client :config])
 
-           :local (component/using (local/new-local) [:config :sqs-client :s3-client]))))
+           :local (component/using (local/new-local) [:config :s3-client]))))
 
 (defn -main [& _]
   (let [_ (component/start-system (new-system))]

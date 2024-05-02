@@ -60,7 +60,7 @@ jobs:
       application: liiteri
       base-image: baseimage-fatjar-openjdk11:master
       configfolder: oph-configuration
-      jarfile: liiteri.jar
+      jarfile: liiteri
       jarfolder: target
     secrets:
       AWS_UTILITY_ROLE_ARN: ${{ secrets.AWS_OPH_UTILITY_ROLE_ARN }}
