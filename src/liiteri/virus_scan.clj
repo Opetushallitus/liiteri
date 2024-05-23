@@ -105,15 +105,16 @@
     (when (not-empty metadata)
       (doseq [file metadata]
         (log/info (str "Requesting file scan for " (:key file) ", to bucket " (:s3-bucket this))))
-      (.sendMessage (:sqs-request-scan-client this) (:request-queue-url this)
-                    (json/generate-string {:objects
-                                           (map (fn [file]
-                                                  {:bucket (:s3-bucket this)
-                                                   :key (:key file)
-                                                   :custom_data (json/generate-string {:start-time (System/currentTimeMillis)
-                                                                                       :filename (:filename file)
-                                                                                       :content-type (:content-type file)})})
-                                                metadata)})))))
+      (doseq [metadatapart (partition 10 10 [] metadata)]   ; BucketAV hyväksyy maksimissaan 10 tiedostoa kerrallaan
+        (.sendMessage (:sqs-request-scan-client this) (:request-queue-url this)
+                      (json/generate-string {:objects
+                                             (map (fn [file]
+                                                    {:bucket (:s3-bucket this)
+                                                     :key (:key file)
+                                                     :custom_data (json/generate-string {:start-time (System/currentTimeMillis)
+                                                                                         :filename (:filename file)
+                                                                                         :content-type (:content-type file)})})
+                                                  metadatapart)}))))))
 
 (defn new-scanner []
   (map->VirusScanner {}))

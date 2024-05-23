@@ -93,13 +93,14 @@
       :header-params [{x-real-ip :- s/Str nil}
                       {user-agent :- s/Str nil}]
       :query-params [{origin-system :- (api/describe (s/maybe s/Str) "Origin system - for example Ataru - optional") "tuntematon"}
-                     {origin-reference :- (api/describe (s/maybe s/Str) "Origin reference - for example Application key - optional") "tuntematon"}]
+                     {origin-reference :- (api/describe (s/maybe s/Str) "Origin reference - for example Application key - optional") "tuntematon"}
+                     {refinalize :- (api/describe (s/maybe s/Bool) "Refinalize - run finalization even if file already finalized - optional") "tuntematon"}]
       :body-params [keys :- [s/Str]]
       (check-authorization! session)
       (when (> (count keys) 0)
         (let [metadata (file-metadata-store/get-metadata keys {:connection db})]
           (file-metadata-store/finalize-files keys origin-system origin-reference {:connection db})
-          (virus-scan/request-file-scan virus-scan (filter (fn [item] (not (:final item))) metadata))
+          (virus-scan/request-file-scan virus-scan (filter (fn [item] (or (true? refinalize) (not (:final item)))) metadata))
           (doseq [{key :key} metadata]
             (audit-log/log audit-logger
                            (audit-log/user session x-real-ip user-agent)
