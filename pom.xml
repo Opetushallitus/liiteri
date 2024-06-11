@@ -18,7 +18,7 @@
     <url>https://github.com/Opetushallitus/liiteri</url>
     <connection>scm:git:git://github.com/Opetushallitus/liiteri.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/Opetushallitus/liiteri.git</developerConnection>
-    <tag>b66b838e07dc55fc4cf367595700cf5431f835dd</tag>
+    <tag>f8b60a8db2f3cdf4e3e9f07967d94d9109b60fbc</tag>
   </scm>
   <build>
     <sourceDirectory>src</sourceDirectory>
@@ -125,7 +125,7 @@
       <dependency>
         <groupId>org.apache.pdfbox</groupId>
         <artifactId>pdfbox</artifactId>
-        <version>2.0.17</version>
+        <version>3.0.2</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -303,22 +303,27 @@
     <dependency>
       <groupId>org.apache.pdfbox</groupId>
       <artifactId>pdfbox</artifactId>
-      <version>2.0.17</version>
+      <version>3.0.2</version>
     </dependency>
     <dependency>
       <groupId>com.github.jai-imageio</groupId>
       <artifactId>jai-imageio-core</artifactId>
-      <version>1.3.1</version>
+      <version>1.4.0</version>
     </dependency>
     <dependency>
       <groupId>com.github.jai-imageio</groupId>
       <artifactId>jai-imageio-jpeg2000</artifactId>
-      <version>1.3.0</version>
+      <version>1.4.0</version>
     </dependency>
     <dependency>
-      <groupId>com.levigo.jbig2</groupId>
-      <artifactId>levigo-jbig2-imageio</artifactId>
-      <version>2.0</version>
+      <groupId>com.twelvemonkeys.imageio</groupId>
+      <artifactId>imageio-jpeg</artifactId>
+      <version>3.11.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.pdfbox</groupId>
+      <artifactId>jbig2-imageio</artifactId>
+      <version>3.0.4</version>
     </dependency>
     <dependency>
       <groupId>ring</groupId>
