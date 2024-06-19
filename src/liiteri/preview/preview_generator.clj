@@ -6,7 +6,7 @@
             [liiteri.files.file-store :as file-store]
             [liiteri.preview.interface :as interface]
             [liiteri.preview.pdf :as pdf])
-  (:import (java.util.concurrent Executors TimeUnit ScheduledFuture)))
+  (:import (java.util.concurrent Executors TimeUnit ScheduledFuture FutureTask)))
 
 (def content-types-to-process (concat pdf/content-types))
 
@@ -24,6 +24,18 @@
                                 (count data-as-byte-array)
                                 conn))
 
+(defn with-timeout
+  ([f ms]
+   (let [task (FutureTask. f)
+         thread (Thread. task)]
+     (try
+       (.start thread)
+       (.get task ms TimeUnit/MILLISECONDS)
+       (catch Exception e
+         (.cancel task true)
+         (.stop thread)
+         (throw e))))))
+
 (defn generate-file-previews [config conn storage-engine file]
   (let [start-time (System/currentTimeMillis)
         {file-key :key
@@ -32,10 +44,11 @@
     (try
       (log/info (format "Generating previews for '%s' with key '%s', uploaded on %s ..." filename file-key uploaded))
       (with-open [input-stream (file-store/get-file storage-engine file-key)]
-        (let [[page-count previews] (interface/generate-previews-for-file storage-engine
+        (let [preview-timeout-ms    (get-in config [:preview-generator :preview-timeout-ms] 45000)
+              [page-count previews] (with-timeout #(interface/generate-previews-for-file storage-engine
                                                                           file
                                                                           input-stream
-                                                                          config)]
+                                                                          config) preview-timeout-ms)]
           (doseq [[page-index preview-as-byte-array] (map-indexed vector previews)]
             (let [preview-key      (str file-key "." page-index)
                   preview-filename preview-key]

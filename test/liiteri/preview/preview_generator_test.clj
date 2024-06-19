@@ -38,6 +38,13 @@
 
   (is (= 0 (count previews))))
 
+(defn- assert-preview-generation-errored [file-metadata previews]
+  (is (= nil (:page-count file-metadata)))
+  (is (= "error" (:preview-status file-metadata)))
+  (is (= 0 (count (:previews file-metadata))))
+
+  (is (= 0 (count previews))))
+
 (deftest previews-are-generated-for-pdf-files
   (let [store (u/new-in-memory-store)
         conn  {:connection (:db @system)}]
@@ -65,6 +72,32 @@
           (if (= "application/pdf" content-type)
             (assert-has-single-png-preview-page file-metadata-after-preview generated-previews)
             (assert-has-no-previews file-metadata-after-preview generated-previews)))))))
+
+(deftest preview-generation-fails-gracefully-after-timeout
+  (let [store (u/new-in-memory-store)
+        conn  {:connection (:db @system)}]
+    (doseq [{:keys [filename file-object content-type size]} fixtures/not-ok-preview-files]
+      (let [uploaded  (-> (t/now)
+                          (.getMillis)
+                          (Timestamp.))
+            origin-system "Test-system"
+            origin-reference "1.2.246.562.11.000000000000000000001"
+            file-spec {:key              filename
+                       :filename         filename
+                       :content-type     content-type
+                       :size             size
+                       :uploaded         uploaded
+                       :origin-system    origin-system
+                       :origin-reference origin-reference}]
+        (test-metadata-store/create-file file-spec conn)
+        (file-store/create-file store file-object filename)
+        (metadata-store/set-virus-scan-status! filename "done" conn)
+        (metadata-store/finalize-files [filename] origin-system origin-reference conn)
+        (preview-generator/generate-file-previews (:config @system) conn store file-spec)
+
+        (let [file-metadata-after-preview (first (metadata-store/get-normalized-metadata! [filename] conn))
+              generated-previews          (vec (metadata-store/get-previews filename conn))]
+          (assert-preview-generation-errored file-metadata-after-preview generated-previews))))))
 
 (deftest previews-are-deleted-when-file-is-deleted
   (let [store (u/new-in-memory-store)

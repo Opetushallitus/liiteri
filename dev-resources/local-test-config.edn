@@ -66,5 +66,6 @@
  :file-delete-cleaner {:poll-interval-seconds 100}
  :mime-fixer {:poll-interval-seconds 5}
  :preview-generator {:poll-interval-seconds 5
-                     :preview-page-count 19
+                     :preview-page-count 1024
+                     :preview-timeout-ms 4000
                      :pdf {:dpi 150}}}

@@ -1,10 +1,10 @@
 (ns liiteri.preview.pdf
   (:require [liiteri.preview.util :as util]
             [liiteri.preview.interface :as interface])
-  (:import (org.apache.pdfbox.pdmodel PDDocument)
+  (:import (org.apache.pdfbox Loader)
            (org.apache.pdfbox.rendering PDFRenderer ImageType)))
 
-(defn- bytes->pdf-document [^bytes pdfbytes] (PDDocument/load pdfbytes))
+(defn- bytes->pdf-document [^bytes pdfbytes] (Loader/loadPDF pdfbytes))
 (defn- get-page-count [pdf-document] (.getNumberOfPages pdf-document))
 
 (defn pdf->pngs [pdf-document _ max-page-count page-count dpi]

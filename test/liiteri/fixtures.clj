@@ -43,6 +43,8 @@
                (load-test-file {:filename "sample.xlsx" :content-type (:xlsx file-types)})
                (load-test-file {:filename "sample.mp4" :content-type (:mp4 file-types)})])
 
+(def not-ok-preview-files [(load-test-file {:filename "not-ok-sample.pdf" :content-type (:pdf file-types)})])
+
 (def mangled-extension-files [(load-mangled-extension-test-file {:mangled-filename "sample.docx" :filename "sample.doc" :content-type (:doc file-types)})
                               (load-mangled-extension-test-file {:mangled-filename "sample.doc" :filename "sample.docx" :content-type (:docx file-types)})
                               (load-mangled-extension-test-file {:mangled-filename "sample.png" :filename "sample.jpg" :content-type (:jpg file-types)})
