@@ -18,7 +18,7 @@
     <url>https://github.com/Opetushallitus/liiteri</url>
     <connection>scm:git:git://github.com/Opetushallitus/liiteri.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/Opetushallitus/liiteri.git</developerConnection>
-    <tag>b5aa9d43459c1a23d7b23c68d83998b01630685e</tag>
+    <tag>a5c5ab4da32205f2d9b01f28b95a10c007b0c49c</tag>
   </scm>
   <build>
     <sourceDirectory>src</sourceDirectory>
@@ -298,7 +298,7 @@
     <dependency>
       <groupId>aleph</groupId>
       <artifactId>aleph</artifactId>
-      <version>0.7.1</version>
+      <version>0.6.4</version>
     </dependency>
     <dependency>
       <groupId>me.raynes</groupId>
