@@ -15,6 +15,8 @@
                          [riddley/riddley "0.2.0"]
                          [org.clojure/tools.reader "1.3.2"]
                          [io.netty/netty-codec-http "4.1.60.Final"] ; fixes CVE-2021-21295
+                         [com.typesafe.akka/akka-actor_2.12 "2.5.16"]
+                         [io.undertow/undertow-core "2.3.5.Final"]
                          [org.apache.pdfbox/pdfbox "3.0.2"]]
 
   :dependencies [[org.clojure/clojure "1.11.2"]
