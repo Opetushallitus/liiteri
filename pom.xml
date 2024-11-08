@@ -18,7 +18,7 @@
     <url>https://github.com/Opetushallitus/liiteri</url>
     <connection>scm:git:git://github.com/Opetushallitus/liiteri.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/Opetushallitus/liiteri.git</developerConnection>
-    <tag>a5c5ab4da32205f2d9b01f28b95a10c007b0c49c</tag>
+    <tag>51d8a289e943aed6885d6fa089de955026a21755</tag>
   </scm>
   <build>
     <sourceDirectory>src</sourceDirectory>
@@ -126,6 +126,16 @@
         <groupId>io.netty</groupId>
         <artifactId>netty-codec-http</artifactId>
         <version>4.1.60.Final</version>
+      </dependency>
+      <dependency>
+        <groupId>com.typesafe.akka</groupId>
+        <artifactId>akka-actor_2.12</artifactId>
+        <version>2.5.16</version>
+      </dependency>
+      <dependency>
+        <groupId>io.undertow</groupId>
+        <artifactId>undertow-core</artifactId>
+        <version>2.3.5.Final</version>
       </dependency>
       <dependency>
         <groupId>org.apache.pdfbox</groupId>
