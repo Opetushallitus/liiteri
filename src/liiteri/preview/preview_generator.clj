@@ -33,10 +33,14 @@
       (log/info (format "Generating previews for '%s' with key '%s', uploaded on %s ..." filename file-key uploaded))
       (with-open [input-stream (file-store/get-file storage-engine file-key)]
         (let [preview-timeout-ms    (get-in config [:preview-generator :preview-timeout-ms] 45000)
-              [page-count previews] (.invokeAny timeout-scheduler [#(interface/generate-previews-for-file storage-engine
+              [page-count previews] (.invokeAny timeout-scheduler [#(try
+                                                                      (interface/generate-previews-for-file storage-engine
                                                                           file
                                                                           input-stream
-                                                                          config)] preview-timeout-ms TimeUnit/MILLISECONDS)]
+                                                                          config)
+                                                                      (catch Throwable t
+                                                                        (log/error t "Error in generating previews task")
+                                                                        (throw t)))] preview-timeout-ms TimeUnit/MILLISECONDS)]
           (doseq [[page-index preview-as-byte-array] (map-indexed vector previews)]
             (let [preview-key      (str file-key "." page-index)
                   preview-filename preview-key]
@@ -90,7 +94,7 @@
          (when (generate-next-preview config db storage-engine timeout-scheduler)
            (recur)))
        (catch Throwable t
-         (println "Unexpected throwable!")
+         (log/error t "Unexpected throwable!")
          (.printStackTrace t))))
 
 (defprotocol Generator

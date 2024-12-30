@@ -83,6 +83,7 @@
       (log/info "Starting virus scan results polling")
       (a/go-loop []
         (when-let [_ (a/<! times)]
+          (log/info "Polling for virus scan results")
           (while (< 0 (poll-scan-results sqs-poll-results-client result-queue-url db storage-engine config)))
           (recur)))
       (assoc this :chan times
