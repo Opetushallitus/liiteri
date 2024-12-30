@@ -8,8 +8,10 @@
             [liiteri.test-utils :as u]
             [liiteri.preview.preview-generator :as preview-generator]
             [com.stuartsierra.component :as component]
-            [clj-time.core :as t])
-  (:import [java.sql Timestamp]))
+            [clj-time.core :as t]
+            [taoensso.timbre :as log])
+  (:import [java.sql Timestamp]
+           (java.util.concurrent Executors)))
 
 (def system (atom (system/new-system {})))
 
@@ -65,7 +67,7 @@
         (file-store/create-file store file-object filename)
         (metadata-store/set-virus-scan-status! filename "done" conn)
         (metadata-store/finalize-files [filename] origin-system origin-reference conn)
-        (preview-generator/generate-file-previews (:config @system) conn store file-spec)
+        (preview-generator/generate-file-previews (:config @system) conn store file-spec (Executors/newCachedThreadPool))
 
         (let [file-metadata-after-preview (first (metadata-store/get-normalized-metadata! [filename] conn))
               generated-previews          (vec (metadata-store/get-previews filename conn))]
@@ -93,7 +95,7 @@
         (file-store/create-file store file-object filename)
         (metadata-store/set-virus-scan-status! filename "done" conn)
         (metadata-store/finalize-files [filename] origin-system origin-reference conn)
-        (preview-generator/generate-file-previews (:config @system) conn store file-spec)
+        (preview-generator/generate-file-previews (:config @system) conn store file-spec (Executors/newCachedThreadPool))
 
         (let [file-metadata-after-preview (first (metadata-store/get-normalized-metadata! [filename] conn))
               generated-previews          (vec (metadata-store/get-previews filename conn))]
@@ -119,7 +121,7 @@
         (file-store/create-file store file-object filename)
         (metadata-store/set-virus-scan-status! filename "done" conn)
         (metadata-store/finalize-files [filename] origin-system origin-reference conn)
-        (preview-generator/generate-file-previews (:config @system) conn store file-spec)
+        (preview-generator/generate-file-previews (:config @system) conn store file-spec (Executors/newCachedThreadPool))
 
         (file-store/delete-file-and-metadata (:key file-spec) "preview-generator-test" store conn false)
 
