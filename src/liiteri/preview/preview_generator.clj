@@ -6,7 +6,7 @@
             [liiteri.files.file-store :as file-store]
             [liiteri.preview.interface :as interface]
             [liiteri.preview.pdf :as pdf])
-  (:import (java.util.concurrent Executors TimeUnit ScheduledFuture FutureTask)))
+  (:import (java.util.concurrent Executors TimeUnit ScheduledFuture)))
 
 (def content-types-to-process (concat pdf/content-types))
 
@@ -24,19 +24,7 @@
                                 (count data-as-byte-array)
                                 conn))
 
-(defn with-timeout
-  ([f ms]
-   (let [task (FutureTask. f)
-         thread (Thread. task)]
-     (try
-       (.start thread)
-       (.get task ms TimeUnit/MILLISECONDS)
-       (catch Exception e
-         (.cancel task true)
-         (.stop thread)
-         (throw e))))))
-
-(defn generate-file-previews [config conn storage-engine file]
+(defn generate-file-previews [config conn storage-engine file timeout-scheduler]
   (let [start-time (System/currentTimeMillis)
         {file-key :key
          filename :filename
@@ -45,10 +33,14 @@
       (log/info (format "Generating previews for '%s' with key '%s', uploaded on %s ..." filename file-key uploaded))
       (with-open [input-stream (file-store/get-file storage-engine file-key)]
         (let [preview-timeout-ms    (get-in config [:preview-generator :preview-timeout-ms] 45000)
-              [page-count previews] (with-timeout #(interface/generate-previews-for-file storage-engine
+              [page-count previews] (.invokeAny timeout-scheduler [#(try
+                                                                      (interface/generate-previews-for-file storage-engine
                                                                           file
                                                                           input-stream
-                                                                          config) preview-timeout-ms)]
+                                                                          config)
+                                                                      (catch Throwable t
+                                                                        (log/error t "Error in generating previews task")
+                                                                        (throw t)))] preview-timeout-ms TimeUnit/MILLISECONDS)]
           (doseq [[page-index preview-as-byte-array] (map-indexed vector previews)]
             (let [preview-key      (str file-key "." page-index)
                   preview-filename preview-key]
@@ -80,14 +72,14 @@
         (metadata-store/set-file-page-count-and-preview-status! file-key nil "error" conn)
         false))))
 
-(defn- generate-next-preview [config db storage-engine]
+(defn- generate-next-preview [config db storage-engine timeout-scheduler]
   (try
     (jdbc/with-db-transaction [tx db]
       (let [conn {:connection tx}]
         (if-let [file (metadata-store/get-file-without-preview conn content-types-to-process)]
           (do
             (reset! were-unprocessed-files-found-on-last-run true)
-            (generate-file-previews config conn storage-engine file))
+            (generate-file-previews config conn storage-engine file timeout-scheduler))
           (do
             (when @were-unprocessed-files-found-on-last-run
               (log/info "Preview generation seems to be finished (or errored)."))
@@ -97,12 +89,12 @@
       (log/error e "Failed to generate preview for the next file")
       false)))
 
-(defn- generate-previews [config db storage-engine]
+(defn- generate-previews [config db storage-engine timeout-scheduler]
   (try (loop []
-         (when (generate-next-preview config db storage-engine)
+         (when (generate-next-preview config db storage-engine timeout-scheduler)
            (recur)))
        (catch Throwable t
-         (println "Unexpected throwable!")
+         (log/error t "Unexpected throwable!")
          (.printStackTrace t))))
 
 (defprotocol Generator
@@ -115,7 +107,8 @@
     (log/info "Starting document preview generation process...")
     (let [poll-interval            (get-in config [:preview-generator :poll-interval-seconds])
           scheduler                (Executors/newScheduledThreadPool 1)
-          preview-generator        #(generate-previews config db storage-engine)
+          timeout-scheduler        (Executors/newCachedThreadPool)
+          preview-generator        #(generate-previews config db storage-engine timeout-scheduler)
           time-unit                TimeUnit/SECONDS
           preview-generator-future (.scheduleAtFixedRate scheduler preview-generator 0 poll-interval time-unit)]
       (log/info (str "Started document preview generation process, restarting at " poll-interval " " time-unit " intervals."))
