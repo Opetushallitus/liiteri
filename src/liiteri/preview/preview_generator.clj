@@ -31,6 +31,9 @@
          uploaded :uploaded} file]
     (try
       (log/info (format "Generating previews for '%s' with key '%s', uploaded on %s ..." filename file-key uploaded))
+      ; Tämä on varotoimenpide tapauksille joissa generointi kaataa JVM:än. Ilman tilan päivitystä generointia yritään
+      ; aina uudestaan samoin (huonoin) tuloksin koska tiedosto on edelleen not started -tilassa.
+      (metadata-store/set-file-page-count-and-preview-status! file-key nil "started" conn)
       (with-open [input-stream (file-store/get-file storage-engine file-key)]
         (let [preview-timeout-ms    (get-in config [:preview-generator :preview-timeout-ms] 45000)
               [page-count previews] (.invokeAny timeout-scheduler [#(try

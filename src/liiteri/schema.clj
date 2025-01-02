@@ -22,6 +22,6 @@
    :final             s/Bool
    :uploaded          DateTime
    :deleted           (s/maybe DateTime)
-   :preview-status    (s/enum "not_supported" "not_generated" "finished" "error")
+   :preview-status    (s/enum "not_supported" "not_generated" "started" "finished" "error")
    :previews          [Preview]
    (s/optional-key :content-disposition) (s/maybe s/Str)})
