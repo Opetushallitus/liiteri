@@ -18,7 +18,7 @@
     <url>https://github.com/Opetushallitus/liiteri</url>
     <connection>scm:git:git://github.com/Opetushallitus/liiteri.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/Opetushallitus/liiteri.git</developerConnection>
-    <tag>51d8a289e943aed6885d6fa089de955026a21755</tag>
+    <tag>9423602c71c600b1da773dc00e5b48ec3e7c23a4</tag>
   </scm>
   <build>
     <sourceDirectory>src</sourceDirectory>
@@ -140,7 +140,7 @@
       <dependency>
         <groupId>org.apache.pdfbox</groupId>
         <artifactId>pdfbox</artifactId>
-        <version>3.0.2</version>
+        <version>3.0.3</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
