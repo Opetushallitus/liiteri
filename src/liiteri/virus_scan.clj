@@ -1,17 +1,14 @@
 (ns liiteri.virus-scan
-  (:require [chime :as c]
-            [clojure.core.async :as a]
-            [clojure.java.jdbc :as jdbc]
+  (:require [clojure.java.jdbc :as jdbc]
             [clojure.string :as string]
-            [clj-time.core :as t]
-            [clj-time.periodic :as p]
             [com.stuartsierra.component :as component]
             [liiteri.db.file-metadata-store :as metadata-store]
             [liiteri.files.file-store :as file-store]
             [liiteri.sqs-client :refer [get-sqs-client]]
             [taoensso.timbre :as log]
             [cheshire.core :as json])
-  (:import [com.amazonaws.services.sqs.model ReceiveMessageRequest]))
+  (:import [com.amazonaws.services.sqs.model ReceiveMessageRequest]
+           [java.util.concurrent Executors TimeUnit ScheduledFuture]))
 
 (defn- log-virus-scan-result [file-key filename content-type status elapsed-time]
   (let [status-str (string/upper-case (name status))]
@@ -28,6 +25,7 @@
      (let [messages (-> (.receiveMessage sqs-client (-> (ReceiveMessageRequest. result-queue-url)
                                                         (.withWaitTimeSeconds (int 1)))) ; wait time of 1 second is to enable long polling which means we get answers from all sqs servers
                         (.getMessages))]
+       (log/info (str "Received " (.size messages) " virus scan results"))
        (doseq [message messages]
          (try
            (let [message (json/parse-string (.getBody message) true)
@@ -77,25 +75,23 @@
           result-queue-url (-> (.getQueueUrl sqs-poll-results-client result-queue-name)
                                 (.getQueueUrl))
           poll-interval (get-in config [:bucketav :poll-interval-seconds])
-          times         (c/chime-ch (p/periodic-seq (t/now) (t/seconds poll-interval))
-                                    {:ch (a/chan (a/sliding-buffer 1))})
-          s3-bucket (get-in config [:file-store :s3 :bucket])]
-      (log/info "Starting virus scan results polling")
-      (a/go-loop []
-        (when-let [_ (a/<! times)]
-          (log/info "Polling for virus scan results")
-          (while (< 0 (poll-scan-results sqs-poll-results-client result-queue-url db storage-engine config)))
-          (recur)))
-      (assoc this :chan times
+          s3-bucket (get-in config [:file-store :s3 :bucket])
+
+          scheduler (Executors/newScheduledThreadPool 1)
+          virus-scan #(while (< 0 (poll-scan-results sqs-poll-results-client result-queue-url db storage-engine config)))
+          time-unit TimeUnit/SECONDS
+          virus-scan-future (.scheduleAtFixedRate scheduler virus-scan 0 poll-interval time-unit)]
+      (log/info (str "Started virus scan results polling process, restarting at " poll-interval " " time-unit " intervals."))
+      (assoc this :virus-scan-future virus-scan-future
                   :request-queue-url request-queue-url
                   :sqs-request-scan-client sqs-request-scan-client
                   :s3-bucket s3-bucket)))
 
   (stop [this]
-    (when-let [chan (:chan this)]
-      (a/close! chan))
+    (when-let [^ScheduledFuture virus-scan-future (:virus-scan-future this)]
+      (.cancel virus-scan-future true))
     (log/info "Stopped virus scan results polling")
-    (assoc this :chan nil
+    (assoc this :virus-scan-future nil
                 :request-queue-url nil
                 :sqs-request-scan-client nil
                 :s3-bucket nil))
