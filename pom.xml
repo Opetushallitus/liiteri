@@ -18,7 +18,7 @@
     <url>https://github.com/Opetushallitus/liiteri</url>
     <connection>scm:git:git://github.com/Opetushallitus/liiteri.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/Opetushallitus/liiteri.git</developerConnection>
-    <tag>51d8a289e943aed6885d6fa089de955026a21755</tag>
+    <tag>5eb3e1bbea5d3eaba7766294031bb577dff7cc37</tag>
   </scm>
   <build>
     <sourceDirectory>src</sourceDirectory>
@@ -140,7 +140,7 @@
       <dependency>
         <groupId>org.apache.pdfbox</groupId>
         <artifactId>pdfbox</artifactId>
-        <version>3.0.2</version>
+        <version>3.0.3</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -233,7 +233,7 @@
     <dependency>
       <groupId>com.taoensso</groupId>
       <artifactId>timbre</artifactId>
-      <version>4.10.0</version>
+      <version>6.6.1</version>
     </dependency>
     <dependency>
       <groupId>timbre-ns-pattern-level</groupId>
@@ -243,7 +243,7 @@
     <dependency>
       <groupId>com.fzakaria</groupId>
       <artifactId>slf4j-timbre</artifactId>
-      <version>0.3.14</version>
+      <version>0.4.1</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -363,7 +363,7 @@
     <dependency>
       <groupId>oph</groupId>
       <artifactId>clj-timbre-access-logging</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.1.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>oph</groupId>
