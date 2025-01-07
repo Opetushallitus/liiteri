@@ -18,7 +18,7 @@
 (use-fixtures :each
               (fn [tests]
                 (u/start-system system)
-                (component/stop (:preview-generator @system))
+                ;(component/stop (:preview-generator @system))
                 (tests)
                 (u/clear-database! system)
                 (u/stop-system system)))

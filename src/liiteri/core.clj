@@ -12,7 +12,7 @@
             [clj-ring-db-session.session.session-store :refer [create-session-store]]
             [liiteri.file-cleaner :as file-cleaner]
             [liiteri.mime-fixer :as mime-fixer]
-            [liiteri.preview.preview-generator :as preview-generator]
+            ;[liiteri.preview.preview-generator :as preview-generator]
             [taoensso.timbre :as log]
             [taoensso.timbre.appenders.community.rolling :refer [rolling-appender]]
             [timbre-ns-pattern-level :as pattern-level]
@@ -75,9 +75,9 @@
                          (mime-fixer/new-mime-fixer)
                          [:db :storage-engine :config :migrations])
 
-           :preview-generator (component/using
-                                (preview-generator/new-preview-generator)
-                                [:db :storage-engine :config :migrations])
+           ;:preview-generator (component/using
+           ;                     (preview-generator/new-preview-generator)
+           ;                     [:db :storage-engine :config :migrations])
 
            :s3-client (component/using
                         (s3-client/new-client)
