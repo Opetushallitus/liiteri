@@ -2,7 +2,7 @@
   (:require [clojure.string :as string]
             [com.stuartsierra.component :as component]
             [taoensso.timbre :as timbre]
-            [taoensso.timbre.appenders.3rd-party.rolling :refer [rolling-appender]])
+            [taoensso.timbre.appenders.community.rolling :refer [rolling-appender]])
   (:import [fi.vm.sade.auditlog Audit ApplicationType Changes$Builder Logger Operation Target$Builder User]
            [org.ietf.jgss Oid]
            (java.net InetAddress)))

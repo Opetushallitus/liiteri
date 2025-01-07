@@ -14,7 +14,7 @@
             [liiteri.mime-fixer :as mime-fixer]
             [liiteri.preview.preview-generator :as preview-generator]
             [taoensso.timbre :as log]
-            [taoensso.timbre.appenders.3rd-party.rolling :refer [rolling-appender]]
+            [taoensso.timbre.appenders.community.rolling :refer [rolling-appender]]
             [timbre-ns-pattern-level :as pattern-level]
             [liiteri.local :as local])
   (:import [java.util TimeZone])
