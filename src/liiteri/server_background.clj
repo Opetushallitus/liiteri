@@ -25,7 +25,7 @@
   component/Lifecycle
 
   (start [this]
-    (let [port   (get-in config [:server :port] 16832)
+    (let [port   (get-in config [:server :port] 16833)
           api    (new-api config)
           server (http-server/start-server api {:port port})]
       (log/info (str "Started server on port " port))

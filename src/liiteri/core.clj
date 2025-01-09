@@ -29,7 +29,9 @@
                         :appenders      {:standard-out     {:enabled? false}
                                          :println          nil
                                          :file-appender   (rolling-appender
-                                                            {:path    (-> config :app-log :path)
+                                                            {:path
+                                                             (get-in config [:app-log :path]
+                                                                     (if is_background "/tmp/app_liiteri-background.log" "/tmp/app_liiteri.log"))
                                                              :pattern :daily})}
                         :middleware     [(pattern-level/middleware {"com.zaxxer.hikari.HikariConfig" :debug
                                                                     :all                             :info})]

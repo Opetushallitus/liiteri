@@ -57,10 +57,8 @@
                                       "video/x-ms-wmv"
                                       "video/x-ms-vob"]}
  :virkailija-host "http://localhost"
- :server {:port 16832}
  :access-log {:path "/tmp/access_liiteri"}
  :audit-log {:path "/tmp/auditlog_liiteri.log"}
- :app-log {:path "/tmp/app_liiteri.log"}
  :bucketav {:scan-request-queue-name "bucketav-scan-requests"
             :scan-result-queue-name "bucketav-scan-results"
             :poll-interval-seconds 5}
