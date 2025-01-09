@@ -1,12 +1,11 @@
 (ns liiteri.test-utils
   (:require [clojure.java.jdbc :as jdbc]
             [com.stuartsierra.component :as component]
-            [liiteri.core :as system]
             [clojure.java.io :as io]
             [liiteri.files.file-store :as file-store]))
 
 (defn start-system [system]
-  (let [s (or @system (system/new-system))]
+  (let [s @system]
     (reset! system (component/start-system s))))
 
 (defn stop-system [system]

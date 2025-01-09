@@ -9,7 +9,7 @@
   (:import [java.util UUID]
            [java.sql Timestamp]))
 
-(def system (atom (system/new-system)))
+(def system (atom (system/new-system false)))
 (def metadata1 (atom nil))
 (def metadata2 (atom nil))
 (def metadata3 (atom nil))

@@ -10,7 +10,7 @@
   (:import [java.util UUID]
            [java.sql Timestamp]))
 
-(def system (atom (system/new-system)))
+(def system (atom (system/new-system true)))
 (def metadata (atom nil))
 
 (use-fixtures :once

@@ -10,7 +10,7 @@
             [clojure.test :refer :all])
   (:import [java.sql Timestamp]))
 
-(def system (atom (system/new-system {})))
+(def system (atom (system/new-system true {})))
 
 (use-fixtures :once
               (fn [tests]

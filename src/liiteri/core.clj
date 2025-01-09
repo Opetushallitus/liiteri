@@ -8,6 +8,7 @@
             [liiteri.files.s3-store :as s3-store]
             [liiteri.migrations :as migrations]
             [liiteri.server :as server]
+            [liiteri.server_background :as server_background]
             [liiteri.virus-scan :as virus-scan]
             [clj-ring-db-session.session.session-store :refer [create-session-store]]
             [liiteri.file-cleaner :as file-cleaner]
@@ -16,11 +17,12 @@
             [taoensso.timbre :as log]
             [taoensso.timbre.appenders.community.rolling :refer [rolling-appender]]
             [timbre-ns-pattern-level :as pattern-level]
-            [liiteri.local :as local])
+            [liiteri.local :as local]
+            [environ.core :refer [env]])
   (:import [java.util TimeZone])
   (:gen-class))
 
-(defn new-system [& [config-overrides]]
+(defn new-system [is_background & [config-overrides]]
   (let [config (config/new-config config-overrides)]
     (log/merge-config! {:timestamp-opts {:pattern  "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
                                          :timezone (TimeZone/getTimeZone "Europe/Helsinki")}
@@ -32,63 +34,88 @@
                         :middleware     [(pattern-level/middleware {"com.zaxxer.hikari.HikariConfig" :debug
                                                                     :all                             :info})]
                         :output-fn      (partial log/default-output-fn {:stacktrace-fonts {}})})
-    (component/system-map
-           :config config
+    (if is_background
+      (component/system-map
+        :config config
 
-           :login-cas-client (delay (cas/new-cas-client config))
+        :db (component/using
+              (db/new-pool)
+              [:config])
 
-           :kayttooikeus-cas-client (delay (cas/new-client config
-                                                           "/kayttooikeus-service" "j_spring_cas_security_check"
-                                                           "JSESSIONID"))
+        :migrations (component/using
+                      (migrations/new-migration)
+                      [:db])
 
-           :audit-logger (component/using
-                           (audit-log/new-logger)
-                           [:config])
+        :server (component/using
+                  (server_background/new-server) [:config])
 
-           :db (component/using
-                 (db/new-pool)
-                 [:config])
+        :file-cleaner (component/using
+                        (file-cleaner/new-cleaner false)
+                        [:db :storage-engine :config :migrations])
 
-           :session-store (create-session-store (db/get-datasource config))
-
-           :server (component/using
-                     (server/new-server)
-                     [:storage-engine :login-cas-client :kayttooikeus-cas-client :session-store :db :config :audit-logger :virus-scan])
-
-           :migrations (component/using
-                         (migrations/new-migration)
-                         [:db])
-
-           :virus-scan (component/using
-                         (virus-scan/new-scanner)
-                         [:db :storage-engine :config :migrations])
-
-           :file-cleaner (component/using
-                           (file-cleaner/new-cleaner false)
-                           [:db :storage-engine :config :migrations])
-
-           :deleted-file-cleaner (component/using
-                                   (file-cleaner/new-cleaner true)
-                                   [:db :storage-engine :config :migrations])
-
-           :mime-fixer (component/using
-                         (mime-fixer/new-mime-fixer)
-                         [:db :storage-engine :config :migrations])
-
-           :preview-generator (component/using
-                                (preview-generator/new-preview-generator)
+        :deleted-file-cleaner (component/using
+                                (file-cleaner/new-cleaner true)
                                 [:db :storage-engine :config :migrations])
 
-           :s3-client (component/using
-                        (s3-client/new-client)
+        :mime-fixer (component/using
+                      (mime-fixer/new-mime-fixer)
+                      [:db :storage-engine :config :migrations])
+
+        :preview-generator (component/using
+                             (preview-generator/new-preview-generator)
+                             [:db :storage-engine :config :migrations])
+
+        :s3-client (component/using
+                     (s3-client/new-client)
+                     [:config])
+
+        :storage-engine (component/using
+                          (s3-store/new-store)
+                          [:s3-client :config])
+
+        :local (component/using (local/new-local) [:config :s3-client]))
+      (component/system-map
+        :config config
+
+        :login-cas-client (delay (cas/new-cas-client config))
+
+        :kayttooikeus-cas-client (delay (cas/new-client config
+                                                        "/kayttooikeus-service" "j_spring_cas_security_check"
+                                                        "JSESSIONID"))
+
+        :audit-logger (component/using
+                        (audit-log/new-logger)
                         [:config])
 
-           :storage-engine (component/using
-                             (s3-store/new-store)
-                             [:s3-client :config])
+        :db (component/using
+              (db/new-pool)
+              [:config])
 
-           :local (component/using (local/new-local) [:config :s3-client]))))
+        :session-store (create-session-store (db/get-datasource config))
+
+        :server (component/using
+                  (server/new-server)
+                  [:storage-engine :login-cas-client :kayttooikeus-cas-client :session-store :db :config :audit-logger :virus-scan])
+
+        :migrations (component/using
+                      (migrations/new-migration)
+                      [:db])
+
+        :virus-scan (component/using
+                      (virus-scan/new-scanner)
+                      [:db :storage-engine :config :migrations])
+
+        :s3-client (component/using
+                     (s3-client/new-client)
+                     [:config])
+
+        :storage-engine (component/using
+                          (s3-store/new-store)
+                          [:s3-client :config])
+
+        :local (component/using (local/new-local) [:config :s3-client])))
+))
 
 (defn -main [& _]
-  (let [_ (component/start-system (new-system))]
+  (let [_ (component/start-system (new-system (= "liiteri-background" (:app env))))]
     @(promise)))
