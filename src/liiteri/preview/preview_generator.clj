@@ -31,9 +31,6 @@
          uploaded :uploaded} file]
     (try
       (log/info (format "Generating previews for '%s' with key '%s', uploaded on %s ..." filename file-key uploaded))
-      ; Tämä on varotoimenpide tapauksille joissa generointi kaataa JVM:än. Ilman tilan päivitystä generointia yritään
-      ; aina uudestaan samoin (huonoin) tuloksin koska tiedosto on edelleen not started -tilassa.
-      (metadata-store/set-file-page-count-and-preview-status! file-key nil "started" conn)
       (with-open [input-stream (file-store/get-file storage-engine file-key)]
         (let [preview-timeout-ms    (get-in config [:preview-generator :preview-timeout-ms] 45000)
               [page-count previews] (.invokeAny timeout-scheduler [#(try
@@ -75,19 +72,31 @@
         (metadata-store/set-file-page-count-and-preview-status! file-key nil "error" conn)
         false))))
 
+(defn- get-next-file-for-preview [db]
+  (jdbc/with-db-transaction
+    [tx db]
+    (let [conn {:connection tx}]
+      (if-let [file (metadata-store/get-file-without-preview conn content-types-to-process)]
+        (do
+          ; Tämä on varotoimenpide tapauksille joissa generointi kaataa JVM:än. Ilman tilan päivitystä generointia yritään
+          ; aina uudestaan samoin (huonoin) tuloksin koska tiedosto on edelleen not started -tilassa.
+          (metadata-store/set-file-page-count-and-preview-status! (:key file) nil "started" conn)
+          file)))))
+
 (defn- generate-next-preview [config db storage-engine timeout-scheduler]
   (try
-    (jdbc/with-db-transaction [tx db]
-      (let [conn {:connection tx}]
-        (if-let [file (metadata-store/get-file-without-preview conn content-types-to-process)]
-          (do
-            (reset! were-unprocessed-files-found-on-last-run true)
-            (generate-file-previews config conn storage-engine file timeout-scheduler))
-          (do
-            (when @were-unprocessed-files-found-on-last-run
-              (log/info "Preview generation seems to be finished (or errored)."))
-            (reset! were-unprocessed-files-found-on-last-run false)
-            false))))
+    (if-let [file (get-next-file-for-preview db)]
+      (do
+        (reset! were-unprocessed-files-found-on-last-run true)
+        (jdbc/with-db-transaction
+          [tx db]
+          (let [conn {:connection tx}]
+            (generate-file-previews config conn storage-engine file timeout-scheduler))))
+      (do
+        (when @were-unprocessed-files-found-on-last-run
+          (log/info "Preview generation seems to be finished (or errored)."))
+        (reset! were-unprocessed-files-found-on-last-run false)
+        false))
     (catch Exception e
       (log/error e "Failed to generate preview for the next file")
       false)))
