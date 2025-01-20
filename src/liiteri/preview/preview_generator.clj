@@ -102,7 +102,9 @@
       false)))
 
 (defn- generate-previews [config db storage-engine timeout-scheduler]
-  (try (loop []
+  (try
+    (log/info "Starting to generate previews")
+    (loop []
          (when (generate-next-preview config db storage-engine timeout-scheduler)
            (recur)))
        (catch Throwable t

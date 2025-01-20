@@ -20,6 +20,26 @@ module.exports = {
       watch: false,
       exec_interpreter: 'none',
       exec_mode: 'fork'
+    },
+    {
+      name: 'liiteri-background-16833',
+      script: 'lein',
+      interpreter: '/bin/sh',
+      args: ['with-profile', 'dev', 'run'],
+      cwd: __dirname,
+      log_file: 'liiteri-background.log',
+      pid_file: '.liiteri-background.pid',
+      combine_logs: true,
+      min_uptime: 30000,
+      max_restarts: 5,
+      restart_delay: 4000,
+      wait_ready: true,
+      watch: false,
+      exec_interpreter: 'none',
+      exec_mode: 'fork',
+      env: {
+        APP: 'liiteri-background',
+      }
     }
   ]
 }

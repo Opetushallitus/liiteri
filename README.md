@@ -2,7 +2,9 @@
 
 [![Dependencies Status](https://jarkeeper.com/Opetushallitus/liiteri/status.svg)](https://jarkeeper.com/Opetushallitus/liiteri)
 
-File Storage Service For OPH
+File Storage Service For OPH. Liiteri is split into two services:
+1. liiteri, which contains the api
+2. liiteri-background, which contains background services such as preview-generation, mime-type fixing, cleanup etc.
 
 ## AWS S3
 

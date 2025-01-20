@@ -59,6 +59,7 @@
       false)))
 
 (defn- fix-mime-types-of-files [db storage-engine]
+  (log/info "Starting to fix MIME types")
   (try (loop []
          (when (fix-mime-type-of-next-file db storage-engine)
            (recur)))

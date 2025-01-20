@@ -64,3 +64,17 @@ jobs:
       jarfolder: target
     secrets:
       AWS_UTILITY_ROLE_ARN: ${{ secrets.AWS_OPH_UTILITY_ROLE_ARN }}
+
+  deploy-background:
+    needs: [ test, build ]
+    uses: Opetushallitus/.github/.github/workflows/push-scan-java-ecr.yml@main
+    with:
+      application: liiteri-background
+      base-image: baseimage-fatjar-openjdk21:master
+      configfolder: oph-configuration
+      jarfile: liiteri
+      jarfolder: target
+    secrets:
+      AWS_UTILITY_ROLE_ARN: ${{ secrets.AWS_OPH_UTILITY_ROLE_ARN }}
+
+

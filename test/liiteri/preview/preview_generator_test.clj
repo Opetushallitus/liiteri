@@ -13,7 +13,7 @@
   (:import [java.sql Timestamp]
            (java.util.concurrent Executors)))
 
-(def system (atom (system/new-system {})))
+(def system (atom (system/new-system true {})))
 
 (use-fixtures :each
               (fn [tests]

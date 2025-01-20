@@ -8,7 +8,7 @@
             [liiteri.virus-scan :as virus-scan])
   (:import [java.util UUID]))
 
-(def system (atom (system/new-system {})))
+(def system (atom (system/new-system false {})))
 (def metadata (atom nil))
 
 (defn- init-test-file []
