@@ -45,7 +45,7 @@
                                                          (metadata-store/set-virus-scan-status! file-key "done" conn))
                                                "infected" (do
                                                             (log-virus-scan-result file-key filename content-type :virus-found elapsed-time)
-                                                            (file-store/delete-file-and-metadata file-key "liiteri-virus-scan" storage-engine conn false)
+                                                            (file-store/delete-file-and-metadata file-key "liiteri-virus-scan" storage-engine conn {} false)
                                                             (metadata-store/set-virus-scan-status! file-key "virus_found" conn))
                                                (mark-and-log-failure file-key filename content-type 0 0 conn)))))))
            (.deleteMessage sqs-client result-queue-url (.getReceiptHandle message))

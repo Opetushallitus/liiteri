@@ -1,5 +1,6 @@
 (ns liiteri.file-store-test
   (:require [clj-time.core :as t]
+            [clojure.string :as string]
             [clojure.test :refer :all]
             [liiteri.core :as system]
             [liiteri.db.file-metadata-store :as metadata-store]
@@ -21,7 +22,6 @@
 (def application-key3 "1.2.246.562.11.000000000000000000003")
 (def application-key4 "1.2.246.562.11.000000000000000000004")
 (def application-key5 "1.2.246.562.11.000000000000000000005")
-
 (use-fixtures :once
               (fn [tests]
                 (u/start-system system)
@@ -29,7 +29,7 @@
                 (u/clear-database! system)
                 (u/stop-system system)))
 
-(defn- init-test-files [uploaded deleted]
+(defn- init-test-files []
   (let [filename1 "test-file.txt"
         filename2 "test-file-2.txt"
         filename3 "test-file-3.txt"
@@ -42,7 +42,15 @@
         file-key5 (str (UUID/randomUUID))
         origin-system "Test-system"
         conn {:connection (:db @system)}
-        store (:storage-engine @system)]
+        store (:storage-engine @system)
+        uploaded (-> (t/now)
+                     (t/minus (t/months 1))
+                     (.getMillis)
+                     (Timestamp.))
+        deleted (-> (t/now)
+                    (t/minus (t/days 1))
+                    (.getMillis)
+                    (Timestamp.))]
     (file-store/create-file-from-bytearray store (.getBytes "test file1") file-key1)
     (file-store/create-file-from-bytearray store (.getBytes "test file2") file-key2)
     (file-store/create-file-from-bytearray store (.getBytes "test file3") file-key3)
@@ -109,16 +117,8 @@
 
 (deftest files-and-metadata-removed-by-application-key
   (let [db (:db @system)
-        storage-engine (:storage-engine @system)
-        uploaded (-> (t/now)
-                     (t/minus (t/months 1))
-                     (.getMillis)
-                     (Timestamp.))
-        deleted (-> (t/now)
-                    (t/minus (t/days 1))
-                    (.getMillis)
-                    (Timestamp.))]
-    (init-test-files uploaded deleted)
+        storage-engine (:storage-engine @system)]
+    (init-test-files)
 
     (file-store/delete-files-and-metadata-by-origin-references [application-key2
                                                                 application-key3
@@ -127,7 +127,8 @@
                                                                 "1.2.246.562.11.000000000000000000009"]
                                                                "file-store-test"
                                                                storage-engine
-                                                               {:connection db})
+                                                               {:connection db}
+                                                               {})
 
     (let [metadata1 (test-metadata-store/get-metadata-for-tests [(:key @metadata1)] {:connection db})
           metadata2 (test-metadata-store/get-metadata-for-tests [(:key @metadata2)] {:connection db})
@@ -145,3 +146,65 @@
       (is (not (file-store/file-exists? (:storage-engine @system) (:key metadata3))))
       (is (not (file-store/file-exists? (:storage-engine @system) (:key metadata4))))
       (is (not (file-store/file-exists? (:storage-engine @system) (:key metadata5)))))))
+
+(deftest not-to-be-deleted-filekeys-preserved-when-deleting-file-and-metadata
+  (init-test-files)
+  (let [db (:db @system)
+        storage-engine (:storage-engine @system)
+        filekey1 (:key @metadata1)
+        filekey2 (:key @metadata2)
+        filekey3 (:key @metadata3)
+        config {:filekeys-not-to-be-deleted (string/join #"," [filekey1 filekey2])}
+
+        counts1 (file-store/delete-file-and-metadata filekey1 "1.2.246.562.24.000000000000000000001" storage-engine
+                                                     {:connection db} config false)
+        counts2 (file-store/delete-file-and-metadata filekey2 "1.2.246.562.24.000000000000000000001" storage-engine
+                                                     {:connection db} config false)
+        counts3 (file-store/delete-file-and-metadata filekey3 "1.2.246.562.24.000000000000000000001" storage-engine
+                                                     {:connection db} config false)]
+
+    (is {:ignored 1, :deleted 0} counts1)
+    (is {:ignored 1, :deleted 0} counts2)
+    (is {:ignored 0, :deleted 1} counts3)
+    (is (nil? (:deleted (test-metadata-store/get-metadata-for-tests [filekey1] {:connection db}))))
+    (is (nil? (:deleted (test-metadata-store/get-metadata-for-tests [filekey2] {:connection db}))))
+    (is (some? (:deleted (test-metadata-store/get-metadata-for-tests [filekey3] {:connection db}))))
+    (is (file-store/file-exists? (:storage-engine @system) filekey1))
+    (is (file-store/file-exists? (:storage-engine @system) filekey2))
+    (is (not (file-store/file-exists? (:storage-engine @system) filekey3)))))
+
+(deftest not-to-be-deleted-filekeys-preserved-when-removing-by-application-key
+  (init-test-files)
+  (let [db (:db @system)
+        storage-engine (:storage-engine @system)
+        filekey1 (:key @metadata1)
+        filekey2 (:key @metadata2)
+        filekey3 (:key @metadata3)
+        filekey4 (:key @metadata4)
+        filekey5 (:key @metadata5)
+
+        keys (file-store/delete-files-and-metadata-by-origin-references [application-key1
+                                                                         application-key2
+                                                                         application-key3
+                                                                         application-key4
+                                                                         application-key5
+                                                                         "1.2.246.562.11.000000000000000000009"]
+                                                                        "file-store-test"
+                                                                        storage-engine
+                                                                        {:connection db}
+                                                                        {:filekeys-not-to-be-deleted
+                                                                         (string/join #"," [filekey1 filekey2])})]
+
+    (is [filekey1 filekey2] (:ignored-keys keys))
+    (is [filekey3 filekey4 filekey5] (:deleted-keys keys))
+
+    (is (nil? (:deleted (test-metadata-store/get-metadata-for-tests [filekey1] {:connection db}))))
+    (is (nil? (:deleted (test-metadata-store/get-metadata-for-tests [filekey2] {:connection db}))))
+    (is (some? (:deleted (test-metadata-store/get-metadata-for-tests [filekey3] {:connection db}))))
+    (is (some? (:deleted (test-metadata-store/get-metadata-for-tests [filekey4] {:connection db}))))
+    (is (some? (:deleted (test-metadata-store/get-metadata-for-tests [filekey5] {:connection db}))))
+    (is (file-store/file-exists? (:storage-engine @system) filekey1))
+    (is (file-store/file-exists? (:storage-engine @system) filekey2))
+    (is (not (file-store/file-exists? (:storage-engine @system) filekey3)))
+    (is (not (file-store/file-exists? (:storage-engine @system) filekey4)))
+    (is (not (file-store/file-exists? (:storage-engine @system) filekey5)))))

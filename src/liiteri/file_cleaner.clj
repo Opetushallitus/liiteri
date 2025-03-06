@@ -12,7 +12,7 @@
 (defn- clean-file [conn storage-engine file process-name delete-file-permanently?]
   (log/info (str process-name " cleaning file: " (:key file)))
   (try
-    (file-store/delete-file-and-metadata (:key file) process-name storage-engine conn delete-file-permanently?)
+    (file-store/delete-file-and-metadata (:key file) process-name storage-engine conn {} delete-file-permanently?)
     (catch Exception e
       (log/error e (str "Failed to clean file " (:key file))))))
 

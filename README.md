@@ -73,7 +73,7 @@ specifying the endpoint, e.g.:
 ```
 export AWS_ACCESS_KEY_ID=localstack
 export AWS_SECRET_ACCESS_KEY=localstack
-aws s3 cp dev-resources/three_page_pdf_for_testing.pdf s3://opintopolku-untuva-liiteri/4555c853-2a56-491f-b217-6e15a86aa0a9 --endpoint-url http://localhost:4566
+aws s3 cp dev-resources/three_page_pdf_for_testing.pdf s3://opintopolku-local-liiteri/4555c853-2a56-491f-b217-6e15a86aa0a9 --endpoint-url http://localhost:4566
 aws s3 ls s3://opintopolku-local-liiteri --endpoint-url http://localhost:4566
 ```
 

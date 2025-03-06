@@ -68,4 +68,5 @@
  :preview-generator {:poll-interval-seconds 5
                      :preview-page-count 1024
                      :preview-timeout-ms 4000
-                     :pdf {:dpi 150}}}
+                     :pdf {:dpi 150}}
+ :filekeys-not-to-be-deleted ""}

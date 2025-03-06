@@ -175,15 +175,19 @@
       :return {:key s/Str}
       (check-authorization! session)
       (let [user (get-in session [:identity :oid])
-            deleted-count (file-store/delete-file-and-metadata key user storage-engine {:connection db} false)]
-        (if (> deleted-count 0)
-          (do (audit-log/log audit-logger
+            counts (file-store/delete-file-and-metadata key user storage-engine {:connection db} config false)
+            deleted-count (:deleted counts)
+            ignored-count (:ignored counts)]
+        (if (or (> ignored-count 0) (> deleted-count 0))
+          (do
+            (if (> deleted-count 0)
+              (audit-log/log audit-logger
                              (audit-log/user session x-real-ip user-agent)
                              audit-log/operation-delete
                              (audit-log/file-target key)
-                             audit-log/no-changes)
-              (response/ok {:key key}))
-          (response/not-found {:message (str "File with key " key " not found")}))))
+                             audit-log/no-changes))
+            (response/ok {:key key}))
+        (response/not-found {:message (str "File with key " key " not found")}))))
 
     (api/POST "/files/mass-delete" {session :session}
       :summary "Delete multiple files by application keys"
@@ -192,16 +196,19 @@
       :body-params [origin-references :- (api/describe [s/Str] "Origin references - For example Application keys")]
       :return {:deleted-keys [s/Str]}
       (check-authorization! session)
-      (let [keys (file-store/delete-files-and-metadata-by-origin-references origin-references session storage-engine {:connection db})]
-        (if (> (count keys) 0)
+      (let [keys (file-store/delete-files-and-metadata-by-origin-references origin-references session storage-engine {:connection db} config)
+            deleted-keys (:deleted-keys keys)
+            all-keys (concat deleted-keys (:ignored-keys keys))]
+        (if (> (count all-keys) 0)
           (do
-            (doseq [key keys]
-              (audit-log/log audit-logger
-                             (audit-log/user session x-real-ip user-agent)
-                             audit-log/operation-delete
-                             (audit-log/file-target key)
-                             audit-log/no-changes))
-            (response/ok {:deleted-keys keys}))
+            (if (> (count deleted-keys) 0)
+              (doseq [key deleted-keys]
+                (audit-log/log audit-logger
+                               (audit-log/user session x-real-ip user-agent)
+                               audit-log/operation-delete
+                               (audit-log/file-target key)
+                               audit-log/no-changes)))
+            (response/ok {:deleted-keys all-keys}))
           (response/not-found {:message (str "Files to delete for origin-references:" origin-references "not found")}))))))
 
 (defn auth-routes [{:keys [login-cas-client
