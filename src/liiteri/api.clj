@@ -180,7 +180,7 @@
             ignored-count (:ignored counts)]
         (if (or (> ignored-count 0) (> deleted-count 0))
           (do
-            (if (> deleted-count 0)
+            (when (> deleted-count 0)
               (audit-log/log audit-logger
                              (audit-log/user session x-real-ip user-agent)
                              audit-log/operation-delete
@@ -201,7 +201,7 @@
             all-keys (concat deleted-keys (:ignored-keys keys))]
         (if (> (count all-keys) 0)
           (do
-            (if (> (count deleted-keys) 0)
+            (when (> (count deleted-keys) 0)
               (doseq [key deleted-keys]
                 (audit-log/log audit-logger
                                (audit-log/user session x-real-ip user-agent)
