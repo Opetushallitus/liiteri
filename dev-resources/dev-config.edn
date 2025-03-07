@@ -68,4 +68,4 @@
  :preview-generator {:poll-interval-seconds 5
                      :preview-page-count 19
                      :pdf {:dpi 150}}
- :filekeys-not-to-be-deleted "4555c853-2a56-491f-b217-6e15a86aa0a1,4555c853-2a56-491f-b217-6e15a86aa0a2"}
+ :filekeys-not-to-be-deleted ""}
