@@ -1,5 +1,7 @@
 (ns liiteri.files.file-store
-  (:require [liiteri.db.file-metadata-store :as metadata-store]))
+  (:require [clojure.string :as string]
+            [clojure.set :as set]
+            [liiteri.db.file-metadata-store :as metadata-store]))
 
 (defprotocol StorageEngine
   (create-file [this file file-key])
@@ -24,15 +26,16 @@
       (.delete-file storage-engine key))
     deleted))
 
-(defn delete-file-and-metadata [key user storage-engine conn delete-file-permanently?]
-  (let [previews-with-key (metadata-store/get-previews key conn)
-        deleted (metadata-store/delete-file key user conn delete-file-permanently?)]
+(defn delete-file-and-metadata [key user storage-engine conn config delete-file-permanently?]
+  (let [is-preserved? (boolean (some #(= % key) (string/split (get config :filekeys-not-to-be-deleted "") #",")))
+        previews-with-key (if is-preserved? [] (metadata-store/get-previews key conn))
+        deleted (if is-preserved? 0 (metadata-store/delete-file key user conn delete-file-permanently?))]
     (when (> deleted 0)
       (.delete-file storage-engine key)
       (when-let [previews previews-with-key]
         (doseq [preview previews]
           (delete-preview-and-metadata (:key preview) storage-engine conn delete-file-permanently?))))
-    deleted))
+    {:ignored (if is-preserved? 1 0) :deleted deleted}))
 
 (defn get-file-and-metadata [key storage-engine conn]
   (let [metadata (metadata-store/get-normalized-metadata! [key] conn)]
@@ -40,9 +43,11 @@
       {:body     (.get-file storage-engine key)
        :filename (:filename (first metadata))})))
 
-(defn delete-files-and-metadata-by-origin-references [origin-references session storage-engine conn]
-  (let [keys-to-delete (metadata-store/get-file-keys-by-origin-references origin-references conn)
+(defn delete-files-and-metadata-by-origin-references [origin-references session storage-engine conn config]
+  (let [all-preserved-keys (set (string/split (get config :filekeys-not-to-be-deleted "") #","))
+        checked-keys (set (map :key (metadata-store/get-file-keys-by-origin-references origin-references conn)))
+        keys-to-ignore (vec (set/intersection checked-keys all-preserved-keys))
+        keys-to-delete (set/difference checked-keys all-preserved-keys)
         user (get-in session [:identity :oid])
-        deleted-keys (doall
-                       (map #(when (= 1 (delete-file-and-metadata (:key %) user storage-engine conn false)) %) keys-to-delete))]
-    (vec (map :key deleted-keys))))
+        deleted-keys (filterv #(= 1 (:deleted (delete-file-and-metadata % user storage-engine conn {} false))) keys-to-delete)]
+    {:deleted-keys deleted-keys :ignored-keys keys-to-ignore}))
