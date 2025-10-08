@@ -1,0 +1,30 @@
+{:linters
+ {:unresolved-symbol   {:exclude [(compojure.api.sweet/context)
+                                  (clojure.java.jdbc/with-db-transaction)]}
+  :unused-namespace    {:exclude [cljs.repl]}
+  :unused-referred-var {:exclude {cljs.repl [Error->map
+                                             apropos
+                                             dir
+                                             doc
+                                             error->str
+                                             ex-str
+                                             ex-triage
+                                             find-doc
+                                             print-doc
+                                             pst
+                                             source]}}
+
+  :type-mismatch {:level :warning}
+  :invalid-arity {:level :warning}}
+
+ :lint-as
+ {compojure.api.sweet/middleware clojure.core/identity
+  compojure.api.sweet/routes     clojure.core/identity
+  compojure.api.sweet/context    clojure.core/identity}
+
+ ;; If you want to scope the relaxations only to the two namespaces:
+ :config-in-ns
+ {liiteri.api {:linters {:type-mismatch {:level :warning}}}
+  liiteri.preview.preview-generator
+  {:linters {:invalid-arity {:level :warning
+                             :exclude [liiteri.preview.preview-generator/generate-previews]}}}}}
