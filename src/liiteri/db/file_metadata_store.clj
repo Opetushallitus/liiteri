@@ -6,7 +6,7 @@
             [yesql.core :as sql]
             [liiteri.schema :as schema]
             [taoensso.timbre :as log]
-            [string-normalizer.filename-normalizer :as normalizer])
+            [liiteri.filename-normalizer :as normalizer])
   (:import [java.text Normalizer Normalizer$Form]))
 
 (declare sql-create-file<!)
