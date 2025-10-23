@@ -18,7 +18,7 @@
     <url>https://github.com/Opetushallitus/liiteri</url>
     <connection>scm:git:git://github.com/Opetushallitus/liiteri.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/Opetushallitus/liiteri.git</developerConnection>
-    <tag>9bcd4f66bb712def9bcd3d67cbcb052d8541c451</tag>
+    <tag>5c6a2967f64044c4cda7c08308d90fda496fb3f8</tag>
   </scm>
   <build>
     <sourceDirectory>src</sourceDirectory>
@@ -403,12 +403,12 @@
     <dependency>
       <groupId>org.apache.tika</groupId>
       <artifactId>tika-core</artifactId>
-      <version>2.9.2</version>
+      <version>3.2.3</version>
     </dependency>
     <dependency>
       <groupId>org.apache.tika</groupId>
       <artifactId>tika-parsers-standard-package</artifactId>
-      <version>2.9.2</version>
+      <version>3.2.3</version>
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>
