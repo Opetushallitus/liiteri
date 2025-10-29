@@ -18,7 +18,7 @@
     <url>https://github.com/Opetushallitus/liiteri</url>
     <connection>scm:git:git://github.com/Opetushallitus/liiteri.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/Opetushallitus/liiteri.git</developerConnection>
-    <tag>16f70110eef5e1fc60bcc30dc2f1b7da01dd09f4</tag>
+    <tag>4ff24f709fd4e419c2ce642938eb3a639a5525b3</tag>
   </scm>
   <build>
     <sourceDirectory>src</sourceDirectory>
@@ -111,11 +111,6 @@
         <groupId>com.typesafe.akka</groupId>
         <artifactId>akka-http-core_2.12</artifactId>
         <version>10.1.15</version>
-      </dependency>
-      <dependency>
-        <groupId>org.http4s</groupId>
-        <artifactId>blaze-core_2.12</artifactId>
-        <version>0.23.14</version>
       </dependency>
       <dependency>
         <groupId>commons-fileupload</groupId>
@@ -298,6 +293,11 @@
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-jdk18on</artifactId>
+      <version>1.82</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
       <artifactId>bcpkix-jdk18on</artifactId>
       <version>1.82</version>
     </dependency>
@@ -307,14 +307,23 @@
       <version>1.82</version>
     </dependency>
     <dependency>
-      <groupId>org.bouncycastle</groupId>
-      <artifactId>bcprov-jdk18on</artifactId>
-      <version>1.82</version>
-    </dependency>
-    <dependency>
       <groupId>org.apache.tika</groupId>
       <artifactId>tika-parsers-standard-package</artifactId>
       <version>3.2.3</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>bcpkix-jdk18on</artifactId>
+          <groupId>org.bouncycastle</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>bcutil-jdk18on</artifactId>
+          <groupId>org.bouncycastle</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>bcprov-jdk18on</artifactId>
+          <groupId>org.bouncycastle</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>

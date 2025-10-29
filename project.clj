@@ -10,7 +10,6 @@
                          [org.clojure/tools.reader "1.3.2"]
                          [com.typesafe.akka/akka-actor_2.12 "2.5.32"]
                          [com.typesafe.akka/akka-http-core_2.12 "10.1.15"]
-                         [org.http4s/blaze-core_2.12 "0.23.14"]
                          [commons-fileupload/commons-fileupload "1.6.0"]
                          [org.apache.commons/commons-fileupload2-core "2.0.0-M4"]
                          [com.google.code.gson/gson "2.11.0"]
