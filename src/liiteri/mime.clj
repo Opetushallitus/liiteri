@@ -13,7 +13,7 @@
            (org.apache.tika.metadata Metadata)
            (org.apache.tika.parser ParseContext)
            (org.apache.tika.sax BodyContentHandler)
-           (com.amazonaws.services.s3.model S3ObjectInputStream)))
+           (software.amazon.awssdk.core ResponseInputStream)))
 
 (def ^TikaConfig tikaConfig (TikaConfig. (io/resource "tika-config.xml")))
 
@@ -26,7 +26,7 @@
   (with-open [^InputStream inputstream     (get-stream)
               ^TikaInputStream tika-stream (TikaInputStream/get inputstream)]
     (let [mimetype (.detect detector tika-stream)]
-      (when (instance? S3ObjectInputStream inputstream) (.abort inputstream))
+      (when (instance? ResponseInputStream inputstream) (.abort inputstream))
       mimetype)))
 
 (defn parse-mime-type [get-stream]
@@ -38,7 +38,7 @@
           metadata (Metadata.)
           context  (ParseContext.)]
       (.parse parser tika-stream handler metadata context)
-      (when (instance? S3ObjectInputStream inputstream) (.abort inputstream))
+      (when (instance? ResponseInputStream inputstream) (.abort inputstream))
       (.get metadata "Content-Type"))))
 
 (defn validate-file-content-type! [config filename real-content-type]

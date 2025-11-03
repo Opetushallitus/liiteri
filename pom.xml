@@ -18,7 +18,7 @@
     <url>https://github.com/Opetushallitus/liiteri</url>
     <connection>scm:git:git://github.com/Opetushallitus/liiteri.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/Opetushallitus/liiteri.git</developerConnection>
-    <tag>0a03912564012005c2d5ff4b5c1e0886762ea038</tag>
+    <tag>9d17b085e6c13cfa82d8dd6264249c1e329eeae3</tag>
   </scm>
   <build>
     <sourceDirectory>src</sourceDirectory>
@@ -161,14 +161,14 @@
       <version>1.11.2</version>
     </dependency>
     <dependency>
-      <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-s3</artifactId>
-      <version>1.12.740</version>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>s3</artifactId>
+      <version>2.37.3</version>
     </dependency>
     <dependency>
-      <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-sqs</artifactId>
-      <version>1.12.740</version>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>sqs</artifactId>
+      <version>2.37.3</version>
     </dependency>
     <dependency>
       <groupId>camel-snake-kebab</groupId>
@@ -394,16 +394,34 @@
       <groupId>oph</groupId>
       <artifactId>clj-access-logging</artifactId>
       <version>1.0.0-SNAPSHOT</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>s3mock_2.12</artifactId>
+          <groupId>io.findify</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>oph</groupId>
       <artifactId>clj-stdout-access-logging</artifactId>
       <version>1.0.0-SNAPSHOT</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>s3mock_2.12</artifactId>
+          <groupId>io.findify</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>oph</groupId>
       <artifactId>clj-timbre-access-logging</artifactId>
       <version>1.1.0-SNAPSHOT</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>s3mock_2.12</artifactId>
+          <groupId>io.findify</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>reloaded.repl</groupId>
