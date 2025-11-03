@@ -1,10 +1,9 @@
 (ns liiteri.sqs-client
   (:require [environ.core :refer [env]])
-  (:import [com.amazonaws.services.sqs AmazonSQSClient]
-           [com.amazonaws.client.builder AwsClientBuilder$EndpointConfiguration]
-           [com.amazonaws.auth DefaultAWSCredentialsProviderChain]
-           [com.amazonaws.auth AWSStaticCredentialsProvider]
-           [com.amazonaws.auth BasicAWSCredentials]))
+  (:import [software.amazon.awssdk.auth.credentials DefaultCredentialsProvider AwsBasicCredentials StaticCredentialsProvider]
+           [software.amazon.awssdk.regions Region]
+           [software.amazon.awssdk.services.sqs SqsClient]
+           [java.net URI]))
 
 (defn- dev? []
   (= (:dev? env) "true"))
@@ -15,10 +14,15 @@
 
 (defn get-sqs-client []
   (if (dev?)
-    (-> (AmazonSQSClient/builder)
-        (.withEndpointConfiguration (AwsClientBuilder$EndpointConfiguration. "http://localhost:4566" "us-east-1"))
-        (.withCredentials (AWSStaticCredentialsProvider. (BasicAWSCredentials. (:access-key aws-credentials) (:secret-key aws-credentials))))
+    (-> (SqsClient/builder)
+        (.endpointOverride (URI/create "http://sqs.localhost.localstack.cloud:4566"))
+        (.region Region/US_EAST_1)
+        (.credentialsProvider
+          (StaticCredentialsProvider/create
+           (AwsBasicCredentials/create (:access-key aws-credentials)
+                                       (:secret-key aws-credentials))))
         (.build))
-    (-> (AmazonSQSClient/builder)
-        (.withCredentials (DefaultAWSCredentialsProviderChain/getInstance))
+    (-> (SqsClient/builder)
+        (.credentialsProvider
+          (.build (DefaultCredentialsProvider/builder)))
         (.build))))

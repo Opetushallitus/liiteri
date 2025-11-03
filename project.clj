@@ -20,8 +20,8 @@
                          [org.apache.pdfbox/pdfbox "3.0.5"]]
 
   :dependencies [[org.clojure/clojure "1.11.2"]
-                 [com.amazonaws/aws-java-sdk-s3 "1.12.740"]
-                 [com.amazonaws/aws-java-sdk-sqs "1.12.740"]
+                 [software.amazon.awssdk/s3 "2.37.3"]
+                 [software.amazon.awssdk/sqs "2.37.3"]
                  [camel-snake-kebab "0.4.0"]
                  [cheshire "6.1.0"]
                  [clj-time "0.15.2"]
@@ -64,9 +64,9 @@
                  [org.apache.pdfbox/jbig2-imageio "3.0.4"]
                  [ring/ring-session-timeout "0.2.0"]
                  [opiskelijavalinnat-utils/clj-ring-db-cas-session "1.0.0-SNAPSHOT"]
-                 [oph/clj-access-logging "1.0.0-SNAPSHOT"]
-                 [oph/clj-stdout-access-logging "1.0.0-SNAPSHOT"]
-                 [oph/clj-timbre-access-logging "1.1.0-SNAPSHOT"]]
+                 [oph/clj-access-logging "1.0.0-SNAPSHOT" :exclusions [io.findify/s3mock_2.12]]
+                 [oph/clj-stdout-access-logging "1.0.0-SNAPSHOT" :exclusions [io.findify/s3mock_2.12]]
+                 [oph/clj-timbre-access-logging "1.1.0-SNAPSHOT" :exclusions [io.findify/s3mock_2.12]]]
 
   :repositories [["snapshots" {:url "https://artifactory.opintopolku.fi/artifactory/oph-sade-snapshot-local"}]
                  ["github" {:url "https://maven.pkg.github.com/Opetushallitus/packages"

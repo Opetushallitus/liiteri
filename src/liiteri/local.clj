@@ -9,7 +9,9 @@
             [cheshire.core :as json]
             [clojure.java.io :as io]
             [liiteri.sqs-client :refer [get-sqs-client]])
-  (:import [com.amazonaws.services.sqs.model ReceiveMessageRequest]))
+  (:import [software.amazon.awssdk.services.s3.model CreateBucketRequest PutObjectRequest]
+           [software.amazon.awssdk.services.sqs.model ListQueuesRequest CreateQueueRequest ReceiveMessageRequest DeleteMessageRequest SendMessageRequest]
+           [software.amazon.awssdk.core.sync RequestBody]))
 
 (def ^:private mock-filename-virus-pattern #"(?i)eicar|virus")
 
@@ -27,44 +29,71 @@
 
 (defn- ensure-queue-exists [sqs-client queue-name]
        (log/info (str "checking if " queue-name " present"))
-       (let [queue-urls (-> (.listQueues sqs-client queue-name)
-                       (.getQueueUrls))]
+       (let [queue-urls (-> (.listQueues sqs-client
+                                         (-> (ListQueuesRequest/builder)
+                                             (.queueNamePrefix queue-name)
+                                             (.build)))
+                            (.queueUrls))]
             (if (.isEmpty queue-urls)
               (do
                 (log/info "creating " queue-name)
-                (-> (.createQueue sqs-client queue-name)
-                    (.getQueueUrl)))
+                (-> (.createQueue sqs-client
+                                  (-> (CreateQueueRequest/builder)
+                                      (.queueName queue-name)
+                                      (.build)))
+                    (.queueUrl)))
               (.get queue-urls 0))))
 
 (defn- ensure-bucket-exists [s3-client bucket-name]
        (log/info (str "checking if " bucket-name " present"))
-       (let [buckets (.listBuckets s3-client)]
-            (log/info (str "buckets: " buckets))
-            (when (empty? (filter (fn [bucket] (= bucket-name (.getName bucket))) buckets))
-                  (log/info (str "creating bucket " bucket-name))
-                  (let [bucket (.createBucket s3-client bucket-name)]
-                       (log/info (str "created bucket: " (.getName bucket))))
-                  (.putObject s3-client
-                              bucket-name
-                              "4555c853-2a56-491f-b217-6e15a86aa0a8"
-                              (io/file (io/resource "three_page_pdf_for_testing.pdf"))))))
+       (let [buckets (->> (.listBucketsPaginator s3-client)
+                          (mapcat #(.buckets %)))]
+         (log/info (str "buckets: " buckets))
+         (when (empty? (filter (fn [bucket] (= bucket-name (.name bucket))) buckets))
+           (log/info (str "creating bucket " bucket-name))
+           (let [response (.createBucket s3-client
+                                         (-> (CreateBucketRequest/builder)
+                                             (.bucket bucket-name)
+                                             (.build)))]
+             (log/info (str "created bucket: " (.bucketArn response))))
+           (let [response (.putObject s3-client
+                                      (-> (PutObjectRequest/builder)
+                                          (.bucket bucket-name)
+                                          (.key "4555c853-2a56-491f-b217-6e15a86aa0a8")
+                                          (.build))
+                                      (RequestBody/fromFile
+                                        (io/file (io/resource "three_page_pdf_for_testing.pdf"))))]
+             (log/info (str "added file with eTag: " (.eTag response)))))))
 
 (defn- poll-scan-requests [sqs-client request-queue-url result-queue-url]
   (try
-   (doseq [message (-> (.receiveMessage sqs-client (-> (ReceiveMessageRequest. request-queue-url)
-                                                     (.withWaitTimeSeconds (int 0))))
-                     (.getMessages))]
-      (doseq [scan-request (:objects (json/parse-string (.getBody message) true))]
+   (doseq [message (-> (.receiveMessage sqs-client
+                                        (-> (ReceiveMessageRequest/builder)
+                                            (.queueUrl request-queue-url)
+                                            (.waitTimeSeconds (int 0))
+                                            (.build)))
+                       (.messages))]
+      (doseq [scan-request (:objects (json/parse-string (.body message) true))]
         (log/info (str "Received scan request: " scan-request))
         (let [custom-data (json/parse-string (:custom_data scan-request) true)
               filename (:filename custom-data)
               scan-failed (re-find mock-filename-virus-pattern filename)]
-              (.sendMessage sqs-client result-queue-url
-                            (json/generate-string {:Message (json/generate-string {:bucket (:bucket scan-request)
-                                                             :key (:key scan-request)
-                                                             :status (if scan-failed "infected" "clean")
-                                                             :custom_data (:custom_data scan-request)})}))))
-      (.deleteMessage sqs-client request-queue-url (.getReceiptHandle message)))
+              (.sendMessage sqs-client
+                            (-> (SendMessageRequest/builder)
+                                (.queueUrl result-queue-url)
+                                (.messageBody
+                                  (json/generate-string
+                                    {:Message (json/generate-string
+                                                {:bucket (:bucket scan-request)
+                                                 :key (:key scan-request)
+                                                 :status (if scan-failed "infected" "clean")
+                                                 :custom_data (:custom_data scan-request)})}))
+                                (.build)))))
+      (.deleteMessage sqs-client
+                      (-> (DeleteMessageRequest/builder)
+                          (.receiptHandle (.receiptHandle message))
+                          (.queueUrl request-queue-url)
+                          (.build))))
    (catch Exception e
      (log/error e "Failed to process scan request"))))
 
