@@ -18,7 +18,7 @@
     <url>https://github.com/Opetushallitus/liiteri</url>
     <connection>scm:git:git://github.com/Opetushallitus/liiteri.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/Opetushallitus/liiteri.git</developerConnection>
-    <tag>4ff24f709fd4e419c2ce642938eb3a639a5525b3</tag>
+    <tag>0a03912564012005c2d5ff4b5c1e0886762ea038</tag>
   </scm>
   <build>
     <sourceDirectory>src</sourceDirectory>
@@ -282,9 +282,9 @@
       <version>1.1.0</version>
     </dependency>
     <dependency>
-      <groupId>fi.vm.sade</groupId>
-      <artifactId>scala-cas_2.12</artifactId>
-      <version>2.2.2.1-SNAPSHOT</version>
+      <groupId>opiskelijavalinnat-utils</groupId>
+      <artifactId>java-cas</artifactId>
+      <version>2.0.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.apache.tika</groupId>

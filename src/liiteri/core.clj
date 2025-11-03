@@ -81,10 +81,6 @@
 
         :login-cas-client (delay (cas/new-cas-client config))
 
-        :kayttooikeus-cas-client (delay (cas/new-client config
-                                                        "/kayttooikeus-service" "j_spring_cas_security_check"
-                                                        "JSESSIONID"))
-
         :audit-logger (component/using
                         (audit-log/new-logger)
                         [:config])
@@ -97,7 +93,7 @@
 
         :server (component/using
                   (server/new-server)
-                  [:storage-engine :login-cas-client :kayttooikeus-cas-client :session-store :db :config :audit-logger :virus-scan])
+                  [:storage-engine :login-cas-client :session-store :db :config :audit-logger :virus-scan])
 
         :migrations (component/using
                       (migrations/new-migration)
