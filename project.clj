@@ -44,7 +44,7 @@
                  [org.slf4j/jcl-over-slf4j "1.7.36"]
                  [yesql "0.5.3"]
                  [environ "1.1.0"]
-                 [fi.vm.sade/scala-cas_2.12 "2.2.2.1-SNAPSHOT"]
+                 [opiskelijavalinnat-utils/java-cas "2.0.0-SNAPSHOT"]
                  [org.apache.tika/tika-core "3.2.3"]
                  [org.bouncycastle/bcprov-jdk18on "1.82"]
                  [org.bouncycastle/bcpkix-jdk18on "1.82"]
