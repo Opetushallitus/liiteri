@@ -213,7 +213,6 @@
 
 (defn auth-routes [{:keys [login-cas-client
                            session-store
-                           kayttooikeus-cas-client
                            config]}]
   (api/context "/auth" []
     (api/middleware [session-client/wrap-session-client-headers]
@@ -226,7 +225,6 @@
                               login-provider (auth/cas-login config @login-cas-client ticket)]
                           (auth/login login-provider
                                       redirect-url
-                                      @kayttooikeus-cas-client
                                       config)))
                       (api/POST "/cas" [logoutRequest]
                         (auth/cas-initiated-logout logoutRequest session-store))

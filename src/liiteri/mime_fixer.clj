@@ -13,7 +13,8 @@
 
 (defn- log-mime-type-fix-result [file-key filename content-type status elapsed-time]
   (let [status-str (if (= status :successful) "OK" "FAILED")]
-    (log/info (str "Mime type fix took " elapsed-time " ms, status " status-str " for file " filename " with key " file-key " (" content-type ")"))))
+    (log/info
+     (str "Mime type fix took " elapsed-time " ms, status " status-str " for file " filename " with key " file-key " (" content-type ")"))))
 
 (defn fix-mime-type-of-file [conn
                              storage-engine
@@ -22,7 +23,8 @@
                               uploaded :uploaded}]
   (let [start-time (System/currentTimeMillis)]
     (try
-      (log/info (str "Fixing mime type of '" filename "' with key '" file-key "', uploaded on " uploaded " ..."))
+      (log/info
+       (str "Fixing mime type of '" filename "' with key '" file-key "', uploaded on " uploaded " ..."))
       (let [detected-content-type (mime/detect-mime-type #(file-store/get-file storage-engine file-key))
             fixed-filename        (mime/fix-extension filename detected-content-type)
             names-for-logging     (if (= filename fixed-filename)
@@ -32,7 +34,8 @@
         (log-mime-type-fix-result file-key names-for-logging detected-content-type :successful (- (System/currentTimeMillis) start-time))
         true)
       (catch Exception e
-        (log/error e (str "Failed to fix mime type of file '" filename "' with key '" file-key "', uploaded on " uploaded " : " (.getMessage e)))
+        (log/error e
+                   (str "Failed to fix mime type of file '" filename "' with key '" file-key "', uploaded on " uploaded " : " (.getMessage e)))
         (metadata-store/set-content-type-and-filename! file-key filename mime-type-for-failed-cases conn)
         (log-mime-type-fix-result file-key
                                   filename
@@ -44,28 +47,29 @@
 (defn- fix-mime-type-of-next-file [db storage-engine]
   (try
     (jdbc/with-db-transaction [tx db]
-      (let [conn {:connection tx}]
-        (if-let [file (metadata-store/get-file-without-mime-type conn)]
-          (do
-            (reset! were-unprocessed-files-found-on-last-run true)
-            (fix-mime-type-of-file conn storage-engine file))
-          (do
-            (when @were-unprocessed-files-found-on-last-run
-              (log/info "MIME type fixing seems to be finished (or errored)."))
-            (reset! were-unprocessed-files-found-on-last-run false)
-            false))))
+                              (let [conn {:connection tx}]
+                                (if-let [file (metadata-store/get-file-without-mime-type conn)]
+                                  (do
+                                    (reset! were-unprocessed-files-found-on-last-run true)
+                                    (fix-mime-type-of-file conn storage-engine file))
+                                  (do
+                                    (when @were-unprocessed-files-found-on-last-run
+                                      (log/info "MIME type fixing seems to be finished (or errored)."))
+                                    (reset! were-unprocessed-files-found-on-last-run false)
+                                    false))))
     (catch Exception e
       (log/error e "Failed to fix mime type of the next file")
       false)))
 
 (defn- fix-mime-types-of-files [db storage-engine]
   (log/info "Starting to fix MIME types")
-  (try (loop []
-         (when (fix-mime-type-of-next-file db storage-engine)
-           (recur)))
-       (catch Throwable t
-         (println "Unexpected throwable!")
-         (.printStackTrace t))))
+  (try
+    (loop []
+      (when (fix-mime-type-of-next-file db storage-engine)
+        (recur)))
+    (catch Throwable t
+      (println "Unexpected throwable!")
+      (.printStackTrace t))))
 
 (defprotocol Fixer
   (fix-mime-types-of-files! [this]))
@@ -80,7 +84,8 @@
           fixer         #(fix-mime-types-of-files db storage-engine)
           time-unit     TimeUnit/SECONDS
           fixer-future  (.scheduleAtFixedRate scheduler fixer 0 poll-interval time-unit)]
-      (log/info (str "Started MIME type fixing process, restarting at " poll-interval " " time-unit " intervals."))
+      (log/info
+       (str "Started MIME type fixing process, restarting at " poll-interval " " time-unit " intervals."))
       (assoc this :fixer-future fixer-future)))
 
   (stop [this]

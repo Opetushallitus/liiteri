@@ -1,8 +1,5 @@
 (ns liiteri.urls)
 
-(defn kayttooikeus-service-kayttooikeus-kayttaja-url [config username]
-  (str (-> config :virkailija-host) "/kayttooikeus-service/kayttooikeus/kayttaja?username=" username))
-
 (defn redirect-to-login-failed-page-url [config]
   (str (-> config :virkailija-host) "/liiteri/virhe"))
 

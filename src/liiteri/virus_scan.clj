@@ -7,7 +7,7 @@
             [liiteri.sqs-client :refer [get-sqs-client]]
             [taoensso.timbre :as log]
             [cheshire.core :as json])
-  (:import [com.amazonaws.services.sqs.model ReceiveMessageRequest]
+  (:import [software.amazon.awssdk.services.sqs.model ReceiveMessageRequest GetQueueUrlRequest SendMessageRequest DeleteMessageRequest]
            [java.util.concurrent Executors TimeUnit ScheduledFuture]))
 
 (defn- log-virus-scan-result [file-key filename content-type status elapsed-time]
@@ -22,13 +22,16 @@
 
 (defn- poll-scan-results [sqs-client result-queue-url db storage-engine config]
   (try
-     (let [messages (-> (.receiveMessage sqs-client (-> (ReceiveMessageRequest. result-queue-url)
-                                                        (.withWaitTimeSeconds (int 1)))) ; wait time of 1 second is to enable long polling which means we get answers from all sqs servers
-                        (.getMessages))]
+     (let [messages (-> (.receiveMessage sqs-client
+                                         (-> (ReceiveMessageRequest/builder)
+                                             (.queueUrl result-queue-url)
+                                             (.waitTimeSeconds (int 1)) ; wait time of 1 second is to enable long polling which means we get answers from all sqs servers
+                                             (.build)))
+                        (.messages))]
        (log/info (str "Received " (.size messages) " virus scan results"))
        (doseq [message messages]
          (try
-           (let [message (json/parse-string (.getBody message) true)
+           (let [message (json/parse-string (.body message) true)
                  scan-result (json/parse-string (:Message message) true)]
              (when [= (:bucket scan-result) (get-in config [:file-store :s3 :bucket])]
                (let [file-key (:key scan-result)
@@ -48,9 +51,12 @@
                                                             (file-store/delete-file-and-metadata file-key "liiteri-virus-scan" storage-engine conn {} false)
                                                             (metadata-store/set-virus-scan-status! file-key "virus_found" conn))
                                                (mark-and-log-failure file-key filename content-type 0 0 conn)))))))
-           (.deleteMessage sqs-client result-queue-url (.getReceiptHandle message))
+           (.deleteMessage sqs-client (-> (DeleteMessageRequest/builder)
+                                          (.queueUrl result-queue-url)
+                                          (.receiptHandle (.receiptHandle message))
+                                          (.build)))
            (catch Exception e
-             (log/error e (str "Failed to process scan result for message: " (.getBody message))))))
+             (log/error e (str "Failed to process scan result for message: " (.body message))))))
        (.size messages))
      (catch Exception e
        (log/error e "Failed to process messages from scan result queue")
@@ -69,11 +75,17 @@
     (let [sqs-request-scan-client (get-sqs-client)
           sqs-poll-results-client (get-sqs-client)
           request-queue-name (get-in config [:bucketav :scan-request-queue-name])
-          request-queue-url (-> (.getQueueUrl sqs-request-scan-client request-queue-name)
-                                (.getQueueUrl))
+          request-queue-url (-> (.getQueueUrl sqs-request-scan-client
+                                              (-> (GetQueueUrlRequest/builder)
+                                                  (.queueName request-queue-name)
+                                                  (.build)))
+                                (.queueUrl))
           result-queue-name (get-in config [:bucketav :scan-result-queue-name])
-          result-queue-url (-> (.getQueueUrl sqs-poll-results-client result-queue-name)
-                                (.getQueueUrl))
+          result-queue-url (-> (.getQueueUrl sqs-poll-results-client
+                                             (-> (GetQueueUrlRequest/builder)
+                                                 (.queueName result-queue-name)
+                                                 (.build)))
+                                (.queueUrl))
           poll-interval (get-in config [:bucketav :poll-interval-seconds])
           s3-bucket (get-in config [:file-store :s3 :bucket])
 
@@ -103,15 +115,20 @@
       (doseq [file metadata]
         (log/info (str "Requesting file scan for " (:key file) ", to bucket " (:s3-bucket this))))
       (doseq [metadatapart (partition 10 10 [] metadata)]   ; BucketAV hyväksyy maksimissaan 10 tiedostoa kerrallaan
-        (.sendMessage (:sqs-request-scan-client this) (:request-queue-url this)
-                      (json/generate-string {:objects
-                                             (map (fn [file]
-                                                    {:bucket (:s3-bucket this)
-                                                     :key (:key file)
-                                                     :custom_data (json/generate-string {:start-time (System/currentTimeMillis)
-                                                                                         :filename (:filename file)
-                                                                                         :content-type (:content-type file)})})
-                                                  metadatapart)}))))))
+        (.sendMessage (:sqs-request-scan-client this)
+                      (-> (SendMessageRequest/builder)
+                          (.queueUrl (:request-queue-url this))
+                          (.messageBody
+                            (json/generate-string
+                              {:objects
+                               (map (fn [file]
+                                      {:bucket (:s3-bucket this)
+                                       :key (:key file)
+                                       :custom_data (json/generate-string {:start-time (System/currentTimeMillis)
+                                                                           :filename (:filename file)
+                                                                           :content-type (:content-type file)})})
+                                    metadatapart)}))
+                          (.build)))))))
 
 (defn new-scanner []
   (map->VirusScanner {}))
