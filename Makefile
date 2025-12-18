@@ -4,7 +4,7 @@ LIITERI_CONFIG ?= ../ataru-secrets/virkailija-local-dev.edn
 
 LIITERI=liiteri-16832
 
-PM2=npx pm2 --no-autorestart
+PM2=pnpm exec pm2 --no-autorestart
 START_ONLY=start pm2.config.js --only
 STOP_ONLY=stop pm2.config.js --only
 
@@ -27,10 +27,10 @@ build-docker-images: check-tools
 	$(DOCKER_COMPOSE) build
 
 # ----------------
-# Npm installation
+# Pnpm installation
 # ----------------
 $(NODE_MODULES):
-	npm install
+	pnpm install
 
 # ----------------
 # Start apps
@@ -95,7 +95,7 @@ log: $(NODE_MODULES)
 logs: log
 
 lint: $(NODE_MODULES)
-	npx eslint .
+	pnpm run lint
 
 help:
 	@cat Makefile.md
@@ -112,4 +112,3 @@ test: start-docker
 # ----------------
 kill: stop-pm2 stop-docker
 	$(PM2) kill
-

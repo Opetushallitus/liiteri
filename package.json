@@ -11,7 +11,7 @@
   },
   "lint-staged": {
     "src/**/*.{clj,cljs,cljc}": [
-      "npm run lint:lint-staged --"
+      "pnpm run lint:lint-staged --"
     ]
   },
   "license": "EUPL-1.1",
@@ -31,5 +31,11 @@
   },
   "engines": {
     "node": ">=18.12"
-  }
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm"
+    }
+  },
+  "packageManager": "pnpm@10.26.0"
 }
