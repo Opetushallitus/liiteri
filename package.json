@@ -7,11 +7,12 @@
   "scripts": {
     "lint": "clj-kondo --config .clj-kondo/config.edn --fail-level error --lint src",
     "lint:lint-staged": "clj-kondo --config .clj-kondo/config.edn --fail-level error --lint",
+    "preinstall": "pnpx only-allow@1.2.2 pnpm",
     "prepare": "husky"
   },
   "lint-staged": {
     "src/**/*.{clj,cljs,cljc}": [
-      "npm run lint:lint-staged --"
+      "pnpm run lint:lint-staged --"
     ]
   },
   "license": "EUPL-1.1",
@@ -31,5 +32,6 @@
   },
   "engines": {
     "node": ">=18.12"
-  }
+  },
+  "packageManager": "pnpm@10.26.1+sha512.664074abc367d2c9324fdc18037097ce0a8f126034160f709928e9e9f95d98714347044e5c3164d65bd5da6c59c6be362b107546292a8eecb7999196e5ce58fa"
 }

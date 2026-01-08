@@ -24,7 +24,7 @@ create-uberjar() {
 
 run-tests() {
   echo "Running tests"
-  npm run lint
+  pnpm run lint
   ./bin/lein test-ci
 }
 
