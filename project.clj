@@ -24,7 +24,6 @@
                  [software.amazon.awssdk/sqs "2.37.3"]
                  [camel-snake-kebab "0.4.0"]
                  [cheshire "6.1.0"]
-                 [clj-time "0.15.2"]
                  [metosin/compojure-api "1.1.14"]
                  [com.stuartsierra/component "0.4.0"]
                  [org.flywaydb/flyway-core "6.0.4"]

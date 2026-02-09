@@ -1,14 +1,14 @@
 (ns liiteri.file-store-test
-  (:require [clj-time.core :as t]
-            [clojure.string :as string]
+  (:require [clojure.string :as string]
             [clojure.test :refer :all]
             [liiteri.core :as system]
             [liiteri.db.file-metadata-store :as metadata-store]
             [liiteri.db.test-metadata-store :as test-metadata-store]
             [liiteri.files.file-store :as file-store]
             [liiteri.test-utils :as u])
-  (:import [java.util UUID]
-           [java.sql Timestamp]))
+  (:import (java.time ZonedDateTime)
+           (java.util UUID)
+           (java.sql Timestamp)))
 
 (def system (atom (system/new-system false)))
 (def metadata1 (atom nil))
@@ -43,14 +43,14 @@
         origin-system "Test-system"
         conn {:connection (:db @system)}
         store (:storage-engine @system)
-        uploaded (-> (t/now)
-                     (t/minus (t/months 1))
-                     (.getMillis)
-                     (Timestamp.))
-        deleted (-> (t/now)
-                    (t/minus (t/days 1))
-                    (.getMillis)
-                    (Timestamp.))]
+        uploaded (-> (ZonedDateTime/now)
+                     (.minusMonths 1)
+                     (.toInstant)
+                     (Timestamp/from))
+        deleted (-> (ZonedDateTime/now)
+                    (.minusDays 1)
+                    (.toInstant)
+                    (Timestamp/from))]
     (file-store/create-file-from-bytearray store (.getBytes "test file1") file-key1)
     (file-store/create-file-from-bytearray store (.getBytes "test file2") file-key2)
     (file-store/create-file-from-bytearray store (.getBytes "test file3") file-key3)

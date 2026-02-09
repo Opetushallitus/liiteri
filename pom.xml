@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="https://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>liiteri</groupId>
   <artifactId>liiteri</artifactId>
@@ -18,7 +18,7 @@
     <url>https://github.com/Opetushallitus/liiteri</url>
     <connection>scm:git:git://github.com/Opetushallitus/liiteri.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/Opetushallitus/liiteri.git</developerConnection>
-    <tag>9d17b085e6c13cfa82d8dd6264249c1e329eeae3</tag>
+    <tag>e5de29591220ef18eed692cfef665345633006c1</tag>
   </scm>
   <build>
     <sourceDirectory>src</sourceDirectory>
@@ -179,11 +179,6 @@
       <groupId>cheshire</groupId>
       <artifactId>cheshire</artifactId>
       <version>6.1.0</version>
-    </dependency>
-    <dependency>
-      <groupId>clj-time</groupId>
-      <artifactId>clj-time</artifactId>
-      <version>0.15.2</version>
     </dependency>
     <dependency>
       <groupId>metosin</groupId>

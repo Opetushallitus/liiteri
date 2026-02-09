@@ -1,25 +1,25 @@
 (ns liiteri.time-utils
-  (:require [clj-time.coerce :as coerce]
-            [clj-time.core :as time])
   (:import (java.sql Timestamp)
-           (org.joda.time DateTime Instant)))
+           (java.time Instant ZoneId ZonedDateTime)))
+
+(defonce timezone-fi (ZoneId/of "Europe/Helsinki"))
 
 (defn current-time-millis []
-  (.getMillis (Instant/now)))
+  (.toEpochMilli (Instant/now)))
 
-(defn date-time->sql-time ^Timestamp [date-time]
-  (coerce/to-sql-time date-time))
+(defn date-time->sql-time ^Timestamp [^ZonedDateTime date-time]
+  (Timestamp/from (.toInstant date-time)))
 
-(defn sql-time->joda-time ^DateTime [x]
+(defn sql-time->date-time ^ZonedDateTime [x]
   (cond-> x
           (instance? Timestamp x)
-          (coerce/from-sql-date)))
+          (-> (.toInstant) (ZonedDateTime/ofInstant timezone-fi))))
 
-(defn sql-date->joda-time ^DateTime [x]
-  (coerce/from-sql-date x))
+(defn sql-date->date-time ^ZonedDateTime [x]
+  (-> x (.toLocalDate) (.atStartOfDay timezone-fi)))
 
-(defn before? [this that]
-  (time/before? this that))
+(defn before? [^ZonedDateTime this that]
+  (.isBefore this that))
 
 (defn periodic-seq
   "Päättymätön sarja aikaleimoja alkaen nykyhetkestä aina interval-seconds sekunnin välein, millisekunteina"
