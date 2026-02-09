@@ -2,7 +2,7 @@
   (:require [com.stuartsierra.component :as component]
             [cheshire.core :as json]
             [clojure.java.jdbc :as jdbc]
-            [clj-time.coerce :as c]
+            [liiteri.time-utils :as time]
             [hikari-cp.core :as h])
   (:import (java.sql PreparedStatement)
            (java.sql Date)
@@ -30,10 +30,10 @@
 
 (extend-protocol jdbc/IResultSetReadColumn
   Date
-  (result-set-read-column [v _ _] (c/from-sql-date v))
+  (result-set-read-column [v _ _] (time/sql-date->joda-time v))
 
   Timestamp
-  (result-set-read-column [v _ _] (c/from-sql-time v))
+  (result-set-read-column [v _ _] (time/sql-time->joda-time v))
 
   PgArray
   (result-set-read-column [v _ _]
@@ -42,7 +42,7 @@
 (extend-type DateTime
   jdbc/ISQLParameter
   (set-parameter [v ^PreparedStatement stmt idx]
-    (.setTimestamp stmt idx (c/to-sql-time v))))
+    (.setTimestamp stmt idx (time/date-time->sql-time v))))
 
 (defonce datasource (atom nil))
 
