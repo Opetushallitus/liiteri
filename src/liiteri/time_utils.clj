@@ -39,4 +39,4 @@
                       (fn [c jsonGenerator]
                         (.writeString jsonGenerator (.format formatter-utc-with-millis c))))
 
-(defmethod json-schema/convert-class java.time.ZonedDateTime [_ _] {:type "string" :format "date"})
+(defmethod json-schema/convert-class java.time.ZonedDateTime [_ _] {:type "string" :format "date-time"})
