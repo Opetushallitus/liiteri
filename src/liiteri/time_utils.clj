@@ -32,7 +32,7 @@
 
 (defonce timezone-utc (ZoneId/of "UTC"))
 (defn formatter-for-utc [fmt-str] (-> (DateTimeFormatter/ofPattern fmt-str) (.withZone timezone-utc)))
-(defonce formatter-utc-with-millis (formatter-for-utc "yyyy-MM-dd'T'HH:mm:ss:SSSX"))
+(defonce formatter-utc-with-millis (formatter-for-utc "yyyy-MM-dd'T'HH:mm:ss.SSSX"))
 
 (cheshire/add-encoder ZonedDateTime
                       (fn [c jsonGenerator]
