@@ -1,6 +1,9 @@
 (ns liiteri.time-utils
+  (:require [cheshire.factory]
+            [cheshire.generate :as cheshire])
   (:import (java.sql Timestamp)
-           (java.time Instant ZoneId ZonedDateTime)))
+           (java.time Instant ZoneId ZonedDateTime)
+           (java.time.format DateTimeFormatter)))
 
 (defonce timezone-fi (ZoneId/of "Europe/Helsinki"))
 
@@ -26,3 +29,11 @@
   [interval-seconds]
   (let [a (* interval-seconds 1000)]
     (iterate (partial + a) (current-time-millis))))
+
+(defonce timezone-utc (ZoneId/of "UTC"))
+(defn formatter-for-utc [fmt-str] (-> (DateTimeFormatter/ofPattern fmt-str) (.withZone timezone-utc)))
+(defonce formatter-utc-with-millis (formatter-for-utc "yyyy-MM-dd'T'HH:mm:ss:SSSX"))
+
+(cheshire/add-encoder ZonedDateTime
+                      (fn [c jsonGenerator]
+                        (.writeString jsonGenerator (.format formatter-utc-with-millis c))))
