@@ -1,6 +1,7 @@
 (ns liiteri.time-utils
   (:require [cheshire.factory]
-            [cheshire.generate :as cheshire])
+            [cheshire.generate :as cheshire]
+            [ring.swagger.json-schema :as json-schema])
   (:import (java.sql Timestamp)
            (java.time Instant ZoneId ZonedDateTime)
            (java.time.format DateTimeFormatter)))
@@ -37,3 +38,5 @@
 (cheshire/add-encoder ZonedDateTime
                       (fn [c jsonGenerator]
                         (.writeString jsonGenerator (.format formatter-utc-with-millis c))))
+
+(defmethod json-schema/convert-class java.time.ZonedDateTime [_ _] {:type "string" :format "date"})
