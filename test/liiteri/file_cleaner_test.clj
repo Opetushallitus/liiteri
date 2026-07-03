@@ -1,14 +1,14 @@
 (ns liiteri.file-cleaner-test
-  (:require [clj-time.core :as t]
-            [clojure.test :refer :all]
+  (:require [clojure.test :refer :all]
             [liiteri.core :as system]
             [liiteri.files.file-store :as file-store]
             [liiteri.db.file-metadata-store :as metadata-store]
             [liiteri.db.test-metadata-store :as test-metadata-store]
             [liiteri.file-cleaner :as cleaner]
             [liiteri.test-utils :as u])
-  (:import [java.util UUID]
-           [java.sql Timestamp]))
+  (:import (java.time ZonedDateTime)
+           (java.util UUID)
+           (java.sql Timestamp)))
 
 (def system (atom (system/new-system true)))
 (def metadata (atom nil))
@@ -50,10 +50,10 @@
   (let [db             (:db @system)
         storage-engine (:storage-engine @system)
         config         (:config @system)
-        uploaded       (-> (t/now)
-                           (t/minus (t/months 1))
-                           (.getMillis)
-                           (Timestamp.))]
+        uploaded       (-> (ZonedDateTime/now)
+                           (.minusMonths 1)
+                           (.toInstant)
+                           (Timestamp/from))]
     (init-test-file uploaded)
     (#'cleaner/clean-files db storage-engine)
     (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] {:connection db})]
@@ -68,9 +68,9 @@
   (let [db             (:db @system)
         storage-engine (:storage-engine @system)
         config         (:config @system)
-        uploaded       (-> (t/now)
-                           (.getMillis)
-                           (Timestamp.))]
+        uploaded       (-> (ZonedDateTime/now)
+                           (.toInstant)
+                           (Timestamp/from))]
     (init-test-file uploaded)
     (#'cleaner/clean-files db storage-engine)
     (let [metadata (test-metadata-store/get-metadata-for-tests [(:key @metadata)] {:connection db})]

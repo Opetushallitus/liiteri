@@ -7,10 +7,9 @@
             [liiteri.fixtures :as fixtures]
             [liiteri.test-utils :as u]
             [liiteri.preview.preview-generator :as preview-generator]
-            [com.stuartsierra.component :as component]
-            [clj-time.core :as t]
-            [taoensso.timbre :as log])
-  (:import [java.sql Timestamp]
+            [com.stuartsierra.component :as component])
+  (:import (java.sql Timestamp)
+           (java.time Instant)
            (java.util.concurrent Executors)))
 
 (def system (atom (system/new-system true {})))
@@ -29,7 +28,7 @@
   (is (= 1 (count (:previews file-metadata))))
 
   (is (= 1 (count previews)))
-  (is (= (str (:filename file-metadata) ".0" (-> (first previews) :key))))
+  (is (= (str (:filename file-metadata) ".0") (-> (first previews) :key)))
   (is (= "image/png" (-> (first previews) :content-type)))
   (is (< 0 (-> (first previews) :size))))
 
@@ -51,9 +50,8 @@
   (let [store (u/new-in-memory-store)
         conn  {:connection (:db @system)}]
     (doseq [{:keys [filename file-object content-type size]} fixtures/ok-files]
-      (let [uploaded  (-> (t/now)
-                          (.getMillis)
-                          (Timestamp.))
+      (let [uploaded  (-> (Instant/now)
+                          (Timestamp/from))
             origin-system "Test-system"
             origin-reference "1.2.246.562.11.000000000000000000001"
             file-spec {:key              filename
@@ -79,9 +77,8 @@
   (let [store (u/new-in-memory-store)
         conn  {:connection (:db @system)}]
     (doseq [{:keys [filename file-object content-type size]} fixtures/not-ok-preview-files]
-      (let [uploaded  (-> (t/now)
-                          (.getMillis)
-                          (Timestamp.))
+      (let [uploaded  (-> (Instant/now)
+                          (Timestamp/from))
             origin-system "Test-system"
             origin-reference "1.2.246.562.11.000000000000000000001"
             file-spec {:key              filename
@@ -105,9 +102,8 @@
   (let [store (u/new-in-memory-store)
         conn  {:connection (:db @system)}]
     (doseq [{:keys [filename file-object content-type size]} (take 2 fixtures/ok-files)]
-      (let [uploaded  (-> (t/now)
-                          (.getMillis)
-                          (Timestamp.))
+      (let [uploaded  (-> (Instant/now)
+                          (Timestamp/from))
             origin-system "Test-system"
             origin-reference "1.2.246.562.11.000000000000000000001"
             file-spec {:key             filename

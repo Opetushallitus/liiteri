@@ -6,9 +6,9 @@
             [liiteri.fixtures :refer :all]
             [liiteri.test-utils :as u]
             [com.stuartsierra.component :as component]
-            [clj-time.core :as t]
             [clojure.test :refer :all])
-  (:import [java.sql Timestamp]))
+  (:import (java.sql Timestamp)
+           (java.time Instant)))
 
 (def system (atom (system/new-system true {})))
 
@@ -24,9 +24,8 @@
   (let [store (u/new-in-memory-store)
         conn  {:connection (:db @system)}]
     (doseq [{:keys [mangled-filename filename file-object content-type size]} mangled-extension-files]
-      (let [uploaded  (-> (t/now)
-                          (.getMillis)
-                          (Timestamp.))
+      (let [uploaded  (-> (Instant/now)
+                          (Timestamp/from))
             file-spec {:key              filename
                        :filename         mangled-filename
                        :content-type     nil

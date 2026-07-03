@@ -2,11 +2,10 @@
     (:require [chime :as c]
               [clojure.core.async :as a]
               [clojure.java.jdbc :as jdbc]
-              [clj-time.core :as t]
-              [clj-time.periodic :as p]
               [com.stuartsierra.component :as component]
               [liiteri.db.file-metadata-store :as metadata-store]
               [liiteri.files.file-store :as file-store]
+              [liiteri.time-utils :as time]
               [taoensso.timbre :as log]))
 
 (defn- clean-file [conn storage-engine file process-name delete-file-permanently?]
@@ -78,7 +77,7 @@
     (let [poll-interval (if clean-deleted-files?
                           (get-in config [:file-delete-cleaner :poll-interval-seconds])
                           (get-in config [:file-cleaner :poll-interval-seconds]))
-          times         (c/chime-ch (p/periodic-seq (t/now) (t/seconds poll-interval))
+          times         (c/chime-ch (time/periodic-seq poll-interval)
                                     {:ch (a/chan (a/sliding-buffer 1))})]
       (if clean-deleted-files?
         (clean-deleted-files db storage-engine times)

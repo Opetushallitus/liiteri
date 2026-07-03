@@ -1,5 +1,5 @@
 (ns liiteri.db.file-metadata-store
-  (:require [clj-time.core :as t]
+  (:require [liiteri.time-utils :as time]
             [clojure.string :as string]
             [liiteri.db.db-utils :as db-utils]
             [schema.core :as s]
@@ -102,7 +102,7 @@
        (reduce (fn pick-latest-metadata [result {:keys [key uploaded] :as metadata}]
                  (cond-> result
                          (or (not (contains? result key))
-                             (t/before? (get-in result [key :uploaded]) uploaded))
+                             (time/before? (get-in result [key :uploaded]) uploaded))
                          (assoc key metadata)))
                {})
        ((fn [metadata]

@@ -1,7 +1,7 @@
 (ns liiteri.schema
   (:require [ring.swagger.upload]
             [schema.core :as s])
-  (:import [org.joda.time DateTime]))
+  (:import (java.time ZonedDateTime)))
 
 ;; This is the public schema of Liiteri API
 
@@ -9,8 +9,8 @@
   {:key          s/Str
    :content-type s/Str
    :size         s/Int
-   :uploaded     DateTime
-   :deleted      (s/maybe DateTime)})
+   :uploaded     ZonedDateTime
+   :deleted      (s/maybe ZonedDateTime)})
 
 (s/defschema File
   {:key               s/Str
@@ -20,8 +20,8 @@
    :page-count        (s/maybe s/Int)
    :virus-scan-status s/Str
    :final             s/Bool
-   :uploaded          DateTime
-   :deleted           (s/maybe DateTime)
+   :uploaded          ZonedDateTime
+   :deleted           (s/maybe ZonedDateTime)
    :preview-status    (s/enum "not_supported" "not_generated" "started" "finished" "error")
    :previews          [Preview]
    (s/optional-key :content-disposition) (s/maybe s/Str)})

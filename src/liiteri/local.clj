@@ -1,10 +1,9 @@
 (ns liiteri.local
   (:require [chime :as c]
             [clojure.core.async :as a]
-            [clj-time.core :as t]
-            [clj-time.periodic :as p]
             [com.stuartsierra.component :as component]
             [environ.core :refer [env]]
+            [liiteri.time-utils :as time]
             [taoensso.timbre :as log]
             [cheshire.core :as json]
             [clojure.java.io :as io]
@@ -107,7 +106,7 @@
         (let [sqs-client (get-sqs-client)
               request-queue-url (ensure-queue-exists sqs-client (get-scan-request-queue-name config))
               result-queue-url (ensure-queue-exists sqs-client (get-scan-result-queue-name config))
-              times (c/chime-ch (p/periodic-seq (t/now) (t/seconds 1))
+              times (c/chime-ch (time/periodic-seq 1)
                                 {:ch (a/chan (a/sliding-buffer 1))})]
              (ensure-bucket-exists (:s3-client s3-client) (get-bucket-name config))
              (a/go-loop []
