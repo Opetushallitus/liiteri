@@ -14,12 +14,12 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@0717577d45739eb3c851188b29f50ed6c0b2194e # v2
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
         name: Install pnpm
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: lts/*
           cache: pnpm
@@ -44,7 +44,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Prepare clojure env
         uses: ./.github/actions/prepare-clojure-env
@@ -54,7 +54,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: CONFIG=dev-resources/local-test-config.edn ./bin/cibuild.sh create-uberjar
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         id: restore-build
         with:
           path: target
@@ -62,7 +62,7 @@ jobs:
 
   deploy:
     needs: [ test, build ]
-    uses: Opetushallitus/.github/.github/workflows/push-scan-java-ecr.yml@main
+    uses: Opetushallitus/.github/.github/workflows/push-scan-java-ecr.yml@2f06269d5ac067ef17a76d2d5742db0b325e9a2e # main
     with:
       application: liiteri
       base-image: baseimage-fatjar-openjdk21:master
@@ -74,7 +74,7 @@ jobs:
 
   deploy-background:
     needs: [ test, build ]
-    uses: Opetushallitus/.github/.github/workflows/push-scan-java-ecr.yml@main
+    uses: Opetushallitus/.github/.github/workflows/push-scan-java-ecr.yml@2f06269d5ac067ef17a76d2d5742db0b325e9a2e # main
     with:
       application: liiteri-background
       base-image: baseimage-fatjar-openjdk21:master
