@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="https://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>liiteri</groupId>
   <artifactId>liiteri</artifactId>
@@ -18,7 +18,7 @@
     <url>https://github.com/Opetushallitus/liiteri</url>
     <connection>scm:git:git://github.com/Opetushallitus/liiteri.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/Opetushallitus/liiteri.git</developerConnection>
-    <tag>e5de29591220ef18eed692cfef665345633006c1</tag>
+    <tag>b30d2a0a13ecaa259671030cefa9f6b1d0da5fd0</tag>
   </scm>
   <build>
     <sourceDirectory>src</sourceDirectory>
@@ -57,16 +57,6 @@
     <repository>
       <id>clojars</id>
       <url>https://repo.clojars.org/</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-    </repository>
-    <repository>
-      <id>snapshots</id>
-      <url>https://artifactory.opintopolku.fi/artifactory/oph-sade-snapshot-local</url>
       <snapshots>
         <enabled>true</enabled>
       </snapshots>
@@ -152,6 +142,159 @@
         <artifactId>pdfbox</artifactId>
         <version>3.0.5</version>
       </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-core</artifactId>
+        <version>2.21.6</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>2.21.6</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-annotations</artifactId>
+        <version>2.21</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.dataformat</groupId>
+        <artifactId>jackson-dataformat-cbor</artifactId>
+        <version>2.21.6</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.dataformat</groupId>
+        <artifactId>jackson-dataformat-smile</artifactId>
+        <version>2.21.6</version>
+      </dependency>
+      <dependency>
+        <groupId>org.mozilla</groupId>
+        <artifactId>rhino</artifactId>
+        <version>1.7.15.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jsoup</groupId>
+        <artifactId>jsoup</artifactId>
+        <version>1.23.2</version>
+      </dependency>
+      <dependency>
+        <groupId>com.github.junrar</groupId>
+        <artifactId>junrar</artifactId>
+        <version>7.5.10</version>
+      </dependency>
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcjmail-jdk18on</artifactId>
+        <version>1.85</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>3.20.0</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-buffer</artifactId>
+        <version>4.2.17.Final</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-common</artifactId>
+        <version>4.2.17.Final</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-codec</artifactId>
+        <version>4.2.17.Final</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-codec-base</artifactId>
+        <version>4.2.17.Final</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-codec-compression</artifactId>
+        <version>4.2.17.Final</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-codec-dns</artifactId>
+        <version>4.2.17.Final</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-codec-http</artifactId>
+        <version>4.2.17.Final</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-codec-http2</artifactId>
+        <version>4.2.17.Final</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-codec-socks</artifactId>
+        <version>4.2.17.Final</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-handler</artifactId>
+        <version>4.2.17.Final</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-handler-proxy</artifactId>
+        <version>4.2.17.Final</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-resolver</artifactId>
+        <version>4.2.17.Final</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-resolver-dns</artifactId>
+        <version>4.2.17.Final</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-transport</artifactId>
+        <version>4.2.17.Final</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-transport-classes-epoll</artifactId>
+        <version>4.2.17.Final</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-transport-classes-kqueue</artifactId>
+        <version>4.2.17.Final</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-transport-native-unix-common</artifactId>
+        <version>4.2.17.Final</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-transport-native-epoll</artifactId>
+        <version>4.2.17.Final</version>
+        <classifier>linux-x86_64</classifier>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-transport-native-epoll</artifactId>
+        <version>4.2.17.Final</version>
+        <classifier>linux-aarch_64</classifier>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-transport-native-kqueue</artifactId>
+        <version>4.2.17.Final</version>
+        <classifier>osx-x86_64</classifier>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>
@@ -198,7 +341,7 @@
     <dependency>
       <groupId>fi.vm.sade</groupId>
       <artifactId>auditlogger</artifactId>
-      <version>8.3.1-SNAPSHOT</version>
+      <version>9.2.7-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>hikari-cp</groupId>
@@ -218,7 +361,7 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>42.7.3</version>
+      <version>42.7.12</version>
     </dependency>
     <dependency>
       <groupId>prismatic</groupId>
@@ -279,7 +422,12 @@
     <dependency>
       <groupId>opiskelijavalinnat-utils</groupId>
       <artifactId>java-cas</artifactId>
-      <version>2.0.0-SNAPSHOT</version>
+      <version>2.3.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>buddy</groupId>
+      <artifactId>buddy-core</artifactId>
+      <version>1.12.0-430</version>
     </dependency>
     <dependency>
       <groupId>org.apache.tika</groupId>
@@ -289,17 +437,17 @@
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk18on</artifactId>
-      <version>1.82</version>
+      <version>1.85</version>
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcpkix-jdk18on</artifactId>
-      <version>1.82</version>
+      <version>1.85</version>
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcutil-jdk18on</artifactId>
-      <version>1.82</version>
+      <version>1.85</version>
     </dependency>
     <dependency>
       <groupId>org.apache.tika</groupId>
@@ -343,12 +491,12 @@
     <dependency>
       <groupId>aleph</groupId>
       <artifactId>aleph</artifactId>
-      <version>0.9.3</version>
+      <version>0.9.11</version>
     </dependency>
     <dependency>
-      <groupId>me.raynes</groupId>
+      <groupId>clj-commons</groupId>
       <artifactId>fs</artifactId>
-      <version>1.4.6</version>
+      <version>1.6.312</version>
     </dependency>
     <dependency>
       <groupId>org.apache.pdfbox</groupId>
@@ -384,39 +532,6 @@
       <groupId>opiskelijavalinnat-utils</groupId>
       <artifactId>clj-ring-db-cas-session</artifactId>
       <version>1.0.0-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>oph</groupId>
-      <artifactId>clj-access-logging</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>s3mock_2.12</artifactId>
-          <groupId>io.findify</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>oph</groupId>
-      <artifactId>clj-stdout-access-logging</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>s3mock_2.12</artifactId>
-          <groupId>io.findify</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>oph</groupId>
-      <artifactId>clj-timbre-access-logging</artifactId>
-      <version>1.1.0-SNAPSHOT</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>s3mock_2.12</artifactId>
-          <groupId>io.findify</groupId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>reloaded.repl</groupId>
