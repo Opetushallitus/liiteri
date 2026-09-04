@@ -1,8 +1,7 @@
 (ns liiteri.api
-  (:require [clj-access-logging]
-            [clj-stdout-access-logging]
+  (:require [liiteri.clj-access-logging :as clj-access-logging]
             [liiteri.auth.auth :as auth]
-            [clj-timbre-access-logging]
+            [liiteri.clj-timbre-access-logging :as clj-timbre-access-logging]
             [clojure.java.io :as io]
             [clojure.string :as string]
             [compojure.api.exception :as ex]

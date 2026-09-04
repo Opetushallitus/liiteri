@@ -1,3 +1,9 @@
+;; Riippuvuusperheiden versiot yhtenä totuutena. Leiningen ei tue Maven-BOM importia
+;; (:scope "import"), joten artefaktit listataan eksplisiittisesti mutta versio jaetaan muuttujalla.
+(def jackson-version "2.21.6")     ; CVE-2026-54512/54513 (CRITICAL); 2.19/2.20-linjoille ei backporttia
+(def netty-version "4.2.17.Final") ; CVE-2026-44249, CVE-2026-75595 (CRITICAL) ym.; java-cas 2.3.0 / AHC 3.0.12
+(def bouncycastle-version "1.85")  ; CVE-2026-8763 ym. (CRITICAL)
+
 (defproject liiteri "0.1.0-SNAPSHOT"
   :description "File Storage Service For OPH"
   :url "https://github.com/Opetushallitus/liiteri"
@@ -8,16 +14,54 @@
   :managed-dependencies [[instaparse/instaparse "1.4.10"]
                          [riddley/riddley "0.2.0"]
                          [org.clojure/tools.reader "1.3.2"]
-                         [com.typesafe.akka/akka-actor_2.12 "2.5.32"]
-                         [com.typesafe.akka/akka-http-core_2.12 "10.1.15"]
-                         [commons-fileupload/commons-fileupload "1.6.0"]
                          [org.apache.commons/commons-fileupload2-core "2.0.0-M4"]
-                         [com.google.code.gson/gson "2.11.0"]
-                         [com.google.protobuf/protobuf-java "3.25.5"]
+                         ;; auditlogger 9.2.7 tuo gson 2.12.0 -> managed-pinni ei saa laskea sitä alas
+                         [com.google.code.gson/gson "2.12.0"]
                          [com.google.guava/guava "33.3.0-jre"]
                          [clj-commons/clj-yaml "1.0.27"]
                          [org.yaml/snakeyaml "2.2"]
-                         [org.apache.pdfbox/pdfbox "3.0.5"]]
+                         [org.apache.pdfbox/pdfbox "3.0.5"]
+                         ;; Tietoturvapäivitykset 2026-09 (transitiiviset pinnit)
+                         [com.fasterxml.jackson.core/jackson-core ~jackson-version]
+                         [com.fasterxml.jackson.core/jackson-databind ~jackson-version]
+                         [com.fasterxml.jackson.core/jackson-annotations "2.21"] ; annotations-linja ei käytä patch-numeroa
+                         [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor ~jackson-version]
+                         [com.fasterxml.jackson.dataformat/jackson-dataformat-smile ~jackson-version]
+                         [org.mozilla/rhino "1.7.15.1"]
+                         [org.jsoup/jsoup "1.23.2"]
+                         [com.github.junrar/junrar "7.5.10"]
+                         ;; bouncycastle: buddy-core 1.12 (clj-ring-db-cas-session -> buddy-auth -> buddy-sign)
+                         ;; ja tika-parsers vetävät *-jdk18on:ia -> pakota 1.85 (CVE-2026-8763 ym.), pois *-jdk15on 1.70:stä
+                         [buddy/buddy-core "1.12.0-430"]
+                         [org.bouncycastle/bcprov-jdk18on ~bouncycastle-version]
+                         [org.bouncycastle/bcpkix-jdk18on ~bouncycastle-version]
+                         [org.bouncycastle/bcutil-jdk18on ~bouncycastle-version]
+                         [org.bouncycastle/bcjmail-jdk18on ~bouncycastle-version]
+                         ;; auditlogger 9.2.7 tuo 3.13.0 (CVE-2025-48924)
+                         [org.apache.commons/commons-lang3 "3.20.0"]
+                         ;; Pidä koko io.netty-perhe yhdessä versiossa. java-cas 2.3.0 -> AHC 3.0.12
+                         ;; vaatii netty 4.2.x (netty-codec-base/-compression); aws-sdk toisi 4.1.126.
+                         ;; ~netty-version tiedoston alussa (kattaa kaikki netty-CVE:t, sis. AHC 3.0.12).
+                         [io.netty/netty-buffer ~netty-version]
+                         [io.netty/netty-common ~netty-version]
+                         [io.netty/netty-codec ~netty-version]
+                         [io.netty/netty-codec-base ~netty-version]
+                         [io.netty/netty-codec-compression ~netty-version]
+                         [io.netty/netty-codec-dns ~netty-version]
+                         [io.netty/netty-codec-http ~netty-version]
+                         [io.netty/netty-codec-http2 ~netty-version]
+                         [io.netty/netty-codec-socks ~netty-version]
+                         [io.netty/netty-handler ~netty-version]
+                         [io.netty/netty-handler-proxy ~netty-version]
+                         [io.netty/netty-resolver ~netty-version]
+                         [io.netty/netty-resolver-dns ~netty-version]
+                         [io.netty/netty-transport ~netty-version]
+                         [io.netty/netty-transport-classes-epoll ~netty-version]
+                         [io.netty/netty-transport-classes-kqueue ~netty-version]
+                         [io.netty/netty-transport-native-unix-common ~netty-version]
+                         [io.netty/netty-transport-native-epoll ~netty-version :classifier "linux-x86_64"]
+                         [io.netty/netty-transport-native-epoll ~netty-version :classifier "linux-aarch_64"]
+                         [io.netty/netty-transport-native-kqueue ~netty-version :classifier "osx-x86_64"]]
 
   :dependencies [[org.clojure/clojure "1.11.2"]
                  [software.amazon.awssdk/s3 "2.37.3"]
@@ -27,11 +71,13 @@
                  [metosin/compojure-api "1.1.14"]
                  [com.stuartsierra/component "0.4.0"]
                  [org.flywaydb/flyway-core "6.0.4"]
-                 [fi.vm.sade/auditlogger "8.3.1-SNAPSHOT"]
+                 ;; 8.3.1-SNAPSHOT (2019) oli vain Artifactoryssa -> 9.2.7-SNAPSHOT (GitHub Packages,
+                 ;; sama kuin ataru/maksut; API yhteensopiva liiterin audit_log.clj:n kanssa)
+                 [fi.vm.sade/auditlogger "9.2.7-SNAPSHOT"]
                  [hikari-cp "2.9.0"]
                  [http-kit "2.8.1"]
                  [org.clojure/java.jdbc "0.7.10"]
-                 [org.postgresql/postgresql "42.7.3"]
+                 [org.postgresql/postgresql "42.7.12"]
                  [prismatic/schema "1.1.12"]
                  [metosin/schema-tools "0.12.0"]
                  [javax.servlet/javax.servlet-api "4.0.1" :scope "provided"]
@@ -43,19 +89,18 @@
                  [org.slf4j/jcl-over-slf4j "1.7.36"]
                  [yesql "0.5.3"]
                  [environ "1.1.0"]
-                 [opiskelijavalinnat-utils/java-cas "2.0.0-SNAPSHOT"]
+                 [opiskelijavalinnat-utils/java-cas "2.3.0-SNAPSHOT"]
                  [org.apache.tika/tika-core "3.2.3"]
-                 [org.bouncycastle/bcprov-jdk18on "1.82"]
-                 [org.bouncycastle/bcpkix-jdk18on "1.82"]
-                 [org.bouncycastle/bcutil-jdk18on "1.82"]
                  ; Exclusions to get rid warnings about version ranges.
                  [org.apache.tika/tika-parsers-standard-package "3.2.3" :exclusions [org.bouncycastle/bcpkix-jdk18on org.bouncycastle/bcutil-jdk18on org.bouncycastle/bcprov-jdk18on]]
-                 [org.apache.commons/commons-compress "1.27.1"]
+                 ;; tika 3.2.3 ja clj-commons/fs 1.6.312 haluavat 1.28.0 -> ei pidetä alhaalla
+                 [org.apache.commons/commons-compress "1.28.0"]
                  [commons-io/commons-io "2.19.0"]
                  [jarohen/chime "0.2.2"]
                  [clj-http "3.13.1"]
-                 [aleph "0.9.3"]
-                 [me.raynes/fs "1.4.6"]
+                 [aleph "0.9.11"]
+                 ;; me.raynes/fs 1.4.6:lle ei tietoturvakorjausta -> ylläpidetty fork, sama namespace (me.raynes.fs)
+                 [clj-commons/fs "1.6.312"]
                  [org.apache.pdfbox/pdfbox "3.0.5"]
                  [com.github.jai-imageio/jai-imageio-core "1.4.0"]
                  [com.github.jai-imageio/jai-imageio-jpeg2000 "1.4.0"]
@@ -63,12 +108,13 @@
                  [org.apache.pdfbox/jbig2-imageio "3.0.4"]
                  [ring/ring-session-timeout "0.2.0"]
                  [opiskelijavalinnat-utils/clj-ring-db-cas-session "1.0.0-SNAPSHOT"]
-                 [oph/clj-access-logging "1.0.0-SNAPSHOT" :exclusions [io.findify/s3mock_2.12]]
-                 [oph/clj-stdout-access-logging "1.0.0-SNAPSHOT" :exclusions [io.findify/s3mock_2.12]]
-                 [oph/clj-timbre-access-logging "1.1.0-SNAPSHOT" :exclusions [io.findify/s3mock_2.12]]]
+                 ;; oph/clj-*-access-logging olivat vain Artifactoryssa (poistumassa käytöstä).
+                 ;; Nämä pienet yhden tiedoston kirjastot on vendoroitu src/liiteri/clj_*_access_logging.clj:hin
+                 ;; (sama kuin ataru/maksut/hakukohderyhmapalvelu tekevät).
+                 ]
 
-  :repositories [["snapshots" {:url "https://artifactory.opintopolku.fi/artifactory/oph-sade-snapshot-local"}]
-                 ["github" {:url "https://maven.pkg.github.com/Opetushallitus/packages"
+  ;; Artifactory poistettu -> kaikki SNAPSHOTit GitHub Packagesista
+  :repositories [["github" {:url "https://maven.pkg.github.com/Opetushallitus/packages"
                             :username "private-token"
                             :password :env/GITHUB_TOKEN}]]
 
