@@ -18,7 +18,7 @@
     <url>https://github.com/Opetushallitus/liiteri</url>
     <connection>scm:git:git://github.com/Opetushallitus/liiteri.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/Opetushallitus/liiteri.git</developerConnection>
-    <tag>8c339a1ea533c5d5e03cdfaa1ed2b4cfe008e083</tag>
+    <tag>53617b607f7b2609cd992f58da84ed31f3b401f1</tag>
   </scm>
   <build>
     <sourceDirectory>src</sourceDirectory>
@@ -412,7 +412,7 @@
     <dependency>
       <groupId>yesql</groupId>
       <artifactId>yesql</artifactId>
-      <version>0.5.3</version>
+      <version>0.5.4</version>
     </dependency>
     <dependency>
       <groupId>environ</groupId>
@@ -456,7 +456,7 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.19.0</version>
+      <version>2.20.0</version>
     </dependency>
     <dependency>
       <groupId>jarohen</groupId>

@@ -87,15 +87,17 @@
                  [org.slf4j/slf4j-api "1.7.36"]
                  [org.slf4j/log4j-over-slf4j "1.7.36"]
                  [org.slf4j/jcl-over-slf4j "1.7.36"]
-                 [yesql "0.5.3"]
+                 ;; 0.5.4: clj-ring-db-cas-session tuo tämän, ei pidetä 0.5.3:ssa
+                 [yesql "0.5.4"]
                  [environ "1.1.0"]
                  [opiskelijavalinnat-utils/java-cas "2.3.0-SNAPSHOT"]
                  [org.apache.tika/tika-core "3.2.3"]
                  ; Exclusions to get rid warnings about version ranges.
                  [org.apache.tika/tika-parsers-standard-package "3.2.3" :exclusions [org.bouncycastle/bcpkix-jdk18on org.bouncycastle/bcutil-jdk18on org.bouncycastle/bcprov-jdk18on]]
-                 ;; tika 3.2.3 ja clj-commons/fs 1.6.312 haluavat 1.28.0 -> ei pidetä alhaalla
+                 ;; tika 3.2.3 ja clj-commons/fs 1.6.312 haluavat commons-compress 1.28.0 / commons-io 2.20.0
+                 ;; -> ei pidetä alhaalla
                  [org.apache.commons/commons-compress "1.28.0"]
-                 [commons-io/commons-io "2.19.0"]
+                 [commons-io/commons-io "2.20.0"]
                  [jarohen/chime "0.2.2"]
                  [clj-http "3.13.1"]
                  [aleph "0.9.11"]
